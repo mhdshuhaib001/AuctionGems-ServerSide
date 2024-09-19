@@ -1,6 +1,7 @@
 import { UserModel } from "../../entities_models/userModel";
 import { IUserRepository } from "../../interfaces/iRepositories/iUserRepository";
 import { User } from "../../interfaces/model/user";
+import UserOutPut from "../../interfaces/model/userOutPut";
 import bcrypt from "bcrypt";
 
 class UserRepository implements IUserRepository {
@@ -9,12 +10,11 @@ class UserRepository implements IUserRepository {
         try {
             console.log('Incoming user data:', user);
 
-            const saltRounds = 10;
-            const hashedPass = await bcrypt.hash(user.password, saltRounds);
+         
 
             const newUser = new UserModel({
                 ...user,
-                password: hashedPass
+              
             });
             await newUser.save();
             console.log('User saved successfully:', newUser);
@@ -67,6 +67,19 @@ class UserRepository implements IUserRepository {
         } catch (error) {
             console.error('Error updating user role:', error);
             return false;
+        }
+    }
+    async updatePassword(email:string,password:string): Promise<User | null> {
+        try {
+            const result = await UserModel.findOneAndUpdate(
+                { email },
+                { $set: { password } },
+                { new: true } 
+            );            console.log(result, 'userUpdateResult');
+            return result;
+        } catch (error) {
+            console.error('Error updating user:', error);
+            throw new Error('Error updating user');
         }
     }
     

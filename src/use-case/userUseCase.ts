@@ -48,25 +48,21 @@ class UserUseCase implements IUserUseCase {
         if (otpRecord?.OTP.toString() === userData.otp?.toString()) {
           userData.role = userData.role || "user";
           console.log(userData, "this is the userData");
-
+          const saltRounds = 10;
+          const hashedPass = await bcrypt.hash(userData.password, saltRounds);
+          userData.password = hashedPass
           const users = await this._userRepository.insertOne(userData);
           const token = this._jwt.createAccessToken(
-            userData._id,
+            userData.email,
             userData.role
           );
           console.log(token, "halooo");
 
-          const responseUserData = {
-            _id: users._id,
-            email: users.email,
-            name: users.name,
-            role: users.role
-          };
-          console.log(responseUserData, "this is response data");
+          
           return {
             status: 200,
             message: "User registration successful",
-            userData: responseUserData,
+            userData:users,
             accessToken: token
           };
         } else {
@@ -92,7 +88,7 @@ class UserUseCase implements IUserUseCase {
         );
         if (isPasswordValid) {
           const role = user.role || "user";
-          const token = this._jwt.createAccessToken(user._id, role);
+          const token = this._jwt.createAccessToken(userData.email, role);
           console.log(token, "halooo");
           return {
             status: 200,
@@ -115,24 +111,23 @@ class UserUseCase implements IUserUseCase {
   async googleRegister(name: string, email: string, password: string) {
     const user = await this._userRepository.findByEmail(email);
     if (user) {
-      const accessToken = this._jwt.createAccessToken(user._id, "user");
+      const accessToken = this._jwt.createAccessToken(email, "user");
       return {
         status: 200,
         accessToken: accessToken,
         message: "Login successfully"
       };
     } else {
-      const userData: User = await this._userRepository.insertOne({
+      const randomPassword = Math.random().toString(36).slice(-8);
+      console.log(randomPassword, "random password");
+      const userData = await this._userRepository.insertOne({
         name,
         email,
-        password,
-        _id: "",
-        isActive: true,
-        isSeller: false
-      });
+        password: randomPassword,
+      })
 
       if (userData) {
-        const accessToken = this._jwt.createAccessToken(userData._id, "user");
+        const accessToken = this._jwt.createAccessToken(userData.email, "user");
         return {
           status: 200,
           accessToken: accessToken,
@@ -143,6 +138,72 @@ class UserUseCase implements IUserUseCase {
         status: 400,
         message: "Something went wrong"
       };
+    }
+  }
+
+  async forgetPasswordReq(email: string) {
+    try {
+      const user = await this._userRepository.findByEmail(email);
+      console.log(process.env.FRONTEND_URL, "frontend usrl is this ");
+      if (user) {
+        const role = user.role||"user" 
+        const resetToken = this._jwt.createAccessToken(user.email, role);
+        const forgetUrl = `${process.env.FRONTEND_URL}/forget-password?token=${resetToken}`;
+        const mailSent = await this._mailer.forgetMail(email, forgetUrl);
+
+        if (mailSent) {
+          return {
+            status: 200,
+            message: "Password reset link sent to your email"
+          };
+        } else {
+          return {
+            status: 500,
+            message: "Failed to send password reset email"
+          };
+        }
+      } else {
+        return { status: 404, message: "User with this email does not exist" };
+      }
+    } catch (error) {
+      console.error("Error in forgetPassword:", error);
+      return { status: 500, message: "Internal server error" };
+    }
+  }
+
+  async forgetPassword(token: string, password: string): Promise<UserOutPut> {
+    try {
+      // Verify the token
+      const decodedToken = this._jwt.verifyToken(token);
+      if (!decodedToken || typeof decodedToken === "string") {
+        return { status: 400, message: "Invalid or expired token" };
+      }
+      // Extract email or user details from decoded token
+      const email = decodedToken.email; // Adjust this based on your token payload
+      // Find the user
+      const user = await this._userRepository.findByEmail(email);
+      if (!user) {
+        return { status: 404, message: "User not found" };
+      }
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      // Update the user's password
+      const updatedUser = await this._userRepository.updatePassword(
+        email,
+        hashedPassword
+      );
+      if (!updatedUser) {
+        return { status: 500, message: "Failed to update password" };
+      }
+
+      return {
+        status: 200,
+        message: "Password updated successfully",
+        userData:updatedUser
+      };
+    } catch (error) {
+      console.error("Error in forgetPassword:", error);
+      return { status: 500, message: "Internal server error" };
     }
   }
 }

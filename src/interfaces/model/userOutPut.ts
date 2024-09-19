@@ -1,11 +1,11 @@
 // In userOutPut.ts
-import { UserResponseData } from "./user";
+import { User } from "./user";
 
 interface UserOutPut {
   status: number;
-  message: string;
+  message?: string;
   accessToken?: string;
-  userData?: UserResponseData | null;
+  userData?: User | null;
 }
 
 export default UserOutPut;

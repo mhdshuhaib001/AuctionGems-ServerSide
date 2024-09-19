@@ -33,6 +33,44 @@ class NodeMailer implements mailer {
             return false;
         }
     }
+
+
+    async forgetMail(email: string, forgetUrl: string): Promise<boolean> {
+        const mailOptions = {
+          from: process.env.GMAIL,
+          to: email,
+          subject: 'Antigo - Password Forget Request',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px;">
+              <h2 style="text-align: center; color: #2c3e50;">Antigo - Password Reset</h2>
+              <p style="font-size: 16px; color: #2c3e50;">
+                Hello,
+              </p>
+              <p style="font-size: 16px; color: #2c3e50;">
+                We received a request to reset the password for your Antigo account. Please click the button below to reset your password. This link will expire in 1 hour.
+              </p>
+              <div style="text-align: center; margin-top: 20px;">
+                <a href="${forgetUrl}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">Forget Password</a>
+              </div>
+              <p style="font-size: 16px; color: #2c3e50; margin-top: 20px;">
+                If you did not request this password reset, please ignore this email. Your password will remain unchanged.
+              </p>
+              <p style="font-size: 16px; color: #2c3e50;">
+                Regards,<br/>The Antigo Team
+              </p>
+            </div>
+          `
+        };
+      
+        try {
+          await this._transporter.sendMail(mailOptions);
+          return true;
+        } catch (error) {
+          console.error('Error sending email:', error);
+          return false;
+        }
+      }
+      
 }
 
 export default NodeMailer;

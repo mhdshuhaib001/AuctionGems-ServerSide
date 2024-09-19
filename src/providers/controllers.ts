@@ -36,7 +36,7 @@ const productUseCase = new ProductUseCase(productRepository)
 const adminUseCase = new AdminUseCase(jwt,adminRepository);
 
 // Controller
-export const userController = new UserController(userUseCase);
+export const userController = new UserController(userUseCase,jwt);
 export const sellerController = new SellerController(sellerUsecase)
 export const productController = new ProductController(productUseCase)
 export const adminController = new AdminController(adminUseCase);

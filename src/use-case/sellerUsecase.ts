@@ -14,10 +14,17 @@ class SellerUseCase {
     async createSeller(sellerData: Seller) {
         try {
             console.log(sellerData,'sellerdarta')
+            const existingName = await this._SellerRepository.findByName(sellerData.CompanyName)
+            console.log(existingName,'hakoooooo')
+            if(existingName){
+                return {
+                    status:400,
+                    message:"Seller name already taken"
+                }
+            }
             const result = await this._SellerRepository.insertOne(sellerData);
             await this._UserRepository.updateRole(sellerData.UserID.toString(), 'seller');
             const sellerToken = this._jwt.createAccessToken(sellerData.UserID.toString(), 'seller');
-console.log(sellerToken,'heyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
 
             console.log(result, 'seller data is this');
             return {

@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import ProductRepository from '../../infrastructure/repositories/ProductListingRepository'; // Import your repository
-import userUseCase from '../../use-case/userUseCase';
+import { Request, Response } from "express";
+import ProductRepository from "../../infrastructure/repositories/ProductListingRepository"; // Import your repository
+import userUseCase from "../../use-case/userUseCase";
 
 const productRepository = new ProductRepository();
 
@@ -121,7 +121,6 @@ const productRepository = new ProductRepository();
  *                   example: Internal server error
  */
 
-
 /**
  * @openapi
  * /api/auth/login:
@@ -176,7 +175,6 @@ const productRepository = new ProductRepository();
  *                   type: string
  *                   example: Internal server error
  */
-
 
 /**
  * @openapi
@@ -243,7 +241,6 @@ const productRepository = new ProductRepository();
  *                   type: string
  *                   example: Internal server error
  */
-
 
 /**
  * @openapi
@@ -436,4 +433,53 @@ const productRepository = new ProductRepository();
  *                 message:
  *                   type: string
  *                   example: "Internal server error"
+ */
+/**
+ * @openapi
+ * /api/auth/forget-password:
+ *   post:
+ *     summary: Request Password Reset
+ *     description: Sends a password reset link to the user's email address.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *                 description: The email address of the user who wants to reset their password.
+ *     responses:
+ *       200:
+ *         description: Password reset link sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password reset link sent to your email
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User with this email does not exist
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
  */

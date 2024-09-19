@@ -14,9 +14,6 @@ const userSchema = new Schema<User>({
       type: String,
       required: true,
   },
-  phoneNo: {
-      type: Number,
-  },
   isSeller: {
       type: Boolean,
       default: false,

@@ -24,6 +24,17 @@ class SellerRepository implements ISellerRepository {
             throw new Error("Failed to find seller.");
         }
     }
+    async findByName(CompanyName:string):Promise<Seller|null>{
+        try{
+            console.log(CompanyName,'CompanyName')
+            const seller = await SellerModel.findOne({CompanyName})
+            console.log(seller,'sellername')
+            return seller
+        }catch(error){
+            console.error("Error finding seller by name",error);
+            throw new Error('Failed to find seller')
+        }
+    }
     
 }
 

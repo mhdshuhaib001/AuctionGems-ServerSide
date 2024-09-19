@@ -1,13 +1,12 @@
 export interface User {
-    _id: string;
-     name: string;
+    _id?:string
+    name: string;
     email: string;
     password: string;
-    phoneNo?: number;
     otp?: number;
-    isActive: boolean;
-    isSeller: boolean;
-    role?: 'user' | 'seller';
+    isActive?: boolean;
+    isSeller?: boolean;
+    role?: 'user' | 'seller'| 'admin';
     accessToken?:string
 }
 
@@ -19,8 +18,8 @@ export interface Login {
 
 
 export interface UserResponseData {
-    _id: string;
+    _id?: string
     name: string;
     email: string;
-    role?: 'user' | 'seller';
+    role?: 'user' | 'seller'|'admin';
 }

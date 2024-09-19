@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import UserUseCase from "../use-case/userUseCase";
-
+import JWT from "../providers/jwt";
 class UserController {
-  constructor(private readonly _userUseCase: UserUseCase) {}
+  constructor(
+    private readonly _userUseCase: UserUseCase,
+    private _jwt: JWT
+  ) {}
 
   async signUp(req: Request, res: Response) {
     try {
@@ -50,8 +53,10 @@ class UserController {
 
   async googleRegister(req: Request, res: Response) {
     try {
-      const { name, email, password } = req.body;
-      console.log("hakoooooooooooooooooooooooooooooo", req.body);
+
+      const  gAuthId  = req.body.idToken;
+      const decodedToken = this._jwt.decode(gAuthId);
+      const { email, name,password } = decodedToken;
       const user = await this._userUseCase.googleRegister(
         name,
         email,
@@ -63,6 +68,33 @@ class UserController {
       res.status(500).json({ message: "Something went wrong" });
     }
   }
+
+  async forgetPasswordReq(req: Request, res: Response) {
+    try {
+      const email = req.body.email;
+      console.log(email, 'halooooooooooooo email is here');
+      
+      const result = await this._userUseCase.forgetPasswordReq(email);
+  
+      res.status(result.status).json({ message: result.message });
+    } catch (error) {
+      console.error('Error in forgetPasswordRequest:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+  async forgetPassword(req:Request,res:Response){
+    try {
+      const {token,newPassword} = req.body
+      console.log(token,newPassword,'halooooooooooooooooo')
+    const result =  await this._userUseCase.forgetPassword(token,newPassword)
+    console.log(result,'halooiiii')
+    } catch (error) {
+      console.error('Error in forgetPassword:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+  
+  
 }
 
 export default UserController;
