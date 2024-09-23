@@ -7,9 +7,8 @@ class AdminController {
     async adminLogin(req: Request, res: Response) {
         try {
             const AdminData = req.body;
-            console.log(AdminData,'AdminDatadfgvdf')
             const result = await this._AdminUsecase.adminLogin(AdminData);
-            res.status(result.status || 200).json({  result });
+            res.status(result.status || 200).json(result);
         } catch (error) {
             console.error('Error during sign in:', error);
             res.status(500).json({ error: 'Internal server error' });
@@ -17,14 +16,24 @@ class AdminController {
     }
     async fetchUsers(req: Request, res: Response) {
         try {
-
-            console.log(req.body)
             const users = await this._AdminUsecase.fetchAllUsers();
-            console.log(users,'fetchUsersfklngkvdfnj')
             res.status(200).json( users );
         } catch (error) {
             console.error('Error fetching users:', error);
             res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+    async updateUserActiveStatus(req:Request,res:Response){
+        try {
+            const {userId } = req.body
+            const result = await this._AdminUsecase.updateUserActiveStatus(userId )
+            res.status(200).json( result );
+
+        } catch (error) {
+            console.error('Error actionhandle admin:', error);
+            res.status(500).json({ error: 'Internal server error' });
+            
         }
     }
 }

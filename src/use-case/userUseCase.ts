@@ -17,6 +17,23 @@ class UserUseCase implements IUserUseCase {
     private readonly _userOTPRepo: UserOTPRepository
   ) {}
 
+
+
+
+  async checkIsBlock(token: string): Promise<boolean | undefined> {
+    try {
+      const decoded = this._jwt.verifyToken(token);
+      if (!decoded || typeof decoded === "string") {
+        throw new Error("Invalid token");
+      }
+      const user = await this._userRepository.findByEmail(decoded.email);
+
+      return user?.isActive;
+    } catch (error) {
+      console.error("Error in checkIsBlock:", error);
+      throw new Error("Error in checkIsBlock OTP");
+    }
+  }
   async sendOTP(email: string): Promise<{ status: number; message: string }> {
     try {
       const OTP = this._OTPgenerator.generateOTP();
@@ -50,7 +67,7 @@ class UserUseCase implements IUserUseCase {
           console.log(userData, "this is the userData");
           const saltRounds = 10;
           const hashedPass = await bcrypt.hash(userData.password, saltRounds);
-          userData.password = hashedPass
+          userData.password = hashedPass;
           const users = await this._userRepository.insertOne(userData);
           const token = this._jwt.createAccessToken(
             userData.email,
@@ -58,11 +75,10 @@ class UserUseCase implements IUserUseCase {
           );
           console.log(token, "halooo");
 
-          
           return {
             status: 200,
             message: "User registration successful",
-            userData:users,
+            userData: users,
             accessToken: token
           };
         } else {
@@ -82,6 +98,11 @@ class UserUseCase implements IUserUseCase {
       const user = await this._userRepository.findByEmail(userData.email);
 
       if (user) {
+        if (user.isActive) {
+          return { status: 403, message: "Your account is blocked" };
+        }
+
+        // Proceed with password validation
         const isPasswordValid = await bcrypt.compare(
           userData.password,
           user.password
@@ -89,7 +110,6 @@ class UserUseCase implements IUserUseCase {
         if (isPasswordValid) {
           const role = user.role || "user";
           const token = this._jwt.createAccessToken(userData.email, role);
-          console.log(token, "halooo");
           return {
             status: 200,
             accessToken: token,
@@ -119,12 +139,11 @@ class UserUseCase implements IUserUseCase {
       };
     } else {
       const randomPassword = Math.random().toString(36).slice(-8);
-      console.log(randomPassword, "random password");
       const userData = await this._userRepository.insertOne({
         name,
         email,
-        password: randomPassword,
-      })
+        password: randomPassword
+      });
 
       if (userData) {
         const accessToken = this._jwt.createAccessToken(userData.email, "user");
@@ -146,7 +165,7 @@ class UserUseCase implements IUserUseCase {
       const user = await this._userRepository.findByEmail(email);
       console.log(process.env.FRONTEND_URL, "frontend usrl is this ");
       if (user) {
-        const role = user.role||"user" 
+        const role = user.role || "user";
         const resetToken = this._jwt.createAccessToken(user.email, role);
         const forgetUrl = `${process.env.FRONTEND_URL}/forget-password?token=${resetToken}`;
         const mailSent = await this._mailer.forgetMail(email, forgetUrl);
@@ -178,16 +197,12 @@ class UserUseCase implements IUserUseCase {
       if (!decodedToken || typeof decodedToken === "string") {
         return { status: 400, message: "Invalid or expired token" };
       }
-      // Extract email or user details from decoded token
-      const email = decodedToken.email; // Adjust this based on your token payload
-      // Find the user
+      const email = decodedToken.email; 
       const user = await this._userRepository.findByEmail(email);
       if (!user) {
         return { status: 404, message: "User not found" };
       }
-      // Hash the new password
       const hashedPassword = await bcrypt.hash(password, 10);
-      // Update the user's password
       const updatedUser = await this._userRepository.updatePassword(
         email,
         hashedPassword
@@ -199,7 +214,7 @@ class UserUseCase implements IUserUseCase {
       return {
         status: 200,
         message: "Password updated successfully",
-        userData:updatedUser
+        userData: updatedUser
       };
     } catch (error) {
       console.error("Error in forgetPassword:", error);

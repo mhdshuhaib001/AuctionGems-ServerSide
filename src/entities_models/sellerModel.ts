@@ -23,20 +23,24 @@ const sellerSchema = new Schema<Seller>({
         type: Boolean,
         default: false,
     },
+    products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }]
 });
 
 const SellerModel: Model<Seller> = mongoose.model<Seller>("Seller", sellerSchema);
 
+
+
+
 const ProductSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+    sellerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Seller' },
     itemTitle: { type: String, required: true },
     category: { type: String, required: true },
     description: String,
     condition: { type: String, required: true },
     images: [String],
     auctionFormat: { type: String, required: true, enum: ['buy-it-now', 'auction'] },
-    auction_start_time: Date,
-    auction_end_time: Date,
+    auctionStartDateTime: String,
+    auctionEndDateTime: String,
     reservePrice: Number,
     shippingType: { type: String, required: true, enum: ['standard', 'express'] },
     shippingCost: Number,

@@ -1,18 +1,18 @@
-import mongoose, { Document, Types } from "mongoose";
+import mongoose, { Document, ObjectId, Types } from "mongoose";
 
 export interface Seller extends Document {
     // status(status: any): unknown;
+    _id:string
     UserID: Types.ObjectId;
     CompanyName: string;
     ContactInfo?: string;
     About?: string;
     IsBlocked?: boolean;
-
-}
+    products?: (ObjectId | Product)[];}
 
 
 export interface Product {
-    userId: mongoose.Types.ObjectId;
+    SellerId: mongoose.Types.ObjectId;
     item_title: string;
     category: string;
     description?: string;
@@ -32,4 +32,10 @@ export interface Product {
     return_duration?: number; 
 }
 
+
+export interface SellerResponse{
+    status: number;
+     message: string;
+     productData?: Product 
+}
   

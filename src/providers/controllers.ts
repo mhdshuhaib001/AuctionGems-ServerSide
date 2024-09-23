@@ -10,7 +10,6 @@ import ProductRepository from "../infrastructure/repositories/ProductListingRepo
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import SellerUseCase from "../use-case/sellerUsecase";
 import Jwt from "./jwt";
-import ProductUseCase from "../use-case/productUseCase";
 import AdminUseCase from "../use-case/adminUseCase";
 import AdminController from "../adaptors/adminController";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
@@ -31,12 +30,10 @@ const productRepository = new ProductRepository()
 const adminRepository = new AdminRepository()
 // UseCases
 const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,  userOTPRepo);
-const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt)
-const productUseCase = new ProductUseCase(productRepository)
+const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository)
 const adminUseCase = new AdminUseCase(jwt,adminRepository);
 
 // Controller
 export const userController = new UserController(userUseCase,jwt);
 export const sellerController = new SellerController(sellerUsecase)
-export const productController = new ProductController(productUseCase)
 export const adminController = new AdminController(adminUseCase);

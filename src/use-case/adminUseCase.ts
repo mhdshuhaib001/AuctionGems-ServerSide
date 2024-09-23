@@ -17,7 +17,6 @@ class AdminUseCase implements IAdminUseCase {
         const { email, password } = loginData;
         if (email === this.adminEmail && password === this.adminPassword) {
             const token = this._jwt.createAccessToken('adminId', 'admin'); 
-           console.log(token,'this is here the accessToken')
             return {
                 status: 200,
                 message: 'Login successful',
@@ -41,15 +40,13 @@ class AdminUseCase implements IAdminUseCase {
             throw new Error('Error fetching users');
         }
     }
-    async updateUserStatus(userId: string, status: 'Active' | 'Inactive'): Promise<void> {
+    async updateUserActiveStatus(userId: string): Promise<any> {
         try {
-            if (status === 'Active') {
-                await this._adminRepository.unblockUser(userId); 
-            } else if (status === 'Inactive') {
-                await this._adminRepository.blockUser(userId);
-            } else {
-                throw new Error('Invalid status provided');
-            }
+
+            const result = await this._adminRepository.updateUserStatus(userId)
+            console.log(result,'updated')
+            return result
+
         } catch (error) {
             console.error(`Error updating user status to ${status}:`, error);
             throw new Error(`Error updating user status to ${status}`);

@@ -6,7 +6,6 @@ interface IUserUseCase {
     signUp(userData: User): Promise<UserOutPut>;
     login(userData: Login, password: any): Promise<UserOutPut>;
     forgetPassword(token:string, password:string): Promise<UserOutPut>
-
 }
 
 export default IUserUseCase;

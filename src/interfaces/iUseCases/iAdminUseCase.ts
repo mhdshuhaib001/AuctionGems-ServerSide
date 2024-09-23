@@ -3,6 +3,7 @@ import AdminOutPut from "../model/adminOutput";
 
 interface IAdminUseCase{
     adminLogin(userData: Login, password: any): Promise<AdminOutPut>;
+    
 
 }
 
