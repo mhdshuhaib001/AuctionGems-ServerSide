@@ -19,7 +19,7 @@ const handleGetProduct = (req: Request, res: Response) =>
 const handleFetchAllProduct = (req: Request, res: Response) =>
   sellerController.getAllProduct(req, res);
 
-router.post('/createseller', userAuth(['user']), handleSellerCreater);
+router.post('/createseller', handleSellerCreater);
 router.post('/createproduct', userAuth(['seller', 'admin']), handleCreateProduct);
 router.get('/fetchProducts/:sellerId', userAuth(['seller', 'admin']), handleSellerProductFetch);
 router.delete('/deleteProduct/:productId', userAuth(['seller', 'admin']), handleDeleteProduct);

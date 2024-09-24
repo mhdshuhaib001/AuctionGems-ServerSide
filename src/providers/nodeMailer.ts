@@ -16,23 +16,33 @@ class NodeMailer implements mailer {
             }
         });
     }
-
     async sendMail(email: string, otp: number): Promise<boolean> {
-        const mailOptions = {
-            from: process.env.GMAIL,
-            to: email,
-            subject: 'Atiqgem \n OTP for email verification',
-            text: `Your OTP is: ${otp}`
-        };
-
-        try {
-            await this._transporter.sendMail(mailOptions);
-            return true;
-        } catch (error) {
-            console.error('Error sending email:', error);
-            return false;
-        }
-    }
+      const mailOptions = {
+          from: process.env.GMAIL,
+          to: email,
+          subject: 'Atiqgem - OTP for Email Verification',
+          html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px;">
+                  <h2 style="color: #333;">Welcome to Atiqgem!</h2>
+                  <p style="font-size: 16px;">Thank you for signing up. Please verify your email address by using the OTP below:</p>
+                  <h3 style="background-color: #f2f2f2; padding: 10px; border-radius: 5px; display: inline-block; font-size: 24px; color: #555;">
+                      ${otp}
+                  </h3>
+                  <p style="font-size: 16px;">This OTP is valid for 5 minutes. If you did not request this, please ignore this email.</p>
+                  <p style="font-size: 16px;">Best regards,<br/>The Atiqgem Team</p>
+              </div>
+          `
+      };
+  
+      try {
+          await this._transporter.sendMail(mailOptions);
+          return true;
+      } catch (error) {
+          console.error('Error sending email:', error);
+          return false;
+      }
+  }
+  
 
 
     async forgetMail(email: string, forgetUrl: string): Promise<boolean> {
