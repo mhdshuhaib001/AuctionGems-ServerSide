@@ -2,7 +2,7 @@ import express from "express";
 import { Request, Response } from "express";
 import { sellerController } from '../../providers/controllers';
 import { userAuth } from '../../middilewares/RoleBaseAuth';
-
+import {uplodeSellerProfile} from "../../middilewares/multer";
 const router = express.Router();
 
 // Define route handlers
@@ -19,7 +19,7 @@ const handleGetProduct = (req: Request, res: Response) =>
 const handleFetchAllProduct = (req: Request, res: Response) =>
   sellerController.getAllProduct(req, res);
 
-router.post('/createseller', handleSellerCreater);
+router.post('/createseller',uplodeSellerProfile.single('image'), handleSellerCreater);
 router.post('/createproduct', userAuth(['seller', 'admin']), handleCreateProduct);
 router.get('/fetchProducts/:sellerId', userAuth(['seller', 'admin']), handleSellerProductFetch);
 router.delete('/deleteProduct/:productId', userAuth(['seller', 'admin']), handleDeleteProduct);
