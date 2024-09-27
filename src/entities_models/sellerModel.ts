@@ -23,7 +23,9 @@ const sellerSchema = new Schema<Seller>({
         type: Boolean,
         default: false,
     },
-    products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }]
+    Profile:{
+        type:String
+    }
 });
 
 const SellerModel: Model<Seller> = mongoose.model<Seller>("Seller", sellerSchema);

@@ -8,6 +8,8 @@ class SellerController {
 
   async createSeller(req: Request, res: Response) {
     try {
+      console.log("Request Body:", req.body);
+      console.log("Uploaded File:", req.file);
       const sellerData = req.body;
       console.log("Output:seller data", sellerData);
 
@@ -34,6 +36,19 @@ class SellerController {
     } catch (error) {
       console.error("Error creating product:", error);
       res.status(500).json({ message: "Error creating product." });
+    }
+  }
+
+  async updateSeller(req:Request,res:Response){
+    try {
+
+     const sellerData = req.body;
+     const image = req.file || null;
+     const response = await this._sellerUseCase.updateSeller(sellerData,image);
+     res.json(response.status).json(response)
+        } catch (error) {
+      console.error("Error  updateSeller.", error);
+      res.status(500).json({ message: "Error updateSeller." });
     }
   }
 
@@ -80,6 +95,17 @@ class SellerController {
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Error fetching products." });
+    }
+  }
+
+  async fetchSeller(req:Request,res:Response){
+    try {
+      const sellerId = req.query.sellerId
+      console.log(sellerId,'sellerId on the conosle ')
+      
+      // const seller = await this._sellerUseCase.fetchSeller({sellerId})
+    } catch (error) {
+      
     }
   }
   

@@ -3,6 +3,9 @@ import { ISellerRepository } from "../../interfaces/iRepositories/iSellerReposit
 import { Seller, Product } from "../../interfaces/model/seller";
 
 class SellerRepository implements ISellerRepository {
+  existsByEmail(email: string) {
+    throw new Error("Method not implemented.");
+  }
   async insertOne(sellerData: Omit<Seller, "_id">): Promise<Seller> {
     try {
       const newSeller = new SellerModel(sellerData);
@@ -27,6 +30,7 @@ class SellerRepository implements ISellerRepository {
 
   async existsByUserId(userId: string): Promise<Seller | null> {
     try {
+      
       const seller = await SellerModel.findOne({ UserID: userId }).exec();
       return seller;
     } catch (error) {
@@ -34,6 +38,21 @@ class SellerRepository implements ISellerRepository {
       throw new Error("Failed to check seller existence.");
     }
   }
+
+
+  async existsBySellerId(_id: string): Promise<Seller | null> {
+    try {
+     
+      const seller = await SellerModel.findOne({_id }).exec();
+      console.log(seller)
+      return seller;
+    } catch (error) {
+      console.error("Error checking if seller exists by email or ID:", error);
+      throw new Error("Failed to check seller existence.");
+    }
+  }
+  
+  
   async findByName(CompanyName: string): Promise<Seller | null> {
     try {
       const seller = await SellerModel.findOne({ CompanyName });

@@ -2,7 +2,7 @@ import express from "express";
 import { Request, Response } from "express";
 import { sellerController } from '../../providers/controllers';
 import { userAuth } from '../../middilewares/RoleBaseAuth';
-import {uplodeSellerProfile} from "../../middilewares/multer";
+import {uploadSellerProfile} from "../../middilewares/multer";
 const router = express.Router();
 
 // Define route handlers
@@ -18,12 +18,22 @@ const handleGetProduct = (req: Request, res: Response) =>
   sellerController.getProduct(req, res);
 const handleFetchAllProduct = (req: Request, res: Response) =>
   sellerController.getAllProduct(req, res);
+const handleUpdateSeller= (req:Request,res:Response)=>{sellerController.updateSeller(req,res)}
+const handleSellerFetch = (req:Request,res:Response)=>{sellerController.fetchSeller(req,res)}
 
-router.post('/createseller',uplodeSellerProfile.single('image'), handleSellerCreater);
+
+router.post('/createseller',  handleSellerCreater);
+router.put('/updateseller', uploadSellerProfile.single('image'), handleUpdateSeller);
 router.post('/createproduct', userAuth(['seller', 'admin']), handleCreateProduct);
 router.get('/fetchProducts/:sellerId', userAuth(['seller', 'admin']), handleSellerProductFetch);
 router.delete('/deleteProduct/:productId', userAuth(['seller', 'admin']), handleDeleteProduct);
 router.get('/getProduct/:productId', handleGetProduct);
 router.get('/fetchAllProducts', handleFetchAllProduct);
+router.get('/fetchSeller/:sellerId', (req, res) => {
+  const sellerId = req.params.sellerId; // Extract sellerId from route parameters
+  console.log('Fetching seller with ID:', sellerId); // Console log for sellerId
+
+  handleSellerFetch(req, res);
+});
 
 export default router;

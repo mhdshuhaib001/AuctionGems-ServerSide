@@ -1,41 +1,11 @@
-const multer = require('multer')
-const {CloudinaryStorage} = require('multer-storage-cloudinary');
-const  cloudinary = '../config/cloudinaryConfig'; // Adjust the path if necessary
+import multer from 'multer';
 
+// Set up Multer to store files in memory
+const storage = multer.memoryStorage();
 
-// Multer Storage for Seller Profile
-const sellerProfileStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'seller_profiles',
-      allowed_formats: ['jpg', 'png'],
-      public_id: (req:any, file:any) => `seller_${Date.now()}_${file.originalname}`,
-    },
-  });
-  
-  // Multer Storage for User Profile
-  const userProfileStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'user_profiles',
-      allowed_formats: ['jpg', 'png'],
-      public_id: (req:any, file:any) => `user_${Date.now()}_${file.originalname}`,
-    },
-  });
-  
-  // Multer Storage for Product
-  const productStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'product_images',
-      allowed_formats: ['jpg', 'png'],
-      public_id: (req:any, file:any) => `product_${Date.now()}_${file.originalname}`,
-    },
-  });
-
-
-  const uplodeSellerProfile = multer({storage:sellerProfileStorage});
+// Create the upload middleware using the memory storage configuration
+const uploadSellerProfile = multer({ storage: storage });
 
 export {
-    uplodeSellerProfile
-  }
+  uploadSellerProfile
+};

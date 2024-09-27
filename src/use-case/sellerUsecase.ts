@@ -5,6 +5,8 @@ import { Seller, SellerResponse } from "../interfaces/model/seller";
 import cloudinary from "../infrastructure/config/cloudinary";
 import ProductRepository from "../infrastructure/repositories/ProductListingRepository";
 import { Product } from "../interfaces/model/seller";
+import { Readable } from "stream";
+
 class SellerUseCase {
   constructor(
     private readonly _SellerRepository: SellerRepository,
@@ -44,6 +46,65 @@ class SellerUseCase {
     } catch (error) {
       console.error("Error creating seller:", error);
       throw new Error("Failed to create seller.");
+    }
+  }
+
+  async updateSeller(sellerData: Seller, image: Express.Multer.File | null) {
+    try {
+      let imageUrl: string | null = null;
+      console.log(sellerData._id);
+      const sellerExists = await this._SellerRepository.existsBySellerId(sellerData._id);
+console.log(sellerExists,)
+ if(sellerExists){
+  
+      if (image) {
+        const bufferStream = new Readable();
+        bufferStream.push(image.buffer);
+        bufferStream.push(null);
+
+        console.log("Starting upload to Cloudinary...");
+
+        const uploadResponse = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto" },
+            (error, result) => {
+              if (error) {
+                console.error("Error during upload:", error);
+                return reject(error);
+              }
+              console.log("Upload successful:", result);
+              resolve(result);
+            }
+          );
+
+          bufferStream.pipe(uploadStream);
+        });
+
+        // Get the URL of the uploaded image
+        imageUrl = (uploadResponse as any).secure_url;
+        console.log("Image URL:", imageUrl);
+      } else {
+        console.log("No image provided, skipping upload.");
+      }
+ }else{
+  return{
+    staus: 404,
+    messag:'Seller is not found '
+  }
+ }
+
+
+      // Update the seller's profile in the database
+      // const updatedSeller = await this._SellerRepository.update(sellerData.id, { ...sellerData, image: imageUrl });
+
+      return {
+        status: 200,
+        message: "Seller updated successfully"
+        // sellerData: updatedSeller,
+      };
+    } catch (error) {
+      console.error("Error updating seller:", error);
+      throw new Error("Failed to update seller.");
     }
   }
 
@@ -110,7 +171,7 @@ class SellerUseCase {
 
   async deleteProduct(productId: string): Promise<SellerResponse> {
     try {
-       await this._SellerRepository.deleteProduct(productId);
+      await this._SellerRepository.deleteProduct(productId);
 
       return {
         status: 200,
@@ -166,6 +227,33 @@ class SellerUseCase {
       };
     }
   }
-}
+
+
+  async fetchSeller(sellerId: string): Promise<{ status: number; message: string; seller?: Seller | null }> {
+    try {
+      // Fetch the seller by ID
+      const seller = await this._SellerRepository.findById(sellerId);
+      
+      if (!seller) {
+        return {
+          status: 404,
+          message: "Seller not found",
+        };
+      }
+  
+      return {
+        status: 200,
+        message: "Seller fetched successfully",
+        seller, 
+      };
+    } catch (error) {
+      console.error("Error fetching seller:", error);
+      return {
+        status: 500,
+        message: "Failed to fetch seller",
+      };
+    }
+  }
+  }
 
 export default SellerUseCase;

@@ -1,7 +1,8 @@
 import mongoose, { Document, ObjectId, Types } from "mongoose";
 
 export interface Seller extends Document {
-    // status(status: any): unknown;
+    email:string;
+    Profile?:string
     _id:string
     UserID: Types.ObjectId;
     CompanyName: string;
