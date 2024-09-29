@@ -14,6 +14,7 @@ class JWT {
 
   createAccessToken(email: string, role: "user" | "seller" | "admin" ) {
     try {
+      console.log(email,role,'this is jwt controeller ')
       if (!this._secretKey) {
         throw new Error("Secret key is undefined");
       }

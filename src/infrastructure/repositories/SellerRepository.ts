@@ -31,7 +31,7 @@ class SellerRepository implements ISellerRepository {
   async existsByUserId(userId: string): Promise<Seller | null> {
     try {
       
-      const seller = await SellerModel.findOne({ UserID: userId }).exec();
+      const seller = await SellerModel.findOne({ userId: userId }).exec();
       return seller;
     } catch (error) {
       console.error("Error checking if seller exists by UserID:", error);
@@ -108,6 +108,19 @@ class SellerRepository implements ISellerRepository {
     } catch (error) {
       console.error("Error getting all products:", error);
       throw new Error("Failed to get products.");
+    }
+  }
+
+  async updateSeller(sellerId:string,sellerData:Partial<Omit<Seller,"_id">>):Promise<Seller|null>{
+    try {
+      const updatedSeller = await SellerModel.findByIdAndUpdate(sellerId,sellerData,{new:true,runValidators:true}).exec();
+      if (!updatedSeller) {
+        throw new Error("Seller not found");
+      }
+      return updatedSeller;
+    } catch (error) {
+      console.error("Error updating seller:", error);
+      throw new Error("Failed to update seller.");
     }
   }
 }

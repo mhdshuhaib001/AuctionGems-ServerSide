@@ -18,7 +18,7 @@ class SellerUseCase {
   async createSeller(sellerData: Seller) {
     try {
       const existingName = await this._SellerRepository.findByName(
-        sellerData.CompanyName
+        sellerData.companyName
       );
       if (existingName) {
         return {
@@ -28,11 +28,11 @@ class SellerUseCase {
       }
       const result = await this._SellerRepository.insertOne(sellerData);
       await this._UserRepository.updateRole(
-        sellerData.UserID.toString(),
+        sellerData.userId.toString(),
         "seller"
       );
       const sellerToken = this._jwt.createAccessToken(
-        sellerData.UserID.toString(),
+        sellerData.userId.toString(),
         "seller"
       );
 
@@ -53,58 +53,74 @@ class SellerUseCase {
     try {
       let imageUrl: string | null = null;
       console.log(sellerData._id);
-      const sellerExists = await this._SellerRepository.existsBySellerId(sellerData._id);
-console.log(sellerExists,)
- if(sellerExists){
-  
-      if (image) {
-        const bufferStream = new Readable();
-        bufferStream.push(image.buffer);
-        bufferStream.push(null);
 
-        console.log("Starting upload to Cloudinary...");
+      // Check if seller exists
+      const sellerExists = await this._SellerRepository.existsBySellerId(
+        sellerData._id
+      );
+      console.log(sellerExists);
 
-        const uploadResponse = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { resource_type: "auto" },
-            (error, result) => {
-              if (error) {
-                console.error("Error during upload:", error);
-                return reject(error);
+      if (sellerExists) {
+        // Upload image if provided
+        if (image) {
+          const bufferStream = new Readable();
+          bufferStream.push(image.buffer);
+          bufferStream.push(null);
+
+          console.log("Starting upload to Cloudinary...");
+
+          const uploadResponse = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { resource_type: "auto" },
+              (error, result) => {
+                if (error) {
+                  console.error("Error during upload:", error);
+                  return reject(error);
+                }
+                console.log("Upload successful:", result);
+                resolve(result);
               }
-              console.log("Upload successful:", result);
-              resolve(result);
-            }
-          );
+            );
 
-          bufferStream.pipe(uploadStream);
-        });
+            bufferStream.pipe(uploadStream);
+          });
 
-        // Get the URL of the uploaded image
-        imageUrl = (uploadResponse as any).secure_url;
-        console.log("Image URL:", imageUrl);
+          // Get the URL of the uploaded image
+          imageUrl = (uploadResponse as any).secure_url;
+          console.log("Image URL:", imageUrl);
+        } else {
+          console.log("No image provided, skipping upload.");
+        }
+
+        // Update seller data in the database
+        const updatedSellerData = {
+          ...sellerData,
+          Profile: imageUrl ? imageUrl : sellerData.profile // Update profile image URL if uploaded
+        };
+
+        const updateResponse = await this._SellerRepository.updateSeller(
+          sellerData._id,
+          updatedSellerData
+        );
+        console.log("Update Response:", updateResponse);
+
+        return {
+          status: 200,
+          message: "Seller updated successfully",
+          data: updateResponse
+        };
       } else {
-        console.log("No image provided, skipping upload.");
+        return {
+          status: 404,
+          message: "Seller not found"
+        };
       }
- }else{
-  return{
-    staus: 404,
-    messag:'Seller is not found '
-  }
- }
-
-
-      // Update the seller's profile in the database
-      // const updatedSeller = await this._SellerRepository.update(sellerData.id, { ...sellerData, image: imageUrl });
-
-      return {
-        status: 200,
-        message: "Seller updated successfully"
-        // sellerData: updatedSeller,
-      };
     } catch (error) {
       console.error("Error updating seller:", error);
-      throw new Error("Failed to update seller.");
+      return {
+        status: 500,
+        message: "Failed to update seller"
+      };
     }
   }
 
@@ -228,32 +244,34 @@ console.log(sellerExists,)
     }
   }
 
-
-  async fetchSeller(sellerId: string): Promise<{ status: number; message: string; seller?: Seller | null }> {
+  async fetchSeller(
+    sellerId: any
+  ): Promise<{ status: number; message: string; seller?: Seller | null }> {
     try {
-      // Fetch the seller by ID
+      console.log(sellerId, "sellerUsecase1");
       const seller = await this._SellerRepository.findById(sellerId);
-      
+      console.log(seller, "sellerUsecase");
+
       if (!seller) {
         return {
           status: 404,
-          message: "Seller not found",
+          message: "Seller not found"
         };
       }
-  
+
       return {
         status: 200,
         message: "Seller fetched successfully",
-        seller, 
+        seller
       };
     } catch (error) {
       console.error("Error fetching seller:", error);
       return {
         status: 500,
-        message: "Failed to fetch seller",
+        message: "Failed to fetch seller"
       };
     }
   }
-  }
+}
 
 export default SellerUseCase;

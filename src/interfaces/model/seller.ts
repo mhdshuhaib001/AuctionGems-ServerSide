@@ -1,16 +1,15 @@
 import mongoose, { Document, ObjectId, Types } from "mongoose";
 
 export interface Seller extends Document {
-    email:string;
-    Profile?:string
-    _id:string
-    UserID: Types.ObjectId;
-    CompanyName: string;
-    ContactInfo?: string;
-    About?: string;
-    IsBlocked?: boolean;
-    products?: (ObjectId | Product)[];}
-
+    email: string;
+    profile?: string; // Updated to camelCase
+    _id: string;
+    userId: Types.ObjectId; // Updated to camelCase
+    companyName: string; // Updated to camelCase
+    contactInfo?: string; // Updated to camelCase
+    about?: string; // Updated to camelCase
+    isBlocked?: boolean; // Updated to camelCase
+}
 
 export interface Product {
     SellerId: mongoose.Types.ObjectId;

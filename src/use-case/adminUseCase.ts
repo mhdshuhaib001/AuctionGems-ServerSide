@@ -52,6 +52,7 @@ class AdminUseCase implements IAdminUseCase {
             throw new Error(`Error updating user status to ${status}`);
         }
     }
+    
 }
 
 export default AdminUseCase;

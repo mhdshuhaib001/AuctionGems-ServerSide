@@ -29,7 +29,7 @@ const userOTPRepo = new UserOTPRepository();
 const productRepository = new ProductRepository()
 const adminRepository = new AdminRepository()
 // UseCases
-const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,  userOTPRepo);
+const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,userOTPRepo,sellerRepository);
 const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository)
 const adminUseCase = new AdminUseCase(jwt,adminRepository);
 

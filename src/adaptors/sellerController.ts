@@ -98,16 +98,19 @@ class SellerController {
     }
   }
 
-  async fetchSeller(req:Request,res:Response){
+  async fetchSeller(req: Request, res: Response) {
     try {
-      const sellerId = req.query.sellerId
-      console.log(sellerId,'sellerId on the conosle ')
-      
-      // const seller = await this._sellerUseCase.fetchSeller({sellerId})
+      const sellerId = req.params.sellerId;
+      const response = await this._sellerUseCase.fetchSeller(sellerId);
+  
+      // Send the entire response object correctly
+      return res.status(response.status).json(response);
     } catch (error) {
-      
+      console.error("Error fetching seller:", error);
+      return res.status(500).json({ message: "An error occurred while fetching the seller" });
     }
   }
+  
   
 }
 

@@ -2,6 +2,7 @@
 import { User } from "./user";
 
 interface UserOutPut {
+  sellerToken?:string;
   status: number;
   message?: string;
   accessToken?: string;

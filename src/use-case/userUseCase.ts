@@ -1,6 +1,7 @@
 import IUserUseCase from "../interfaces/iUseCases/iUserUseCase";
 import UserRepository from "../infrastructure/repositories/UserRepositories";
 import UserOTPRepository from "../infrastructure/repositories/UserOtpRepositories";
+import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import { Login, User } from "../interfaces/model/user";
 import UserOutPut from "../interfaces/model/userOutPut";
 import NodeMailer from "../providers/nodeMailer";
@@ -14,11 +15,9 @@ class UserUseCase implements IUserUseCase {
     private readonly _userRepository: UserRepository,
     private readonly _mailer: NodeMailer,
     private readonly _jwt: JWT,
-    private readonly _userOTPRepo: UserOTPRepository
+    private readonly _userOTPRepo: UserOTPRepository,
+    private readonly _sellerRepository: SellerRepository
   ) {}
-
-
-
 
   async checkIsBlock(token: string): Promise<boolean | undefined> {
     try {
@@ -110,12 +109,30 @@ class UserUseCase implements IUserUseCase {
         if (isPasswordValid) {
           const role = user.role || "user";
           const token = this._jwt.createAccessToken(userData.email, role);
+          let sellerToken:string| undefined
+          if (role === "seller") {
+            const sellerExists = await this._sellerRepository.existsByUserId(
+              user._id as string
+            );
+            console.log(`Seller exists: ${sellerExists}`); // Debug log
+
+            if (sellerExists) {
+               sellerToken = this._jwt.createAccessToken(
+                userData.email,
+                role
+              );
+              console.log(`Generated sellerToken: ${sellerToken}`);              
+            }
+          }
+          console.log(sellerToken,'this is th usecase')
           return {
             status: 200,
             accessToken: token,
+            sellerToken,
             message: "Login successful",
             userData: user
           };
+         
         } else {
           return { status: 400, message: "Invalid password" };
         }
@@ -125,6 +142,7 @@ class UserUseCase implements IUserUseCase {
     } catch (error) {
       console.error("Error in login:", error);
       throw new Error("Error in user login");
+      
     }
   }
 
@@ -197,7 +215,7 @@ class UserUseCase implements IUserUseCase {
       if (!decodedToken || typeof decodedToken === "string") {
         return { status: 400, message: "Invalid or expired token" };
       }
-      const email = decodedToken.email; 
+      const email = decodedToken.email;
       const user = await this._userRepository.findByEmail(email);
       if (!user) {
         return { status: 404, message: "User not found" };

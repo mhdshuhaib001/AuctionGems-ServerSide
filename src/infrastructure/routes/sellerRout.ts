@@ -18,7 +18,7 @@ const handleGetProduct = (req: Request, res: Response) =>
   sellerController.getProduct(req, res);
 const handleFetchAllProduct = (req: Request, res: Response) =>
   sellerController.getAllProduct(req, res);
-const handleUpdateSeller= (req:Request,res:Response)=>{sellerController.updateSeller(req,res)}
+const handleUpdateSeller= (req:Request,res:Response)=>{ console.log("Handling seller update", req.body),sellerController.updateSeller(req,res)}
 const handleSellerFetch = (req:Request,res:Response)=>{sellerController.fetchSeller(req,res)}
 
 
@@ -30,8 +30,8 @@ router.delete('/deleteProduct/:productId', userAuth(['seller', 'admin']), handle
 router.get('/getProduct/:productId', handleGetProduct);
 router.get('/fetchAllProducts', handleFetchAllProduct);
 router.get('/fetchSeller/:sellerId', (req, res) => {
-  const sellerId = req.params.sellerId; // Extract sellerId from route parameters
-  console.log('Fetching seller with ID:', sellerId); // Console log for sellerId
+  const sellerId = req.params.sellerId; 
+  console.log('Fetching seller with ID:', sellerId); 
 
   handleSellerFetch(req, res);
 });

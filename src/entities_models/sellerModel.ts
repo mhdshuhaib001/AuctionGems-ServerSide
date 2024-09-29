@@ -1,36 +1,35 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model, model } from "mongoose";
 import { Seller } from "../interfaces/model/seller";
 import { Product } from "../interfaces/model/seller";
 
 // Seller schema
 const sellerSchema = new Schema<Seller>({
-    UserID: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
-    CompanyName: {
-        type: String,
-        required: true,
+    companyName: {
+      type: String,
+      required: true,
     },
-    ContactInfo: {
-        type: String,
+    contactInfo: {
+      type: String,
     },
-    About: {
-        type: String,
+    about: {
+      type: String,
     },
-    IsBlocked: {
-        type: Boolean,
-        default: false,
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
-    Profile:{
-        type:String
-    }
-});
-
-const SellerModel: Model<Seller> = mongoose.model<Seller>("Seller", sellerSchema);
-
-
+    profile: {
+      type: String,
+    },
+  });
+  
+  // Create the Seller model
+  const SellerModel: Model<Seller> = model<Seller>('Seller', sellerSchema);
 
 
 const ProductSchema = new mongoose.Schema({
