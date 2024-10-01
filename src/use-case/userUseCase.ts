@@ -63,7 +63,6 @@ class UserUseCase implements IUserUseCase {
 
         if (otpRecord?.OTP.toString() === userData.otp?.toString()) {
           userData.role = userData.role || "user";
-          console.log(userData, "this is the userData");
           const saltRounds = 10;
           const hashedPass = await bcrypt.hash(userData.password, saltRounds);
           userData.password = hashedPass;
@@ -72,7 +71,6 @@ class UserUseCase implements IUserUseCase {
             userData.email,
             userData.role
           );
-          console.log(token, "halooo");
 
           return {
             status: 200,
@@ -109,22 +107,19 @@ class UserUseCase implements IUserUseCase {
         if (isPasswordValid) {
           const role = user.role || "user";
           const token = this._jwt.createAccessToken(userData.email, role);
-          let sellerToken:string| undefined
+          let sellerToken: string | undefined;
           if (role === "seller") {
             const sellerExists = await this._sellerRepository.existsByUserId(
               user._id as string
             );
-            console.log(`Seller exists: ${sellerExists}`); // Debug log
+            console.log(`Seller exists: ${sellerExists}`); 
 
             if (sellerExists) {
-               sellerToken = this._jwt.createAccessToken(
-                userData.email,
-                role
-              );
-              console.log(`Generated sellerToken: ${sellerToken}`);              
+              sellerToken = this._jwt.createAccessToken(userData.email, role);
+              console.log(`Generated sellerToken: ${sellerToken}`);
             }
           }
-          console.log(sellerToken,'this is th usecase')
+          console.log(sellerToken, "this is th usecase");
           return {
             status: 200,
             accessToken: token,
@@ -132,7 +127,6 @@ class UserUseCase implements IUserUseCase {
             message: "Login successful",
             userData: user
           };
-         
         } else {
           return { status: 400, message: "Invalid password" };
         }
@@ -142,7 +136,6 @@ class UserUseCase implements IUserUseCase {
     } catch (error) {
       console.error("Error in login:", error);
       throw new Error("Error in user login");
-      
     }
   }
 

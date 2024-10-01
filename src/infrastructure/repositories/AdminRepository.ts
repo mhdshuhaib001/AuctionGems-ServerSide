@@ -1,6 +1,9 @@
 import IAdminRepository from "../../interfaces/iRepositories/iAdminRepository";
 import { User } from "../../interfaces/model/user";
+import { Category } from "../../interfaces/model/admin";
 import { UserModel } from "../../entities_models/userModel";
+import CategoryModel from "../../entities_models/categoryModel"
+
 
 class AdminRepository implements IAdminRepository {
     async getAllUsers(): Promise<User[]> {
@@ -30,7 +33,16 @@ class AdminRepository implements IAdminRepository {
       }
     }
     
-    
+    async addCategory(categoryData:Category):Promise<boolean>{
+      try {
+        const Category = new CategoryModel(categoryData);
+        const saveCategory = await Category.save()
+return true
+      } catch (error) {
+              throw new Error(`Error adding new category: ${error}`);
+
+      }
+    }
 
     
 }

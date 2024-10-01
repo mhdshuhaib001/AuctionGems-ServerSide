@@ -4,8 +4,7 @@ import multer from 'multer';
 const storage = multer.memoryStorage();
 
 // Create the upload middleware using the memory storage configuration
-const uploadSellerProfile = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
-export {
-  uploadSellerProfile
-};
+// Export the upload middleware
+export default upload;

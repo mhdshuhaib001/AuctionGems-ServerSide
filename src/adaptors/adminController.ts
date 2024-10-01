@@ -36,6 +36,46 @@ class AdminController {
             
         }
     }
+
+
+    async addCategory(req: Request, res: Response) {
+        try {
+            const { name } = req.body;
+    
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    
+            if (!files) {
+                return res.status(400).json({ error: 'Files are required' });
+            }
+    
+            const imageFile = files['image'] ? files['image'][0] : null;
+            const iconFile = files['icon'] ? files['icon'][0] : null;
+    
+            let imageUrl: string | null = null;
+            let iconUrl: string | null = null;
+    
+
+         console.log(imageFile,'imageFile');
+         console.log(iconFile,'icon file ');
+            // Build the category data object
+            const categoryData = {
+                name: req.body.name,
+                image: imageUrl || '', 
+                svgIcon: iconUrl || '', 
+                description: req.body.description || '' // Optional description
+            };
+            
+            // Call your use case method to save the category
+            const response = await this._AdminUsecase.addCategory(categoryData,imageFile,iconFile);
+    
+            // Respond with success
+            res.status(201).json({ message: 'Category added successfully', data: response });
+        } catch (error) {
+            console.error('Error in addCategory controller:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+    
 }
 
 export default AdminController;
