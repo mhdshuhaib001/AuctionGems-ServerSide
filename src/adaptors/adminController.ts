@@ -62,16 +62,23 @@ class AdminController {
                 name: req.body.name,
                 image: imageUrl || '', 
                 svgIcon: iconUrl || '', 
-                description: req.body.description || '' // Optional description
             };
             
-            // Call your use case method to save the category
             const response = await this._AdminUsecase.addCategory(categoryData,imageFile,iconFile);
     
-            // Respond with success
             res.status(201).json({ message: 'Category added successfully', data: response });
         } catch (error) {
             console.error('Error in addCategory controller:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+    async getAllCategory(req:Request,res:Response){
+        try {
+            const categories =await this._AdminUsecase.getAllCategory()
+            console.log(categories,'controller')
+            res.status(200).json({categories})
+        } catch (error) {
+            console.error('Error in getAllCategory controller:', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     }
