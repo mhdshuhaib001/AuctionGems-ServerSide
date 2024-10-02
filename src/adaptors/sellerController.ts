@@ -8,10 +8,8 @@ class SellerController {
 
   async createSeller(req: Request, res: Response) {
     try {
-      console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
+      
       const sellerData = req.body;
-      console.log("Output:seller data", sellerData);
 
       const result = await this._sellerUseCase.createSeller(sellerData);
       res.status(result.status).json(result);

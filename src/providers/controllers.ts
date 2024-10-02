@@ -13,13 +13,13 @@ import Jwt from "./jwt";
 import AdminUseCase from "../use-case/adminUseCase";
 import AdminController from "../adaptors/adminController";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
-
+import CloudinaryHelper from "./cloudinaryHelper";
 
 // Provider
 const jwt = new Jwt()
 const OTPGenerator = new GenerateOTP()
 const mailer = new NodeMailer()
-
+const cloudinaryHelper = new CloudinaryHelper()
 
 
 // Repositoriesa
@@ -31,7 +31,7 @@ const adminRepository = new AdminRepository()
 // UseCases
 const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,userOTPRepo,sellerRepository);
 const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository)
-const adminUseCase = new AdminUseCase(jwt,adminRepository);
+const adminUseCase = new AdminUseCase(jwt,adminRepository,cloudinaryHelper);
 
 // Controller
 export const userController = new UserController(userUseCase,jwt);

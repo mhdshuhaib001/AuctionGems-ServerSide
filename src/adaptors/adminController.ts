@@ -61,7 +61,7 @@ class AdminController {
             const categoryData = {
                 name: req.body.name,
                 image: imageUrl || '', 
-                svgIcon: iconUrl || '', 
+                icon: iconUrl || '', 
             };
             
             const response = await this._AdminUsecase.addCategory(categoryData,imageFile,iconFile);
@@ -75,7 +75,6 @@ class AdminController {
     async getAllCategory(req:Request,res:Response){
         try {
             const categories =await this._AdminUsecase.getAllCategory()
-            console.log(categories,'controller')
             res.status(200).json({categories})
         } catch (error) {
             console.error('Error in getAllCategory controller:', error);
@@ -83,6 +82,20 @@ class AdminController {
         }
     }
     
+    async updateCategory(req:Request,res:Response){
+        try {
+           
+            const categoryId = req.params.id
+            const updateData = {...req.body};
+            const files = req.files
+
+            const updatedCategory = await this._AdminUsecase.updateCategory(categoryId, updateData, files);
+console.log(updatedCategory,'the constrolle ')
+        } catch (error) {
+            console.error('Error in controller:', error);
+    res.status(500).json({ message: 'Failed to update category', error });
+        }
+    }
 }
 
 export default AdminController;

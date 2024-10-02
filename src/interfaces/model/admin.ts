@@ -4,6 +4,6 @@ export interface Login {
 }
 export interface Category {
   name: string;
-  svgIcon: string;
+  icon: string;
   image: string;
 }

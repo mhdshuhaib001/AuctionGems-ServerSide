@@ -5,14 +5,15 @@ import AdminOutPut from "../interfaces/model/adminOutput";
 import JWT from "../providers/jwt";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
 import cloudinary from "../infrastructure/config/cloudinary";
-
+import CloudinaryHelper from "../providers/cloudinaryHelper";
 class AdminUseCase implements IAdminUseCase {
   private readonly adminEmail: string = process.env.ADMIN_EMAIL!;
   private readonly adminPassword: string = process.env.ADMIN_PASSWORD!;
 
   constructor(
     private readonly _jwt: JWT,
-    private readonly _adminRepository: AdminRepository
+    private readonly _adminRepository: AdminRepository,
+    private readonly _cloudinaryHelper: CloudinaryHelper
   ) {}
 
   async adminLogin(loginData: AdminLogin): Promise<AdminOutPut> {
@@ -101,10 +102,9 @@ class AdminUseCase implements IAdminUseCase {
       };
 
       categoryData.image = (await uploadFile(imageFile)) || "";
-      categoryData.svgIcon = (await uploadFile(iconFile)) || "";
+      categoryData.icon = (await uploadFile(iconFile)) || "";
 
       const category = await this._adminRepository.addCategory(categoryData);
-      console.log(category, "this is the use case category");
 
       return true;
     } catch (error) {
@@ -115,15 +115,60 @@ class AdminUseCase implements IAdminUseCase {
     }
   }
 
-  async getAllCategory():Promise<any>{
+  async getAllCategory(): Promise<any> {
     try {
-      
-      const fetchedCategory = await this._adminRepository.getAllCategory()
-      return fetchedCategory
+      const fetchedCategory = await this._adminRepository.getAllCategory();
+      return fetchedCategory;
     } catch (error) {
       console.error(
         `Error fetching allcategory Usecase: ${error instanceof Error ? error.message : error}`
       );
+    }
+  }
+
+  async updateCategory(
+    categoryId: string,
+    bodyData: any,
+    files: any
+  ): Promise<boolean> {
+    try {
+
+      const updateData = { ...bodyData };
+      if (files) {
+        if (files.image) {
+
+          const imageFile = files.image;
+          console.log(imageFile,'image file ')
+          const imageUrl = await this._cloudinaryHelper.uploadSingleFile(
+            imageFile,
+            "category"
+          );
+          console.log(imageUrl,'imageweeeeeeeeeeeeeeee')
+          updateData.image = imageUrl || "";
+        }
+        if (files.icon) {
+          const iconFile = files.icon;
+  
+          const iconUrl = await this._cloudinaryHelper.uploadSingleFile(iconFile, 'category');
+          console.log(iconUrl,'imageweeeeeeeeeeeeeeee')
+
+          updateData.icon = iconUrl || ""; 
+        }
+      }
+
+      console.log(updateData,'update update Category')
+
+      const result = await this._adminRepository.updateCategory(
+        categoryId,
+        updateData
+      );
+      console.log(result,'suiiiiiiii')
+      return result;
+    } catch (error) {
+      console.error(
+        `Error update category Usecase: ${error instanceof Error}`
+      );
+      return false;
     }
   }
 }

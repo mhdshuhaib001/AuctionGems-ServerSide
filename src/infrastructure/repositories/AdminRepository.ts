@@ -49,6 +49,19 @@ class AdminRepository implements IAdminRepository {
       throw new Error("Error fetching categories")
     }
   }
+
+  async updateCategory(_id:string,updatedData:any):Promise<boolean>{
+    try {
+      console.log(_id,'repositories')
+      const updatedCategory = await CategoryModel.findByIdAndUpdate(_id, updatedData, {
+        new: true, 
+      });
+      return updatedCategory
+    } catch (error) {
+      throw new Error("Error updateing categories")
+
+    }
+  }
 }
 
 export default AdminRepository;
