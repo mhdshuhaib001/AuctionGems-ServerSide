@@ -14,17 +14,14 @@ const handleSellerProductFetch = (req: Request, res: Response) =>
   sellerController.fetchSellerProducts(req, res);
 const handleDeleteProduct = (req: Request, res: Response) =>
   sellerController.deleteProduct(req, res);
-const handleGetProduct = (req: Request, res: Response) =>
-  sellerController.getProduct(req, res);
+
 const handleFetchAllProduct = (req: Request, res: Response) =>
-  sellerController.getAllProduct(req, res);
-const handleUpdateSeller = (req: Request, res: Response) => {
-  console.log("Handling seller update", req.body),
+  sellerController.getAllProducts(req, res);
+const handleUpdateSeller = (req: Request, res: Response) => 
     sellerController.updateSeller(req, res);
-};
-const handleSellerFetch = (req: Request, res: Response) => {
-  sellerController.fetchSeller(req, res);
-};
+const handleSellerFetch = (req: Request, res: Response) => sellerController.fetchSeller(req, res);
+const handleGetAllOrders = (req: Request, res: Response) => sellerController.getAllOrders(req, res);
+const handleUpdateOrderStatus = (req: Request, res: Response) => sellerController.updateOrderStatus(req, res);
 
 router.post("/createseller", handleSellerCreater);
 router.put("/updateseller", upload.single("image"), handleUpdateSeller);
@@ -43,13 +40,10 @@ router.delete(
   userAuth(["seller", "admin"]),
   handleDeleteProduct
 );
-router.get("/getProduct/:productId", handleGetProduct);
 router.get("/fetchAllProducts", handleFetchAllProduct);
-router.get("/fetchSeller/:sellerId", (req, res) => {
-  const sellerId = req.params.sellerId;
-  console.log("Fetching seller with ID:", sellerId);
-
-  handleSellerFetch(req, res);
-});
+router.get("/fetchSeller/:sellerId", handleSellerFetch);
+router.get("/orders/:sellerId", handleGetAllOrders);
+router.get("/fetchAllProducts", handleFetchAllProduct);
+router.put("/order/:orderId", handleUpdateOrderStatus);
 
 export default router;

@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import OTP from "../interfaces/model/OTP"
+import OTP from "../interfaces/model/Otp"
 
 
 const userOTPSchema = new Schema<OTP>({

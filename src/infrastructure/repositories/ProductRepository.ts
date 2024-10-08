@@ -2,6 +2,7 @@ import SellerModel, { ProductModel } from "../../entities_models/sellerModel";
 import { Product } from "../../interfaces/model/seller";
 
 class ProductRepository {
+  
   async insertOne(productData: Omit<Product, "_id">): Promise<Product> {
     try {
       const newProduct = new ProductModel(productData);
@@ -11,6 +12,21 @@ class ProductRepository {
     } catch (error) {
       console.error("Error inserting product:", error);
       throw new Error("Failed to insert product.");
+    }
+  }
+
+
+  async getProductById(productId: string): Promise<Product | null> {
+    try {
+      const result = await ProductModel.findById({_id:productId});
+      console.log(result,"result=============================================")
+      if (!result) {
+        throw new Error("Product not found");
+      }
+      return result;
+    } catch (error) {
+      console.error("Error fetching single product:", error);
+      throw new Error("Failed to fetch product.");
     }
   }
 }

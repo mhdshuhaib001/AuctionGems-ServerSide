@@ -10,11 +10,12 @@ const handleUserBlockAndUnblock = (req:Request,res:Response) => adminController.
 const handleAddCategory = (req:Request,res:Response)=>  adminController.addCategory(req,res);
 const handleGetAllCategory = (req:Request,res:Response)=>adminController.getAllCategory(req,res);
 const handleUpdateCategory = (req: Request, res: Response) =>  adminController.updateCategory(req, res); 
-
+const handleDeleteCategory = (req:Request,res:Response)=>adminController.deleteCategory(req,res);   
 router.get('/get-user', handleGetAllUser);
 router.post('/user-status',handleUserBlockAndUnblock)
 router.post('/categories', upload.fields([{ name: 'image' }, { name: 'icon' }]),handleAddCategory);
 router.get('/categories',handleGetAllCategory)
 router.put('/categories/:id',upload.fields([{name:'image'},{name:'icon'}]), handleUpdateCategory);
+router.delete('/categories/:id',handleDeleteCategory);
 
 export default router;

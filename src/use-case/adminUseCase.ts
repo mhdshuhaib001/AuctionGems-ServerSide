@@ -1,6 +1,6 @@
 import { Readable } from "stream";
 import IAdminUseCase from "../interfaces/iUseCases/iAdminUseCase";
-import { Login as AdminLogin, Category } from "../interfaces/model/admin";
+import { Login as AdminLogin, Category, Pagination } from "../interfaces/model/admin";
 import AdminOutPut from "../interfaces/model/adminOutput";
 import JWT from "../providers/jwt";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
@@ -115,10 +115,16 @@ class AdminUseCase implements IAdminUseCase {
     }
   }
 
-  async getAllCategory(): Promise<any> {
+  async getAllCategory(pagination:Pagination): Promise<any> {
     try {
-      const fetchedCategory = await this._adminRepository.getAllCategory();
-      return fetchedCategory;
+      const {page,limit} = pagination
+      const {categories,totalCategories} = await this._adminRepository.getAllCategory({page,limit});
+      const totalPages = Math.ceil(totalCategories/limit)
+      return {
+        categories,
+        totalPages,
+        currentPage: page,
+      };
     } catch (error) {
       console.error(
         `Error fetching allcategory Usecase: ${error instanceof Error ? error.message : error}`
@@ -132,42 +138,50 @@ class AdminUseCase implements IAdminUseCase {
     files: any
   ): Promise<boolean> {
     try {
-
       const updateData = { ...bodyData };
       if (files) {
         if (files.image) {
-
-          const imageFile = files.image;
-          console.log(imageFile,'image file ')
-          const imageUrl = await this._cloudinaryHelper.uploadSingleFile(
-            imageFile,
+          const imageFile = files.image[0];
+          const imageUrl = await this._cloudinaryHelper.uploadBuffer(
+            imageFile.buffer,
             "category"
           );
-          console.log(imageUrl,'imageweeeeeeeeeeeeeeee')
-          updateData.image = imageUrl || "";
+
+          console.log(imageUrl,'image url chek on here ')
+          updateData.imageUrl = imageUrl || "";
         }
+
         if (files.icon) {
           const iconFile = files.icon;
-  
-          const iconUrl = await this._cloudinaryHelper.uploadSingleFile(iconFile, 'category');
-          console.log(iconUrl,'imageweeeeeeeeeeeeeeee')
 
-          updateData.icon = iconUrl || ""; 
+          const iconUrl = await this._cloudinaryHelper.uploadSingleFile(
+            iconFile,
+            "category"
+          );
+
+          updateData.iconUrl = iconUrl || "";
         }
       }
 
-      console.log(updateData,'update update Category')
 
       const result = await this._adminRepository.updateCategory(
         categoryId,
         updateData
       );
-      console.log(result,'suiiiiiiii')
+      console.log(result, "suiiiiiiii");
       return result;
     } catch (error) {
-      console.error(
-        `Error update category Usecase: ${error instanceof Error}`
-      );
+      console.error(`Error update category Usecase: ${error instanceof Error}`);
+      return false;
+    }
+  }
+
+  async deleteCategory(categoryId: string): Promise<boolean> {
+    try {
+      const result = await this._adminRepository.deleteCategory(categoryId);
+      return result;
+    } catch (error) {
+      console.error(`Error deleting category Usecase: ${error instanceof Error}`);
       return false;
     }
   }

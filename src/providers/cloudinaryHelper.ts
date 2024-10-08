@@ -61,6 +61,7 @@ class CloudinaryHelper {
         { folder: folder },
         (error, result) => {
           if (error) {
+            console.error("Cloudinary upload error:", error);  
             return reject(error);
           }
           return resolve(result?.secure_url);
@@ -71,7 +72,7 @@ class CloudinaryHelper {
       stream.pipe(uploadStream);
     });
   }
-
+  
   // Upload multiple files (useful for bulk uploads)
   uploadMultipleFiles(filePaths: string[], folder: string): Promise<any[]> {
     return Promise.all(filePaths.map(filePath => 

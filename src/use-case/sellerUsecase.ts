@@ -3,7 +3,7 @@ import userRepository from "../infrastructure/repositories/UserRepositories";
 import JWT from "../providers/jwt";
 import { Seller, SellerResponse } from "../interfaces/model/seller";
 import cloudinary from "../infrastructure/config/cloudinary";
-import ProductRepository from "../infrastructure/repositories/ProductListingRepository";
+import ProductRepository from "../infrastructure/repositories/ProductRepository";
 import { Product } from "../interfaces/model/seller";
 import { Readable } from "stream";
 
@@ -17,6 +17,7 @@ class SellerUseCase {
 
   async createSeller(sellerData: Seller) {
     try {
+      console.log(sellerData,'haloooo')
       const existingName = await this._SellerRepository.findByName(
         sellerData.companyName
       );
@@ -52,69 +53,61 @@ class SellerUseCase {
   async updateSeller(sellerData: Seller, image: Express.Multer.File | null) {
     try {
       let imageUrl: string | null = null;
-      console.log(sellerData._id);
-
-      // Check if seller exists
-      const sellerExists = await this._SellerRepository.existsBySellerId(
-        sellerData._id
-      );
+  
+      const sellerExists = await this._SellerRepository.existsBySellerId(sellerData._id);
       console.log(sellerExists);
-
-      if (sellerExists) {
-        // Upload image if provided
-        if (image) {
-          const bufferStream = new Readable();
-          bufferStream.push(image.buffer);
-          bufferStream.push(null);
-
-          console.log("Starting upload to Cloudinary...");
-
-          const uploadResponse = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-              { resource_type: "auto" },
-              (error, result) => {
-                if (error) {
-                  console.error("Error during upload:", error);
-                  return reject(error);
-                }
-                console.log("Upload successful:", result);
-                resolve(result);
-              }
-            );
-
-            bufferStream.pipe(uploadStream);
-          });
-
-          // Get the URL of the uploaded image
-          imageUrl = (uploadResponse as any).secure_url;
-          console.log("Image URL:", imageUrl);
-        } else {
-          console.log("No image provided, skipping upload.");
-        }
-
-        // Update seller data in the database
-        const updatedSellerData = {
-          ...sellerData,
-          Profile: imageUrl ? imageUrl : sellerData.profile // Update profile image URL if uploaded
-        };
-
-        const updateResponse = await this._SellerRepository.updateSeller(
-          sellerData._id,
-          updatedSellerData
-        );
-        console.log("Update Response:", updateResponse);
-
-        return {
-          status: 200,
-          message: "Seller updated successfully",
-          data: updateResponse
-        };
-      } else {
+  
+      if (!sellerExists) {
         return {
           status: 404,
           message: "Seller not found"
         };
       }
+  
+      if (image) {
+        const bufferStream = new Readable();
+        bufferStream.push(image.buffer);
+        bufferStream.push(null);
+  
+        console.log("Starting upload to Cloudinary...");
+  
+        const uploadResponse = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto" },
+            (error, result) => {
+              if (error) {
+                console.error("Error during upload:", error);
+                return reject(error);
+              }
+              resolve(result);
+            }
+          );
+  
+          bufferStream.pipe(uploadStream);
+        });
+  
+        imageUrl = (uploadResponse as any).secure_url;
+      } else {
+        console.log("No image provided, skipping upload.");
+      }
+  
+      const updatedSellerData = {
+        ...sellerData,
+        Profile: imageUrl ? imageUrl : sellerData.profile
+      };
+  
+      const updateResponse = await this._SellerRepository.updateSeller(
+        sellerData._id,
+        updatedSellerData
+      );
+      console.log("Update Response:", updateResponse);
+  
+      return {
+        status: 200,
+        message: "Seller updated successfully",
+        data: updateResponse
+      };
+  
     } catch (error) {
       console.error("Error updating seller:", error);
       return {
@@ -123,13 +116,13 @@ class SellerUseCase {
       };
     }
   }
-
+  
   async createProduct(
     productData: Product,
     images: string[]
   ): Promise<{ status: number; message: string; productData?: Product }> {
     try {
-      console.log(productData, "this is the product Dataaaaaaaaaaaa");
+      // console.log(productData, "this is the product Dataaaaaaaaaaaa");
 
       if (!Array.isArray(images) || images.length === 0) {
         throw new Error("No images provided");
@@ -248,9 +241,8 @@ class SellerUseCase {
     sellerId: any
   ): Promise<{ status: number; message: string; seller?: Seller | null }> {
     try {
-      console.log(sellerId, "sellerUsecase1");
       const seller = await this._SellerRepository.findById(sellerId);
-      console.log(seller, "sellerUsecase");
+      // console.log(seller, "sellerUsecase");
 
       if (!seller) {
         return {
@@ -272,6 +264,41 @@ class SellerUseCase {
       };
     }
   }
+
+  async getAllOrders(sellerId: string): Promise<any> {
+    try {
+      const orders = await this._SellerRepository.getAllOrders(sellerId);
+      return {
+        status: 200,
+        message: "Orders fetched successfully",
+        orders
+      };  
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      return {
+        status: 500,
+        message: "Failed to fetch orders"
+      };
+    }
+  }
+
+  async updateOrderStatus(orderId: string, newStatus: string): Promise<any> {
+    try {
+      const updatedOrder = await this._SellerRepository.updateOrderStatus(orderId, newStatus);
+      console.log(updatedOrder,'updatedOrder')
+      return {
+        status: 200,
+        message: "Order status updated successfully",
+        order: updatedOrder
+      };
+    } catch (error) { 
+      console.error("Error updating order status:", error);
+      return {
+        status: 500,
+        message: "Failed to update order status"
+      };
+    }
+  } 
 }
 
 export default SellerUseCase;

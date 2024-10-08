@@ -1,6 +1,8 @@
+
 export interface User {
     _id?:string
     name: string;
+    profileImage?:string;
     email: string;
     password: string;
     otp?: number;
@@ -23,3 +25,6 @@ export interface UserResponseData {
     email: string;
     role?: 'user' | 'seller'|'admin';
 }
+
+
+  

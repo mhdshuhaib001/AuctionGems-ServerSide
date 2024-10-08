@@ -1,4 +1,4 @@
-import Otp from '../model/OTP'
+import Otp from '../model/Otp'
 
 
 interface IOTPRepository{

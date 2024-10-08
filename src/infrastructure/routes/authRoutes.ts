@@ -19,9 +19,15 @@ const handleAdminLogin = (req: Request, res: Response) =>
 const handleUserForegtPasswordRequest = (req:Request,res:Response)=>userController.forgetPasswordReq(req,res)
 const handleUserForgetPassword = (req:Request,res:Response)=>userController.forgetPassword(req,res)
 const handleIsBlocked = (req:Request,res:Response)=>userController.checkIsBlock(req,res)
+const handleTokenRefresh = (req: Request, res: Response) => userController.refreshToken(req, res);
+
+
+
+
 router.post("/signup", handleUserRegister);
 router.post("/send-Otp", handleUserOtp);
 router.post("/login", handleUserLogin);
+router.post("/refresh-token", handleTokenRefresh);
 router.post("/admin-login", handleAdminLogin);
 router.post("/google-auth", handleUserGoogleAuthRegister);
 router.post("/forget-password-request", handleUserForegtPasswordRequest);

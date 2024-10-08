@@ -1,5 +1,5 @@
-import { Seller } from "../interfaces/model/seller";
-import SellerUseCase from "../use-case/sellerUsecase";
+import { Seller } from "../../interfaces/model/seller";
+import SellerUseCase from "../../use-case/sellerUsecase";
 
 import { Request, Response } from "express";
 
@@ -18,9 +18,10 @@ class SellerController {
 
   async createProduct(req: Request, res: Response) {
     try {
+      console.log(req.body)
       const productData = req.body;
       const sellerId = req.body.sellerId;
-
+      console.log('Seller ID:', sellerId);
       const images: string[] = req.body.images;
 
       const result = await this._sellerUseCase.createProduct(
@@ -39,7 +40,7 @@ class SellerController {
 
   async updateSeller(req:Request,res:Response){
     try {
-
+console.log(req.body,'req.body',req.file)
      const sellerData = req.body;
      const image = req.file || null;
      const response = await this._sellerUseCase.updateSeller(sellerData,image);
@@ -73,21 +74,10 @@ class SellerController {
         res.status(500).json({ message: "Error product removeing time." });
     }
   }
-  async getProduct(req:Request,res:Response){
-    try {
-       
-        const productId = req.params.productId
-        const product = await this._sellerUseCase.getProduct(productId)
-        res.status(product.status).json(product)
 
-    } catch (error) {
-        console.error("Error product:", error);
-        res.status(500).json({ message: "Error product getting time." });
-    }
-  }
-
-  async getAllProduct(req: Request, res: Response) {
+  async getAllProducts(req: Request, res: Response) {
     try {
+      console.log('getAllProduct')
       const products = await this._sellerUseCase.getAllProducts(); 
       res.status(products.status).json(products);
     } catch (error) {
@@ -100,14 +90,38 @@ class SellerController {
     try {
       const sellerId = req.params.sellerId;
       const response = await this._sellerUseCase.fetchSeller(sellerId);
-  
-      // Send the entire response object correctly
-      return res.status(response.status).json(response);
+        return res.status(response.status).json(response);
     } catch (error) {
       console.error("Error fetching seller:", error);
       return res.status(500).json({ message: "An error occurred while fetching the seller" });
     }
   }
+
+  async getAllOrders(req: Request, res: Response) {
+    try {
+      const sellerId = req.params.sellerId;
+      const response = await this._sellerUseCase.getAllOrders(sellerId);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      return res.status(500).json({ message: "An error occurred while fetching the orders" });
+    }
+  }
+
+  async updateOrderStatus(req: Request, res: Response) {
+    try {
+
+      
+      console.log(req.body,'req.body')  
+      const orderId = req.params.orderId;
+      const  newStatus  = req.body.status;
+      const response = await this._sellerUseCase.updateOrderStatus(orderId, newStatus);
+      return res.status(response.status).json(response);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      return res.status(500).json({ message: "Failed to update order status" });
+    }
+  } 
   
   
 }

@@ -1,6 +1,6 @@
 import IAdminRepository from "../../interfaces/iRepositories/iAdminRepository";
 import { User } from "../../interfaces/model/user";
-import { Category } from "../../interfaces/model/admin";
+import { Category,Pagination } from "../../interfaces/model/admin";
 import { UserModel } from "../../entities_models/userModel";
 import CategoryModel from "../../entities_models/categoryModel";
 
@@ -41,10 +41,16 @@ class AdminRepository implements IAdminRepository {
       throw new Error(`Error adding new category: ${error}`);
     }
   }
-  async getAllCategory():Promise<Category[]>{
+  async getAllCategory(pagination: Pagination): Promise<{ categories: Category[]; totalCategories: number }> {
     try {
-      const categories = await CategoryModel.find()
-      return categories
+
+      const {page,limit} = pagination
+      const categories = await CategoryModel.find().skip((page-1)*limit).limit(limit)
+      const totalCategories = await CategoryModel.countDocuments();
+      return {
+        categories,
+        totalCategories
+      }
     } catch (error) {
       throw new Error("Error fetching categories")
     }
@@ -52,7 +58,7 @@ class AdminRepository implements IAdminRepository {
 
   async updateCategory(_id:string,updatedData:any):Promise<boolean>{
     try {
-      console.log(_id,'repositories')
+      console.log(updatedData,'repositories')
       const updatedCategory = await CategoryModel.findByIdAndUpdate(_id, updatedData, {
         new: true, 
       });
@@ -60,6 +66,24 @@ class AdminRepository implements IAdminRepository {
     } catch (error) {
       throw new Error("Error updateing categories")
 
+    }
+  }
+async getAllCategorys():Promise<Category[]>{
+  try {
+    const categories = await CategoryModel.find();
+    return categories;
+  } catch (error) {
+    throw new Error("Error fetching categories");
+  }
+}
+
+
+async deleteCategory(categoryId: string): Promise<boolean> {
+    try {
+      const result = await CategoryModel.findByIdAndDelete(categoryId);
+      return result;
+    } catch (error) {
+      throw new Error("Error deleting category");
     }
   }
 }

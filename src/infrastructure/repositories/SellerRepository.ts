@@ -1,6 +1,8 @@
 import SellerModel, { ProductModel } from "../../entities_models/sellerModel";
 import { ISellerRepository } from "../../interfaces/iRepositories/iSellerRepository";
 import { Seller, Product } from "../../interfaces/model/seller";
+import  OrderModel  from "../../entities_models/orderModel";
+import IOrder  from "../../interfaces/model/order";
 
 class SellerRepository implements ISellerRepository {
   existsByEmail(email: string) {
@@ -8,6 +10,7 @@ class SellerRepository implements ISellerRepository {
   }
   async insertOne(sellerData: Omit<Seller, "_id">): Promise<Seller> {
     try {
+      console.log(sellerData,'suiiiiiiii')
       const newSeller = new SellerModel(sellerData);
 
       await newSeller.save();
@@ -90,7 +93,7 @@ class SellerRepository implements ISellerRepository {
 
   async getProductById(productId: string): Promise<Product | null> {
     try {
-      const result = await ProductModel.findById(productId);
+      const result = await ProductModel.findById(productId).exec();
       if (!result) {
         throw new Error("Product not found");
       }
@@ -113,6 +116,7 @@ class SellerRepository implements ISellerRepository {
 
   async updateSeller(sellerId:string,sellerData:Partial<Omit<Seller,"_id">>):Promise<Seller|null>{
     try {
+      // console.log(sellerData,'sellerId===============================================')
       const updatedSeller = await SellerModel.findByIdAndUpdate(sellerId,sellerData,{new:true,runValidators:true}).exec();
       if (!updatedSeller) {
         throw new Error("Seller not found");
@@ -121,6 +125,40 @@ class SellerRepository implements ISellerRepository {
     } catch (error) {
       console.error("Error updating seller:", error);
       throw new Error("Failed to update seller.");
+    }
+  }
+
+  async getAllOrders(sellerId: string): Promise<any> {
+    try {
+      const orders = await OrderModel.find({ sellerId }).exec();
+      return orders;
+    } catch (error) {
+      console.error("Error getting all orders for seller:", error);
+      throw new Error("Failed to get orders.");
+    }
+  }
+
+  async updateOrderStatus(orderId: string, newStatus: string): Promise<IOrder | null> {
+    try {
+      const updatedOrder = await OrderModel.findByIdAndUpdate(orderId, { orderStatus: newStatus }, { new: true }).exec();
+      if (!updatedOrder) {
+        throw new Error("Order not found");
+      }
+      return updatedOrder;
+    } catch (error) {   
+      console.error("Error updating order status:", error);
+      throw new Error("Failed to update order status.");
+    }
+  }
+
+
+  async getSellerByUserId(userId: string): Promise<Seller | null> {
+    try {
+      const seller = await SellerModel.findOne({ userId }).exec();
+      return seller;
+    } catch (error) {
+      console.error("Error getting seller by userId:", error);
+      throw new Error("Failed to get seller.");
     }
   }
 }

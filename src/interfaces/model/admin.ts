@@ -7,3 +7,9 @@ export interface Category {
   icon: string;
   image: string;
 }
+
+
+export interface Pagination{
+  page:number ;
+  limit: number
+}

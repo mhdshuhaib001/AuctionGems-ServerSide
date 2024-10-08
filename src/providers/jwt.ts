@@ -26,6 +26,19 @@ class JWT {
     }
   }
 
+  createRefreshToken(email: string, role: "user" | "seller" | "admin" ) {
+    try {
+      if (!this._secretKey) {
+        throw new Error("Secret key is undefined");
+      }
+      const payload = { email, role };
+      const token = sign(payload, this._secretKey, { expiresIn: "7d" });
+      return token;
+    } catch (error) {
+      console.error("JWT Error", error);
+    }
+  }
+
   verifyToken(token: string): JwtPayload | string | null {
     try {
       if (!this._secretKey) {

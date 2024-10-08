@@ -1,8 +1,4 @@
-import { Request, Response } from "express";
-import ProductRepository from "../../infrastructure/repositories/ProductListingRepository"; // Import your repository
-import userUseCase from "../../use-case/userUseCase";
 
-const productRepository = new ProductRepository();
 
 /**
  * @openapi
@@ -483,3 +479,76 @@ const productRepository = new ProductRepository();
  *                   type: string
  *                   example: Internal server error
  */
+
+
+
+/**
+ * @openapi
+ * /api/user/address:
+ *   post:
+ *     summary: Add an address for the user
+ *     description: Adds a new address for the logged-in user.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 example: John Doe
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "+1-555-555-5555"
+ *               streetAddress:
+ *                 type: string
+ *                 example: "123 Main St"
+ *               city:
+ *                 type: string
+ *                 example: "New York"
+ *               state:
+ *                 type: string
+ *                 example: "NY"
+ *               postalCode:
+ *                 type: string
+ *                 example: "10001"
+ *               country:
+ *                 type: string
+ *                 example: "USA"
+ *               userId:
+ *                 type: string
+ *                 example: "60d0fe4f5311236168a109ca"
+ *     responses:
+ *       200:
+ *         description: Address added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Address added successfully
+ *       400:
+ *         description: Bad request or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid input data
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error
+ */
+

@@ -1,4 +1,4 @@
-import otp from "../../interfaces/model/OTP";
+import otp from "../../interfaces/model/Otp";
 import otpModel from "../../entities_models/userOtpModel";
 import IOTPRepository from "../../interfaces/iRepositories/iOtpRepository";
 
