@@ -54,7 +54,7 @@ console.log(req.body,'req.body',req.file)
   async fetchSellerProducts(req: Request, res: Response) {
     try {
       const sellerId = req.params.sellerId;
-
+console.log(sellerId,'sellerId')
       const products = await this._sellerUseCase.fetchSellerProducts(sellerId);
       res.status(products.status).json(products);
     } catch (error) {

@@ -49,7 +49,6 @@ class OrderRepository {
     }
     async fetchOrderById(orderId: string): Promise<any | null> {
         try {
-            console.log(orderId,"orderId=============================================")
             const order = await OrderModel.findOne({ _id: orderId });
             return order;
         } catch (error) {

@@ -116,7 +116,6 @@ class SellerRepository implements ISellerRepository {
 
   async updateSeller(sellerId:string,sellerData:Partial<Omit<Seller,"_id">>):Promise<Seller|null>{
     try {
-      // console.log(sellerData,'sellerId===============================================')
       const updatedSeller = await SellerModel.findByIdAndUpdate(sellerId,sellerData,{new:true,runValidators:true}).exec();
       if (!updatedSeller) {
         throw new Error("Seller not found");

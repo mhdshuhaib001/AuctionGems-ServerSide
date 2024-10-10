@@ -58,7 +58,6 @@ class AdminRepository implements IAdminRepository {
 
   async updateCategory(_id:string,updatedData:any):Promise<boolean>{
     try {
-      console.log(updatedData,'repositories')
       const updatedCategory = await CategoryModel.findByIdAndUpdate(_id, updatedData, {
         new: true, 
       });
