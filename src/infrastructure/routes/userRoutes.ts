@@ -13,6 +13,8 @@ const handleGetUser = (req:Request,res:Response)=>userController.getUser(req,res
 const handleUpdateAddress = (req:Request,res:Response)=>userController.updateAddress(req,res);
 const handleDeleteAddress = (req:Request,res:Response)=>userController.deleteAddress(req,res);
 const handleGetCategory = (req:Request,res:Response)=>userController.getCategory(req,res);
+const handleNotifyAuctionStart = (req:Request,res:Response)=>userController.notifyAuctionStart(req,res);
+const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
 route.post("/address",handleAddAddress)
 route.get("/address",handleGetAllAddress)
 route.get("/address/:id",handleGetAddress)
@@ -21,4 +23,6 @@ route.get("/user/:id", handleGetUser);
 route.put("/address/:id",handleUpdateAddress)
 route.delete("/address/:id",handleDeleteAddress)
 route.get('/categories',handleGetCategory)
+route.post('/subscribe-notification',handleAuctionNotification)
+route.post('/auctionNotification',handleAuctionNotification)
 export default route    

@@ -35,9 +35,9 @@ const orderRepository = new OrderRepository()
 
 // UseCases
 const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,userOTPRepo,sellerRepository,cloudinaryHelper,adminRepository);
-const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository)
+const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository,adminRepository,cloudinaryHelper)
 const adminUseCase = new AdminUseCase(jwt,adminRepository,cloudinaryHelper);
-const productUseCase = new ProductUseCase(productRepository)
+const productUseCase = new ProductUseCase(productRepository,sellerRepository)
 const orderUseCase = new OrderUsecase(orderRepository,sellerRepository,userRepository);
 
 

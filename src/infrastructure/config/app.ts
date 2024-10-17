@@ -8,7 +8,8 @@ import cors from "cors";
 import userRoute from "../routes/userRoutes";
 import { swaggerDocs } from "../swagger/swaggerConfi";
 import orderRoutes from "../routes/orderRoutes";
-import webhook from "../config/webhook"; // Import the webhook route
+import webhook from "../config/webhook"; 
+import { startAuctionCronJob } from "../../providers/AuctionNotificationScheduler";
 
 export const createServer = () => {
   try {
@@ -38,7 +39,9 @@ export const createServer = () => {
     app.use("/api/orders", orderRoutes);
 
     app.use("/api/webhook", webhook);
-
+     
+    // startAuctionCronJob();
+    
     return app;
   } catch (error) {
     console.error("Error creating server:", error);

@@ -125,7 +125,6 @@ async refreshToken(req:Request,res:Response){
 
   async addAddress(req: Request, res: Response) {
     try {
-      console.log(req.body,'req.body')
       const addressData = req.body.address;
 
       const result = await this._userUseCase.addAddress(addressData);
@@ -163,8 +162,7 @@ async refreshToken(req:Request,res:Response){
         const userData = req.body; 
         const profileImage = req.file;
 
-        console.log(userData, 'User Data received');
-        console.log(profileImage, 'Profile Image received');
+       
         const userId = userData.userId;
         const updateData = { ...userData };
 
@@ -220,6 +218,29 @@ async getUser(req:Request,res:Response){
     console.error('Error fetching user:', error);
     res.status(500).json({ message: 'An error occurred while fetching the user' });
   }
+}
+
+async auctionNotification(req:Request,res:Response){
+  try {
+    console.log(req.body,'req.body====================================suiiiiiiiiiiiiiiiiiiiii')
+    const { auctionId, userId, fcmToken } = req.body;
+    await this._userUseCase.subscribeToAuction( userId, auctionId, fcmToken);
+    res.status(200).json({ message: 'Notification sent' });
+  } catch (error) {
+    console.error('Error sending auction notification:', error);
+    res.status(500).json({ message: 'An error occurred while sending the auction notification' });
+  }
+}
+
+async notifyAuctionStart(req:Request,res:Response){
+  // try{
+  //   const {auctionId,title,body} = req.body
+  //   await this._userUseCase.sendAuctionNotification(auctionId,title,body)
+  //   res.status(200).json({message:'Notification sent'})
+  // }catch(error){
+  //   console.error('Error sending auction notification:', error);
+  //   res.status(500).json({ message: 'An error occurred while sending the auction notification' });
+  // }
 }
 }
 

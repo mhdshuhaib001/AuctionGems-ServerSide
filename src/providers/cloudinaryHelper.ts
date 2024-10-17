@@ -58,18 +58,23 @@ class CloudinaryHelper {
   uploadBuffer(fileBuffer: Buffer, folder: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: folder },
+        { folder: folder ,timeout:60000},
         (error, result) => {
           if (error) {
-            console.error("Cloudinary upload error:", error);  
+            console.error("Cloudinary upload error:", JSON.stringify(error));
             return reject(error);
           }
           return resolve(result?.secure_url);
         }
       );
-      
-      const stream = bufferToStream(fileBuffer); 
-      stream.pipe(uploadStream);
+  
+      const stream = bufferToStream(fileBuffer);
+      stream.pipe(uploadStream)
+        .on('finish', () => console.log('Upload finished'))
+        .on('error', (err) => {
+          console.error('Stream error:', err);
+          reject(new Error('Stream error: ' + err.message));
+        });
     });
   }
   

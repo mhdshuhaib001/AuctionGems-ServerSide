@@ -1,4 +1,5 @@
-import SellerModel, { ProductModel } from "../../entities_models/sellerModel";
+import SellerModel from "../../entities_models/sellerModel";
+import ProductModel from "../../entities_models/productModal";
 import { ISellerRepository } from "../../interfaces/iRepositories/iSellerRepository";
 import { Seller, Product } from "../../interfaces/model/seller";
 import  OrderModel  from "../../entities_models/orderModel";
@@ -93,10 +94,12 @@ class SellerRepository implements ISellerRepository {
 
   async getProductById(productId: string): Promise<Product | null> {
     try {
+      console.log(productId,'productId')
       const result = await ProductModel.findById(productId).exec();
       if (!result) {
         throw new Error("Product not found");
       }
+      console.log(result,'result')
       return result;
     } catch (error) {
       console.error("Error fetching single product:", error);

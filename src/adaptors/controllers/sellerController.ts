@@ -18,7 +18,7 @@ class SellerController {
 
   async createProduct(req: Request, res: Response) {
     try {
-      console.log(req.body)
+      console.log(req.body)         
       const productData = req.body;
       const sellerId = req.body.sellerId;
       console.log('Seller ID:', sellerId);
@@ -38,18 +38,25 @@ class SellerController {
     }
   }
 
-  async updateSeller(req:Request,res:Response){
+  async updateSeller(req: Request, res: Response) {
     try {
-console.log(req.body,'req.body',req.file)
-     const sellerData = req.body;
-     const image = req.file || null;
-     const response = await this._sellerUseCase.updateSeller(sellerData,image);
-     res.json(response.status).json(response)
-        } catch (error) {
-      console.error("Error  updateSeller.", error);
+      console.log(req.body,'req.body--------------------')
+      console.log(req.file,'req.file--------------------')
+      const sellerData = req.body;
+      const image = req.file || null;
+      
+      const response = await this._sellerUseCase.updateSeller(sellerData, image);
+      
+      // Send the full response back to the client
+      res.status(response.status).json(response);
+    } catch (error) {
+      console.error("Error updateSeller.", error);
+      
+      // Handle error response correctly
       res.status(500).json({ message: "Error updateSeller." });
     }
   }
+  
 
   async fetchSellerProducts(req: Request, res: Response) {
     try {

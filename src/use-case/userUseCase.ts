@@ -11,6 +11,7 @@ import JWT from "../providers/jwt";
 import bcrypt from "bcrypt";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
+import { messaging } from "../infrastructure/config/fireBaseConfig";
 
 class UserUseCase implements IUserUseCase {
   constructor(
@@ -284,8 +285,6 @@ try {
 
   async addAddress(addressData:AddressData):Promise<boolean>{
     try {
-      console.log(addressData,'in usercase ')
-      const { fullName, phoneNumber, streetAddress, city, state, postalCode, country, userId } = addressData;
       const result = await this._userRepository.saveAddress(addressData)
       return result
     } catch (error) {
@@ -345,7 +344,6 @@ try {
       }
 
       const updatedUser = await this._userRepository.updateUser(userId, userData);
-      console.log(updatedUser,'haloooo')
       return updatedUser;
     } catch (error) {
       console.error('Error updating user:', error);
@@ -362,6 +360,36 @@ try {
       throw error;
     }
   }
+
+  async subscribeToAuction(userId: string, auctionId: string, fcmToken: string) {
+    const auctionItem = await this._sellerRepository.getProductById(auctionId);
+    console.log(auctionItem?.auctionStartDateTime, 'auctionItem');
+    const auctionStartTime = auctionItem?.auctionStartDateTime ?? '';
+    console.log(auctionStartTime, 'auctionStartTime');
+    
+    await this._userRepository.saveFCMToken(userId, auctionId, fcmToken, auctionStartTime);
+    
+    await this.sendNotification(fcmToken, 'The auction is starting soon! This is a test notification.');
+}
+
+
+async sendNotification(fcmToken:string,message:string){
+  const notificationMessage = {
+    notification: {
+        title: 'Auction Notification',
+        body: message,
+    },
+    token: fcmToken,
+};
+try {
+  const response = await messaging.send(notificationMessage);
+  console.log('Notification sent:', response);
+} catch (error) {
+  console.error('Error sending notification:', error);
+}
+
+}
+
 }
 
 export default UserUseCase;

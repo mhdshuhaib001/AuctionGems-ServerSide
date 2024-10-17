@@ -1,6 +1,5 @@
-import SellerModel, { ProductModel } from "../../entities_models/sellerModel";
 import { Product } from "../../interfaces/model/seller";
-
+import ProductModel from "../../entities_models/productModal";
 class ProductRepository {
   
   async insertOne(productData: Omit<Product, "_id">): Promise<Product> {
@@ -19,7 +18,6 @@ class ProductRepository {
   async getProductById(productId: string): Promise<Product | null> {
     try {
       const result = await ProductModel.findById({_id:productId});
-      console.log(result,"result=============================================")
       if (!result) {
         throw new Error("Product not found");
       }

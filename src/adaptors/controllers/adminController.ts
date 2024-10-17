@@ -37,12 +37,11 @@ class AdminController {
 
   async addCategory(req: Request, res: Response) {
     try {
-      const { name } = req.body;
 
       const files = req.files as
         | { [fieldname: string]: Express.Multer.File[] }
         | undefined;
-
+      
       if (!files) {
         return res.status(400).json({ error: "Files are required" });
       }
@@ -53,13 +52,11 @@ class AdminController {
       let imageUrl: string | null = null;
       let iconUrl: string | null = null;
 
-      console.log(imageFile, "imageFile");
-      console.log(iconFile, "icon file ");
-      // Build the category data object
+    
       const categoryData = {
         name: req.body.name,
-        image: imageUrl || "",
-        icon: iconUrl || ""
+        imageUrl: imageUrl || "",
+        iconUrl: iconUrl || ""
       };
 
       const response = await this._AdminUsecase.addCategory(
@@ -81,7 +78,6 @@ class AdminController {
     try {
       const pageQuery = req.body.page;
       const limitQuery = req.body.limit;
-console.log(pageQuery,limitQuery)
       const page = typeof pageQuery === "string" ? parseInt(pageQuery) : 1;
       const limit = typeof limitQuery === "string" ? parseInt(limitQuery) : 5;
 
@@ -116,7 +112,6 @@ console.log(pageQuery,limitQuery)
   async deleteCategory(req: Request, res: Response) {
     try {
       const categoryId = req.params.id;
-      console.log(categoryId,"categoryId")
       const result = await this._AdminUsecase.deleteCategory(categoryId);
       res.status(200).json(result);
     } catch (error) {

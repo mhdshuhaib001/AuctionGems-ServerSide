@@ -3,9 +3,10 @@ export interface Login {
   password: string;
 }
 export interface Category {
+  _id?: string;
   name: string;
-  icon: string;
-  image: string;
+  iconUrl: string;
+  imageUrl: string;
 }
 
 

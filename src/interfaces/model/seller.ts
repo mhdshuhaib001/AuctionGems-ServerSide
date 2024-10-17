@@ -6,33 +6,34 @@ export interface Seller extends Document {
     _id: string;
     userId: Types.ObjectId; 
     companyName: string;
-    contactInfo?: string;
+    phone?: string;
     about?: string; 
     isBlocked?: boolean;
+    address?: string;
 }
 
-export interface Product {
-    _id: any;
-    SellerId: mongoose.Types.ObjectId;
-    item_title: string;
-    itemTitle?: string;
-    category: string;
+export interface Product extends Document {
+    category:string;
+    sellerId: mongoose.Types.ObjectId;
+    itemTitle: string;
+    categoryId: string; 
     description?: string;
     condition: 'new' | 'used' | 'vintage';
     images?: string[];
-    auction_format: 'buy-it-now' | 'auction';
-    auction_start_time?: Date;
-    auction_end_time?: Date;
+    auctionFormat: 'buy-it-now' | 'auction';
+    auctionStartDateTime: string; 
+    auctionEndDateTime?: Date;
     reservePrice?: string;
-    shipping_type: 'standard' | 'express';
-    shipping_cost?: number;
-    handling_time?: number;
-    item_location?: string;
-    zip_code?: string;
+    shippingType: 'standard' | 'express';
+    shippingCost?: number;
+    handlingTime?: number;
+    itemLocation?: string;
+    zipCode?: string;
     city?: string;
     state?: string;
-    return_duration?: number; 
-}
+    returnDuration?: number; 
+  }
+  
 
 
 export interface SellerResponse{

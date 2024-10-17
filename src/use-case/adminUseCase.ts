@@ -36,7 +36,6 @@ class AdminUseCase implements IAdminUseCase {
   async fetchAllUsers(): Promise<any> {
     try {
       const userDatas = await this._adminRepository.getAllUsers();
-      console.log(userDatas, "fetchAllUsers");
       return userDatas;
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -61,56 +60,21 @@ class AdminUseCase implements IAdminUseCase {
   ): Promise<boolean> {
     try {
       const categoryFolder = `category/${categoryData.name}`;
-
-      // Helper function for uploading files
-      const uploadFile = async (
-        file: Express.Multer.File | null
-      ): Promise<string | null> => {
-        if (!file) {
-          console.warn("No file provided for upload.");
-          return null;
-        }
-
-        return new Promise((resolve, reject) => {
-          // Createing a readable stream from the file buffer
-          const stream = new Readable();
-          stream.push(file.buffer);
-          stream.push(null);
-
-          //  upload_stream method
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: categoryFolder,
-              resource_type: "auto"
-            },
-            (error, result) => {
-              if (error) {
-                return reject(
-                  new Error(
-                    "File upload failed: " + (error.message || "unknown error")
-                  )
-                );
-              }
-              resolve(result?.secure_url || null);
-            }
-          );
-
-          stream.pipe(uploadStream).on("error", (uploadError) => {
-            reject(new Error("Stream piping failed: " + uploadError.message));
-          });
-        });
-      };
-
-      categoryData.image = (await uploadFile(imageFile)) || "";
-      categoryData.icon = (await uploadFile(iconFile)) || "";
-
+  
+      const imageUrl = imageFile?.buffer
+        ? await this._cloudinaryHelper.uploadBuffer(imageFile.buffer, categoryFolder)
+        : "";
+      const iconUrl = iconFile?.buffer
+        ? await this._cloudinaryHelper.uploadBuffer(iconFile.buffer, categoryFolder)
+        : "";
+      categoryData.imageUrl = imageUrl;
+      categoryData.iconUrl = iconUrl || "";
+  
       const category = await this._adminRepository.addCategory(categoryData);
-
+  
       return true;
     } catch (error) {
-      console.error(
-        `Error adding category Usecase: ${error instanceof Error ? error.message : error}`
-      );
+      console.error(`Error adding category Usecase: ${error instanceof Error ? error.message : error}`);
       return false;
     }
   }
@@ -168,7 +132,6 @@ class AdminUseCase implements IAdminUseCase {
         categoryId,
         updateData
       );
-      console.log(result, "suiiiiiiii");
       return result;
     } catch (error) {
       console.error(`Error update category Usecase: ${error instanceof Error}`);

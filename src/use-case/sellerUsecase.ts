@@ -6,18 +6,20 @@ import cloudinary from "../infrastructure/config/cloudinary";
 import ProductRepository from "../infrastructure/repositories/ProductRepository";
 import { Product } from "../interfaces/model/seller";
 import { Readable } from "stream";
-
+import AdminRepository from "../infrastructure/repositories/AdminRepository";
+import CloudinaryHelper from "../providers/cloudinaryHelper";
 class SellerUseCase {
   constructor(
     private readonly _SellerRepository: SellerRepository,
     private readonly _UserRepository: userRepository,
     private readonly _jwt: JWT,
-    private readonly _ProductRepository: ProductRepository
+    private readonly _ProductRepository: ProductRepository,
+    private readonly _AdminRepository: AdminRepository,
+    private readonly _cloudinaryHelper: CloudinaryHelper
   ) {}
 
   async createSeller(sellerData: Seller) {
     try {
-      console.log(sellerData,'haloooo')
       const existingName = await this._SellerRepository.findByName(
         sellerData.companyName
       );
@@ -53,70 +55,55 @@ class SellerUseCase {
   async updateSeller(sellerData: Seller, image: Express.Multer.File | null) {
     try {
       let imageUrl: string | null = null;
-  
+
+      // Check if the seller exists
       const sellerExists = await this._SellerRepository.existsBySellerId(sellerData._id);
-      console.log(sellerExists);
-  
       if (!sellerExists) {
         return {
           status: 404,
-          message: "Seller not found"
+          message: "Seller not found",
         };
       }
-  
+
       if (image) {
-        const bufferStream = new Readable();
-        bufferStream.push(image.buffer);
-        bufferStream.push(null);
-  
         console.log("Starting upload to Cloudinary...");
-  
-        const uploadResponse = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { resource_type: "auto" },
-            (error, result) => {
-              if (error) {
-                console.error("Error during upload:", error);
-                return reject(error);
-              }
-              resolve(result);
-            }
-          );
-  
-          bufferStream.pipe(uploadStream);
-        });
-  
-        imageUrl = (uploadResponse as any).secure_url;
+        try {
+          imageUrl = await this._cloudinaryHelper.uploadBuffer(image.buffer, 'seller_images');
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          return {
+            status: 500,
+            message: "Failed to upload image",
+          };
+        }
       } else {
         console.log("No image provided, skipping upload.");
       }
-  
+
+      // Prepare the updated seller data
       const updatedSellerData = {
         ...sellerData,
-        Profile: imageUrl ? imageUrl : sellerData.profile
+        profile: imageUrl ? imageUrl : sellerData.profile, 
       };
-  
-      const updateResponse = await this._SellerRepository.updateSeller(
-        sellerData._id,
-        updatedSellerData
-      );
+console.log(updatedSellerData,'updatedSellerData=============================')
+      // Update seller information in the repository
+      const updateResponse = await this._SellerRepository.updateSeller(sellerData._id, updatedSellerData);
       console.log("Update Response:", updateResponse);
-  
+
       return {
         status: 200,
         message: "Seller updated successfully",
-        data: updateResponse
+        data: updateResponse,
       };
-  
     } catch (error) {
       console.error("Error updating seller:", error);
       return {
         status: 500,
-        message: "Failed to update seller"
+        message: "Failed to update seller",
       };
     }
   }
-  
+
   async createProduct(
     productData: Product,
     images: string[]
@@ -140,13 +127,14 @@ class SellerUseCase {
         (result: { secure_url: string }) => result.secure_url
       );
 
-      const updatedProductData: Product = {
+      const updatedProductData = {
         ...productData,
         images: imageUrls
       };
 
-      const product =
-        await this._ProductRepository.insertOne(updatedProductData);
+      const product = await this._ProductRepository.insertOne(
+        updatedProductData as any
+      );
 
       return {
         status: 201,
@@ -164,6 +152,8 @@ class SellerUseCase {
   ): Promise<{ status: number; message: string; products?: Product[] }> {
     try {
       const products = await this._SellerRepository.getAllProducts(sellerId);
+      const categoryIds = products.map((products) => products.category);
+
       return {
         status: 200,
         message: "Products fetched successfully",
@@ -242,8 +232,6 @@ class SellerUseCase {
   ): Promise<{ status: number; message: string; seller?: Seller | null }> {
     try {
       const seller = await this._SellerRepository.findById(sellerId);
-      // console.log(seller, "sellerUsecase");
-
       if (!seller) {
         return {
           status: 404,
@@ -272,7 +260,7 @@ class SellerUseCase {
         status: 200,
         message: "Orders fetched successfully",
         orders
-      };  
+      };
     } catch (error) {
       console.error("Error fetching orders:", error);
       return {
@@ -284,21 +272,24 @@ class SellerUseCase {
 
   async updateOrderStatus(orderId: string, newStatus: string): Promise<any> {
     try {
-      const updatedOrder = await this._SellerRepository.updateOrderStatus(orderId, newStatus);
-      console.log(updatedOrder,'updatedOrder')
+      const updatedOrder = await this._SellerRepository.updateOrderStatus(
+        orderId,
+        newStatus
+      );
+      console.log(updatedOrder, "updatedOrder");
       return {
         status: 200,
         message: "Order status updated successfully",
         order: updatedOrder
       };
-    } catch (error) { 
+    } catch (error) {
       console.error("Error updating order status:", error);
       return {
         status: 500,
         message: "Failed to update order status"
       };
     }
-  } 
+  }
 }
 
 export default SellerUseCase;

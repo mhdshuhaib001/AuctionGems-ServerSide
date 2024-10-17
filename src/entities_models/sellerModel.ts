@@ -1,6 +1,5 @@
-import mongoose, { Schema, Document, Model, model } from "mongoose";
+import mongoose, { Schema, Model, model } from "mongoose";
 import { Seller } from "../interfaces/model/seller";
-import { Product } from "../interfaces/model/seller";
 
 // Seller schema
 const sellerSchema = new Schema<Seller>({
@@ -9,11 +8,14 @@ const sellerSchema = new Schema<Seller>({
       ref: 'User',
       required: true,
     },
+    address: {
+      type: String,
+    },
     companyName: {
       type: String,
       required: true,
     },
-    contactInfo: {
+    phone: {
       type: String,
     },
     about: {
@@ -28,31 +30,6 @@ const sellerSchema = new Schema<Seller>({
     },
   });
   
-  // Create the Seller model
   const SellerModel: Model<Seller> = model<Seller>('Seller', sellerSchema);
 
-
-const ProductSchema = new mongoose.Schema({
-    sellerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Seller' },
-    itemTitle: { type: String, required: true },
-    category: { type: String, required: true },
-    description: String,
-    condition: { type: String, required: true },
-    images: [String],
-    auctionFormat: { type: String, required: true, enum: ['buy-it-now', 'auction'] },
-    auctionStartDateTime: String,
-    auctionEndDateTime: String,
-    reservePrice: Number,
-    shippingType: { type: String, required: true, enum: ['standard', 'express'] },
-    shippingCost: Number,
-    handlingTime: String,
-    item_location: String,
-    zip_code: String,
-    city: String,
-    state: String,
-    return_duration: Number,
-});
-
-
-export const ProductModel = mongoose.model<Product>("Product", ProductSchema);
-export default SellerModel;
+  export default SellerModel;

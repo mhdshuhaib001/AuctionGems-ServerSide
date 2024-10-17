@@ -41,7 +41,7 @@ router.delete(
   handleDeleteProduct
 );
 router.get("/fetchAllProducts", handleFetchAllProduct);
-router.get("/fetchSeller/:sellerId", handleSellerFetch);
+router.get("/:sellerId", handleSellerFetch);
 router.get("/orders/:sellerId", handleGetAllOrders);
 router.get("/fetchAllProducts", handleFetchAllProduct);
 router.put("/order/:orderId", handleUpdateOrderStatus);

@@ -76,6 +76,16 @@ async getAllCategorys():Promise<Category[]>{
   }
 }
 
+async getCategoryByIds(categoryIds: string[]): Promise<Category[]> {
+  try {
+    const categories = await CategoryModel.find({ _id: { $in: categoryIds } });
+    console.log(categories,'categories')
+    return categories;
+  } catch (error) {
+    throw new Error("Error fetching categories");
+  }
+}
+
 
 async deleteCategory(categoryId: string): Promise<boolean> {
     try {

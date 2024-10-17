@@ -3,6 +3,8 @@ import { UserModel } from "../../entities_models/userModel";
 import { IUserRepository } from "../../interfaces/iRepositories/iUserRepository";
 import { AddressData } from "../../interfaces/model/address";
 import { User } from "../../interfaces/model/user";
+import admin from "../../infrastructure/config/fireBaseConfig";
+import NotificationSubscriptionModel from "../../entities_models/Notification";
 
 class UserRepository implements IUserRepository {
   async insertOne(user: User): Promise<User> {
@@ -21,17 +23,22 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async updateUser(userId:string,userData:Partial<User>):Promise<User | null>{
+  async updateUser(
+    userId: string,
+    userData: Partial<User>
+  ): Promise<User | null> {
     try {
-console.log(userData,'this is the dataaaa')
-      const updatedUser = await UserModel.findByIdAndUpdate(userId, userData, { new: true, runValidators: true }).exec();
-      if(!updatedUser){
-        throw new Error('User not found')
+      const updatedUser = await UserModel.findByIdAndUpdate(userId, userData, {
+        new: true,
+        runValidators: true
+      }).exec();
+      if (!updatedUser) {
+        throw new Error("User not found");
       }
-      return updatedUser
+      return updatedUser;
     } catch (error) {
-      console.error('Error updating user:',error)
-      throw error
+      console.error("Error updating user:", error);
+      throw error;
     }
   }
 
@@ -130,34 +137,40 @@ console.log(userData,'this is the dataaaa')
     }
   }
 
-  async updateAddress(addressId:string,addressData:Partial<AddressData>):Promise<AddressData | null>{
+  async updateAddress(
+    addressId: string,
+    addressData: Partial<AddressData>
+  ): Promise<AddressData | null> {
     try {
-      const updatedAddress = await AddressModal.findByIdAndUpdate(addressId,addressData,{new:true,runValidators:true}).exec()
-      if(!updatedAddress){
-        throw new Error('Address not found')
+      const updatedAddress = await AddressModal.findByIdAndUpdate(
+        addressId,
+        addressData,
+        { new: true, runValidators: true }
+      ).exec();
+      if (!updatedAddress) {
+        throw new Error("Address not found");
       }
-      return updatedAddress
+      return updatedAddress;
     } catch (error) {
-      console.error('Error in updateAddress:',error)
-      throw error
+      console.error("Error in updateAddress:", error);
+      throw error;
     }
-  } 
+  }
 
-  
-  async getAllAddress():Promise<AddressData[]>{
+  async getAllAddress(): Promise<AddressData[]> {
     try {
-      const addresses = await AddressModal.find()
-      return addresses
+      const addresses = await AddressModal.find();
+      return addresses;
     } catch (error) {
-      console.error("Error in getAllAddress:",error)
-      return []
+      console.error("Error in getAllAddress:", error);
+      return [];
     }
   }
 
   async getAddress(userId: string): Promise<AddressData[]> {
     try {
       const addresses = await AddressModal.find({ userId: userId });
-      console.log(addresses, 'addresses');
+      console.log(addresses, "addresses");
       return addresses;
     } catch (error) {
       console.error("Error in getAddressesByUserId:", error);
@@ -177,16 +190,38 @@ console.log(userData,'this is the dataaaa')
 
   async deleteAddress(addressId: string): Promise<boolean> {
     try {
-      console.log(addressId,'addressId')
-      const result = await AddressModal.findByIdAndDelete({_id:addressId});
-      console.log(result,'result')
+      console.log(addressId, "addressId");
+      const result = await AddressModal.findByIdAndDelete({ _id: addressId });
+      console.log(result, "result");
       return result ? true : false;
     } catch (error) {
       console.error("Error in deleteAddress:", error);
       return false;
     }
   }
-  
+
+  async saveFCMToken(
+    userId: string,
+    auctionId: string,
+    fcmToken: string,
+    auctionStartTime: string
+  ): Promise<void> {
+    const subscription = new NotificationSubscriptionModel({
+      userId,
+      auctionId,
+      fcmToken,
+      auctionStartTime
+    });
+
+    await subscription.save();
+  }
+
+  async getFCMTokensByAuction(auctionId: string): Promise<string[]> {
+    const subscriptions = await NotificationSubscriptionModel.find({
+      auctionId
+    });
+    return subscriptions.map((sub) => sub.fcmToken);
+  }
 }
 
 export default UserRepository;
