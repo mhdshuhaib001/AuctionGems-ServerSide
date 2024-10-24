@@ -3,7 +3,7 @@ import { UserModel } from "../../entities_models/userModel";
 import { IUserRepository } from "../../interfaces/iRepositories/iUserRepository";
 import { AddressData } from "../../interfaces/model/address";
 import { User } from "../../interfaces/model/user";
-import admin from "../../infrastructure/config/fireBaseConfig";
+import admin from "../config/services/fireBaseConfig";
 import NotificationSubscriptionModel from "../../entities_models/Notification";
 
 class UserRepository implements IUserRepository {

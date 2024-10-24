@@ -17,7 +17,7 @@ class ProductRepository {
 
   async getProductById(productId: string): Promise<Product | null> {
     try {
-      const result = await ProductModel.findById({_id:productId});
+      const result = await ProductModel.findById(productId);
       if (!result) {
         throw new Error("Product not found");
       }

@@ -201,7 +201,6 @@ async deleteAddress(req:Request,res:Response){
 async getCategory(req:Request,res:Response){
   try {
     const category = await this._userUseCase.getCategory();
-    console.log(category,'category')
     res.status(200).json(category);
   } catch (error) {
     console.error('Error fetching category:', error);

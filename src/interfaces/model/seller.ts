@@ -19,10 +19,10 @@ export interface Product extends Document {
     categoryId: string; 
     description?: string;
     condition: 'new' | 'used' | 'vintage';
-    images?: string[];
+    images: string[];
     auctionFormat: 'buy-it-now' | 'auction';
     auctionStartDateTime: string; 
-    auctionEndDateTime?: Date;
+    auctionEndDateTime: Date;
     reservePrice?: string;
     shippingType: 'standard' | 'express';
     shippingCost?: number;
@@ -40,5 +40,5 @@ export interface SellerResponse{
     status: number;
      message: string;
      productData?: Product 
-}
-  
+     seller?: Seller[];
+    }

@@ -19,10 +19,10 @@ const handleFetchAllProduct = (req: Request, res: Response) =>
   sellerController.getAllProducts(req, res);
 const handleUpdateSeller = (req: Request, res: Response) => 
     sellerController.updateSeller(req, res);
-const handleSellerFetch = (req: Request, res: Response) => sellerController.fetchSeller(req, res);
+// const handleSellerFetch = (req: Request, res: Response) => sellerController.fetchSeller(req, res);
 const handleGetAllOrders = (req: Request, res: Response) => sellerController.getAllOrders(req, res);
 const handleUpdateOrderStatus = (req: Request, res: Response) => sellerController.updateOrderStatus(req, res);
-
+const handleFetchAllSeller = (req:Request,res:Response) => sellerController.fetchAllSellers(req,res);
 router.post("/createseller", handleSellerCreater);
 router.put("/updateseller", upload.single("image"), handleUpdateSeller);
 router.post(
@@ -41,9 +41,10 @@ router.delete(
   handleDeleteProduct
 );
 router.get("/fetchAllProducts", handleFetchAllProduct);
-router.get("/:sellerId", handleSellerFetch);
+// router.get("/:sellerId", handleSellerFetch);
 router.get("/orders/:sellerId", handleGetAllOrders);
 router.get("/fetchAllProducts", handleFetchAllProduct);
 router.put("/order/:orderId", handleUpdateOrderStatus);
+router.get('/get-seller',handleFetchAllSeller)
 
 export default router;

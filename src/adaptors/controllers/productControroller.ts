@@ -10,9 +10,8 @@ class ProductController {
     async getProduct(req: Request, res: Response) {
         try {
             const productId = req.params.id;
-    
+    console.log(productId,'========================')
             const product = await this._productUseCase.getProduct(productId);
-            console.log(product,'product')
             res.status(product.status).json(product);
         } catch (error) {
             console.error("Error fetching product:", error);

@@ -81,6 +81,42 @@ class NodeMailer implements mailer {
         }
       }
       
+
+      async sendWinnerMail(email: string, auctionName: string, auctionAmount: number, paymentLink: string, productImage: string): Promise<boolean> {
+        const mailOptions = {
+            from: process.env.GMAIL,
+            to: email,
+            subject: `Congratulations! You Won the Auction for ${auctionName}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #333;">Congratulations, ${email.split('@')[0]}!</h2>
+                    <p style="font-size: 16px;">You've won the auction for <strong>${auctionName}</strong>!</p>
+                    <h3 style="color: #333;">Bid Information</h3>
+                    <p style="font-size: 16px;">Bid Amount: <strong>$${auctionAmount.toFixed(2)}</strong></p>
+                    <p style="font-size: 16px;">Next Steps:</p>
+                    <ul>
+                        <li><strong>Payment:</strong> Please proceed with payment to complete the transaction. <a href="${paymentLink}" style="color: blue;">Pay Now</a></li>
+                        <li><strong>Shipping:</strong> Arrange for shipping or pick-up details.</li>
+                        <li><strong>Contact:</strong> For any queries, contact <a href="mailto:support@auctiongems.com">support@auctiongems.com</a>.</li>
+                    </ul>
+                    <h3 style="color: #333;">Product Image:</h3>
+                    <img src="${productImage}" alt="${auctionName}" style="width: 300px; height: auto;"/>
+                    <p style="font-size: 16px;">Thank you for participating in our auction!</p>
+                    <p style="font-size: 16px;">Best regards,<br/>The Antigo Team</p>
+                </div>
+            `,
+        };
+    
+        try {
+            await this._transporter.sendMail(mailOptions);
+            return true;
+        } catch (error) {
+            console.error('Error sending winner email:', error);
+            return false;
+        }
+    }
+    
+      
 }
 
 export default NodeMailer;

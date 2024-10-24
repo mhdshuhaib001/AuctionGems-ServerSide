@@ -8,8 +8,10 @@ import cors from "cors";
 import userRoute from "../routes/userRoutes";
 import { swaggerDocs } from "../swagger/swaggerConfi";
 import orderRoutes from "../routes/orderRoutes";
-import webhook from "../config/webhook"; 
-import { startAuctionCronJob } from "../../providers/AuctionNotificationScheduler";
+import webhook from "./services/webhook"; 
+import http from 'http';  
+import chatRoute from "../routes/chatRoutes";
+import auctionRout from '../routes/auctionRoutes'
 
 export const createServer = () => {
   try {
@@ -22,7 +24,7 @@ export const createServer = () => {
 
     // CORS configuration
     app.use(cors({
-      origin: "http://localhost:5173", // Adjust if using another frontend URL
+      origin: "http://localhost:5173",
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true
     }));
@@ -37,12 +39,13 @@ export const createServer = () => {
     app.use("/api/admin", adminRouter);
     app.use("/api/products", productRoute);
     app.use("/api/orders", orderRoutes);
-
+    app.use("/api/chat", chatRoute);
+    app.use('/api/auction',auctionRout)
     app.use("/api/webhook", webhook);
-     
-    // startAuctionCronJob();
-    
-    return app;
+
+    const server = http.createServer(app);
+
+    return { app, server };
   } catch (error) {
     console.error("Error creating server:", error);
     throw error;

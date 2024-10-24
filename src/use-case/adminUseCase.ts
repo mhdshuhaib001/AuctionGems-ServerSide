@@ -4,7 +4,7 @@ import { Login as AdminLogin, Category, Pagination } from "../interfaces/model/a
 import AdminOutPut from "../interfaces/model/adminOutput";
 import JWT from "../providers/jwt";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
-import cloudinary from "../infrastructure/config/cloudinary";
+import cloudinary from "../infrastructure/config/services/cloudinary";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 class AdminUseCase implements IAdminUseCase {
   private readonly adminEmail: string = process.env.ADMIN_EMAIL!;

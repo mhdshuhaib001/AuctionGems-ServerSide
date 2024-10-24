@@ -2,7 +2,7 @@
 import cron from 'node-cron';
 import NotificationSubscriptionModel from '../entities_models/Notification';
 import ProductModel from '../entities_models/productModal';
-import { sendAuctionAlert } from '../infrastructure/config/fireBaseConfig';
+import { sendAuctionAlert } from '../infrastructure/config/services/fireBaseConfig';
 
 const scheduledNotifications = new Set();
 const CUSTOM_TEST_TIME = '10:30 PM';  

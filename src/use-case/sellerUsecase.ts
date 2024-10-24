@@ -2,7 +2,7 @@ import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import userRepository from "../infrastructure/repositories/UserRepositories";
 import JWT from "../providers/jwt";
 import { Seller, SellerResponse } from "../interfaces/model/seller";
-import cloudinary from "../infrastructure/config/cloudinary";
+import cloudinary from "../infrastructure/config/services/cloudinary";
 import ProductRepository from "../infrastructure/repositories/ProductRepository";
 import { Product } from "../interfaces/model/seller";
 import { Readable } from "stream";
@@ -57,23 +57,28 @@ class SellerUseCase {
       let imageUrl: string | null = null;
 
       // Check if the seller exists
-      const sellerExists = await this._SellerRepository.existsBySellerId(sellerData._id);
+      const sellerExists = await this._SellerRepository.existsBySellerId(
+        sellerData._id
+      );
       if (!sellerExists) {
         return {
           status: 404,
-          message: "Seller not found",
+          message: "Seller not found"
         };
       }
 
       if (image) {
         console.log("Starting upload to Cloudinary...");
         try {
-          imageUrl = await this._cloudinaryHelper.uploadBuffer(image.buffer, 'seller_images');
+          imageUrl = await this._cloudinaryHelper.uploadBuffer(
+            image.buffer,
+            "seller_images"
+          );
         } catch (uploadError) {
           console.error("Image upload failed:", uploadError);
           return {
             status: 500,
-            message: "Failed to upload image",
+            message: "Failed to upload image"
           };
         }
       } else {
@@ -83,23 +88,29 @@ class SellerUseCase {
       // Prepare the updated seller data
       const updatedSellerData = {
         ...sellerData,
-        profile: imageUrl ? imageUrl : sellerData.profile, 
+        profile: imageUrl ? imageUrl : sellerData.profile
       };
-console.log(updatedSellerData,'updatedSellerData=============================')
+      console.log(
+        updatedSellerData,
+        "updatedSellerData============================="
+      );
       // Update seller information in the repository
-      const updateResponse = await this._SellerRepository.updateSeller(sellerData._id, updatedSellerData);
+      const updateResponse = await this._SellerRepository.updateSeller(
+        sellerData._id,
+        updatedSellerData
+      );
       console.log("Update Response:", updateResponse);
 
       return {
         status: 200,
         message: "Seller updated successfully",
-        data: updateResponse,
+        data: updateResponse
       };
     } catch (error) {
       console.error("Error updating seller:", error);
       return {
         status: 500,
-        message: "Failed to update seller",
+        message: "Failed to update seller"
       };
     }
   }
@@ -231,6 +242,8 @@ console.log(updatedSellerData,'updatedSellerData=============================')
     sellerId: any
   ): Promise<{ status: number; message: string; seller?: Seller | null }> {
     try {
+      console.log('suiiiii');
+      
       const seller = await this._SellerRepository.findById(sellerId);
       if (!seller) {
         return {
@@ -256,10 +269,22 @@ console.log(updatedSellerData,'updatedSellerData=============================')
   async getAllOrders(sellerId: string): Promise<any> {
     try {
       const orders = await this._SellerRepository.getAllOrders(sellerId);
+      
+      const ordersWithDetails = await Promise.all(orders.map(async (order: { productId: string; buyerId: string; }) => {
+        const product = await this._ProductRepository.getProductById(order.productId); 
+        const buyer = await this._UserRepository.findById(order.buyerId); 
+  
+        return {
+          ...order,
+          productName: product?.itemTitle,
+          buyerName: buyer ? buyer.name : 'Unknown', 
+        };
+      }));
+  
       return {
         status: 200,
         message: "Orders fetched successfully",
-        orders
+        orders: ordersWithDetails
       };
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -268,6 +293,13 @@ console.log(updatedSellerData,'updatedSellerData=============================')
         message: "Failed to fetch orders"
       };
     }
+  }
+  
+
+  async fetchAllSeller(): Promise<Seller[]> {
+    console.log('fetch all seller ')
+    const sellerDatas = await this._SellerRepository.getAllSeller();
+    return sellerDatas
   }
 
   async updateOrderStatus(orderId: string, newStatus: string): Promise<any> {

@@ -4,6 +4,7 @@ import { ISellerRepository } from "../../interfaces/iRepositories/iSellerReposit
 import { Seller, Product } from "../../interfaces/model/seller";
 import  OrderModel  from "../../entities_models/orderModel";
 import IOrder  from "../../interfaces/model/order";
+import { console } from "inspector";
 
 class SellerRepository implements ISellerRepository {
   existsByEmail(email: string) {
@@ -153,6 +154,18 @@ class SellerRepository implements ISellerRepository {
     }
   }
 
+  async getAllSeller():Promise<Seller[]>{
+    try{
+
+      const sellerDatas = await SellerModel.find();
+      console.log(sellerDatas)
+      return sellerDatas
+    }catch(error){
+      console.log('Error finding All sellerDatas');
+      throw new Error('Find all SellerData.')
+
+    }
+  }
 
   async getSellerByUserId(userId: string): Promise<Seller | null> {
     try {

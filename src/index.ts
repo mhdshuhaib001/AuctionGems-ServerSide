@@ -1,23 +1,31 @@
-import { createServer } from "./infrastructure/config/app"; 
+import { createServer } from "./infrastructure/config/app";
 import { DBconfig } from "./infrastructure/config/DBconfig";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+import { socketIoInit } from "./infrastructure/config/services/socket-io";
+import { initAuctionCronJob } from "./providers/corn";
+import { initSocket } from './infrastructure/config/services/auctionSocket';
 
 dotenv.config();
 
-console.log(`Port from environment: ${process.env.PORT}`);
-
 const startServer = async () => {
   try {
+    // Initialize the database connection
     await DBconfig();
-    const port = process.env.PORT || 3000;
+
+    const port = process.env.PORT || 8001;
     const url = `http://localhost:${port}`;
 
-    const app = createServer();
-    app.listen(port, () => 
-      console.log(`Server running at ${url}`)
-    );
+    const { app, server } = createServer();
+
+    initSocket(server)
+    // Initialize Socket.io
+    socketIoInit(server);
+    // Initialize the auction cron job
+
+    initAuctionCronJob();
+    server.listen(port, () => console.log(`Server running at ${url}`));
   } catch (error) {
-    console.error('Error starting server:', error);
+    console.error("Error starting server:", error);
   }
 };
 

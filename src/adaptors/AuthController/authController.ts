@@ -259,7 +259,7 @@
  *                 type: string
  *                 example: "Vintage Radio"
  *                 description: The title of the product.
- *               Category:
+ *               :
  *                 type: string
  *                 example: "Electronics"
  *                 description: The category under which the product is listed.

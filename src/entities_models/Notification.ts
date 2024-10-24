@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { INotificationSubscription } from "../interfaces/model/iNotificationModel";
+import { INotificationSubscription } from "../interfaces/model/notification";
 
 
 // Define the schema for FCM token storage
@@ -10,7 +10,6 @@ const NotificationSubscriptionSchema: Schema = new Schema({
   notifyAt: { type: Date, default: Date.now },
 });
 
-// Create a model from the schema and export it
 const NotificationSubscriptionModel = mongoose.model<INotificationSubscription>("NotificationSubscription", NotificationSubscriptionSchema);
 
 export default NotificationSubscriptionModel;

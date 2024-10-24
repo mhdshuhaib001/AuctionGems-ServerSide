@@ -11,7 +11,7 @@ import JWT from "../providers/jwt";
 import bcrypt from "bcrypt";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
-import { messaging } from "../infrastructure/config/fireBaseConfig";
+import { messaging } from "../infrastructure/config/services/fireBaseConfig";
 
 class UserUseCase implements IUserUseCase {
   constructor(
@@ -222,7 +222,6 @@ try {
   async forgetPasswordReq(email: string) {
     try {
       const user = await this._userRepository.findByEmail(email);
-      console.log(process.env.FRONTEND_URL, "frontend usrl is this ");
       if (user) {
         const role = user.role || "user";
         const resetToken = this._jwt.createAccessToken(user.email, role);

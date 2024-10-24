@@ -1,6 +1,6 @@
 import IProductUseCase from "../interfaces/iUseCases/iProductUseCase";
 import ProductRepository from "../infrastructure/repositories/ProductRepository";
-import cloudinary from "../infrastructure/config/cloudinary";
+import cloudinary from "../infrastructure/config/services/cloudinary";
 import { Product } from "../interfaces/model/seller";
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 

@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import Stripe from 'stripe';
-import { OrderRepository } from '../repositories/OrderRepository';
+import { OrderRepository } from '../../repositories/OrderRepository';
 import dotenv from 'dotenv';
 
 dotenv.config();

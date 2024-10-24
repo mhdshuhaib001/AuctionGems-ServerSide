@@ -1,5 +1,6 @@
 import { Product } from "../interfaces/model/seller";
 import mongoose from "mongoose";
+
 const ProductSchema = new mongoose.Schema({
     sellerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Seller' },
     itemTitle: { type: String, required: true },
@@ -19,8 +20,9 @@ const ProductSchema = new mongoose.Schema({
     city: String,
     state: String,
     return_duration: Number,
+    sold: { type: Boolean, default: false },             
+    finalBidAmount: { type: Number, default: null },       
 });
-
 
 export const ProductModel = mongoose.model<Product>("Product", ProductSchema);
 export default ProductModel;
