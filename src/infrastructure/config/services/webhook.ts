@@ -2,13 +2,10 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import Stripe from 'stripe';
 import { OrderRepository } from '../../repositories/OrderRepository';
-import dotenv from 'dotenv';
 
-dotenv.config();
 
 const router = express.Router();
 
-// Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2024-09-30.acacia',
 });
@@ -18,7 +15,7 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 // Middleware to handle raw body for Stripe webhook
 router.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
-  console.log('Webhook called:===============================================================', req.body.toString()); // Log the raw body for debugging
+  console.log('Webhook called:===============================================================', req.body.toString()); 
 
   const sig = req.headers['stripe-signature'] as string;
   let event = req.body

@@ -128,33 +128,41 @@ class OrderUsecase implements IOrderUsecase {
     async fetchOrderById(orderId: string): Promise<any | null> {
         try {
             const order = await this._orderRepository.fetchOrderById(orderId);
+            console.log(order, "=========================================================");
+    
             const product = await this._sellerRepository.getProductById(order.productId);
-            const seller = await this._sellerRepository.getSellerByUserId(order.sellerId);
-            const address = await this._userRepository.getAddressById(order.addressId);
-            console.log(address,"address=============================================")
-            if (product) {
-                const responseData = {
-                    orderId: order.id,
-                    orderDate: order.orderDate, 
-                    status: order.status,
-                    bidAmount: product.reservePrice,
-                    productId: product._id,
-                    productName: product.itemTitle || null,
-                    productImage: (product as any).images || null, 
-                    description: product.description || null,
-                    companyName: seller?.companyName as string || 'Unknown Seller',
-                    paymentStatus: order.paymentStatus
-                };
-                
-                return responseData;
-            } else {
+            console.log(product, 'productData==================================');
+    
+            if (!product) {
                 throw new Error("Product not found");
             }
+    
+            // Now product.sellerId should be of type ISeller
+            const responseData = {
+                orderId: order._id,
+                orderDate: order.orderDate,
+                status: order.orderStatus,
+                bidAmount: order.bidAmount,
+                productId: product._id,
+                productName: product.itemTitle || null,
+                productImage: product.images || null,
+                description: product.description || null,
+                companyName: product.sellerId?.companyName || "Unknown Seller",
+                sellerId: product.sellerId?._id || null,
+                profileName: product.sellerId?.profile || null,
+                paymentStatus: order.paymentStatus,
+                shippingAddress: order.shippingAddress
+            };
+    
+            return responseData;
+    
         } catch (error) {
             console.error("Error fetching order by order ID:", error);
             throw new Error("Failed to fetch order by order ID");
         }
     }
+    
+    
     
 }
 

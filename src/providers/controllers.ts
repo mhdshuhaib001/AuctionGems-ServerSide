@@ -48,11 +48,11 @@ const auctionRepository = new AuctionRepository()
 // UseCases
 const userUseCase = new UserUseCase(OTPGenerator, userRepository,mailer,jwt,userOTPRepo,sellerRepository,cloudinaryHelper,adminRepository);
 const sellerUsecase = new SellerUseCase(sellerRepository,userRepository,jwt,productRepository,adminRepository,cloudinaryHelper)
-const adminUseCase = new AdminUseCase(jwt,adminRepository,cloudinaryHelper);
+const adminUseCase = new AdminUseCase(jwt,adminRepository,cloudinaryHelper,sellerRepository);
 const productUseCase = new ProductUseCase(productRepository,sellerRepository)
 const orderUseCase = new OrderUsecase(orderRepository,sellerRepository,userRepository);
 const chatUseCase = new ChatUseCase(chatRepository,sellerRepository)
-const auctionUseCase = new AuctionUseCase(auctionRepository,userRepository,mailer)
+const auctionUseCase = new AuctionUseCase(auctionRepository,userRepository,mailer,adminRepository)
 
 
 // Controller

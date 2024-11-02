@@ -2,10 +2,8 @@ import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import userRepository from "../infrastructure/repositories/UserRepositories";
 import JWT from "../providers/jwt";
 import { Seller, SellerResponse } from "../interfaces/model/seller";
-import cloudinary from "../infrastructure/config/services/cloudinary";
 import ProductRepository from "../infrastructure/repositories/ProductRepository";
 import { Product } from "../interfaces/model/seller";
-import { Readable } from "stream";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 class SellerUseCase {
@@ -90,10 +88,7 @@ class SellerUseCase {
         ...sellerData,
         profile: imageUrl ? imageUrl : sellerData.profile
       };
-      console.log(
-        updatedSellerData,
-        "updatedSellerData============================="
-      );
+
       // Update seller information in the repository
       const updateResponse = await this._SellerRepository.updateSeller(
         sellerData._id,
@@ -117,40 +112,51 @@ class SellerUseCase {
 
   async createProduct(
     productData: Product,
-    images: string[]
+    images: Buffer[]
   ): Promise<{ status: number; message: string; productData?: Product }> {
     try {
-      // console.log(productData, "this is the product Dataaaaaaaaaaaa");
 
       if (!Array.isArray(images) || images.length === 0) {
         throw new Error("No images provided");
       }
 
-      // Upload each image (base64 string) to Cloudinary
-      const uploadPromises = images.map((imageBase64) =>
-        cloudinary.uploader.upload(imageBase64, {
-          folder: "auction_gems/product_images"
-        })
+      const uploadPromise = images.map((imageBuffer) =>
+        this._cloudinaryHelper.uploadBuffer(
+          imageBuffer,
+          "auction_gems/product_images"
+        )
       );
-      // cloudinary image adding area
-      const uploadResults = await Promise.all(uploadPromises);
-      const imageUrls = uploadResults.map(
-        (result: { secure_url: string }) => result.secure_url
-      );
-
-      const updatedProductData = {
-        ...productData,
-        images: imageUrls
-      };
-
+      const imageUrl = await Promise.all(uploadPromise);
+      const updatedProductData = { ...productData, images: imageUrl };
       const product = await this._ProductRepository.insertOne(
         updatedProductData as any
       );
 
+      // Upload each image (base64 string) to Cloudinary
+      // const uploadPromises = images.map((imageBase64) =>
+      //   cloudinary.uploader.upload(imageBase64, {
+      //     folder: "auction_gems/product_images"
+      //   })
+      // );
+      // // cloudinary image adding area
+      // const uploadResults = await Promise.all(uploadPromises);
+      // const imageUrls = uploadResults.map(
+      //   (result: { secure_url: string }) => result.secure_url
+      // );
+
+      // const updatedProductData = {
+      //   ...productData,
+      //   images: imageUrls
+      // };
+
+      // const product = await this._ProductRepository.insertOne(
+      //   updatedProductData as any
+      // );
+
       return {
         status: 201,
-        message: "Product created successfully",
-        productData: product
+        message: "Product created successfully"
+        // productData: product
       };
     } catch (error) {
       console.error("Error creating product:", error);
@@ -163,12 +169,27 @@ class SellerUseCase {
   ): Promise<{ status: number; message: string; products?: Product[] }> {
     try {
       const products = await this._SellerRepository.getAllProducts(sellerId);
-      const categoryIds = products.map((products) => products.category);
-
+      console.log(products,'this is the porductsssssssss')
+      if (products.length > 0) {
+        // Map through products to format response if needed
+        const productsWithCategory = products.map((product) => {
+          const plainProduct = product.toObject();
+          // Include the category directly within the product
+          plainProduct.category = plainProduct.categoryId || { id: null, name: "Unknown Category" }; // Handle missing categories
+          delete plainProduct.categoryId; // Remove categoryId if not needed
+          return plainProduct;
+        });
+  
+        return {
+          status: 200,
+          message: "Products fetched successfully",
+          products: productsWithCategory
+        };
+      }
+  
       return {
-        status: 200,
-        message: "Products fetched successfully",
-        products
+        status: 404,
+        message: "No products found for this seller"
       };
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -178,6 +199,7 @@ class SellerUseCase {
       };
     }
   }
+  
 
   async deleteProduct(productId: string): Promise<SellerResponse> {
     try {
@@ -217,13 +239,13 @@ class SellerUseCase {
     }
   }
 
-  async getAllProducts(): Promise<{
+  async getAllProducts(page: number, limit: number): Promise<{
     status: number;
     message: string;
     products?: Product[];
   }> {
     try {
-      const products = await this._SellerRepository.getAll();
+      const products = await this._SellerRepository.getAll(page, limit);
       return {
         status: 200,
         message: "All products fetched successfully",
@@ -237,13 +259,13 @@ class SellerUseCase {
       };
     }
   }
-
+  
   async fetchSeller(
     sellerId: any
   ): Promise<{ status: number; message: string; seller?: Seller | null }> {
     try {
-      console.log('suiiiii');
-      
+      console.log("suiiiii");
+
       const seller = await this._SellerRepository.findById(sellerId);
       if (!seller) {
         return {
@@ -269,22 +291,26 @@ class SellerUseCase {
   async getAllOrders(sellerId: string): Promise<any> {
     try {
       const orders = await this._SellerRepository.getAllOrders(sellerId);
-      
-      const ordersWithDetails = await Promise.all(orders.map(async (order: { productId: string; buyerId: string; }) => {
-        const product = await this._ProductRepository.getProductById(order.productId); 
-        const buyer = await this._UserRepository.findById(order.buyerId); 
-  
-        return {
-          ...order,
-          productName: product?.itemTitle,
-          buyerName: buyer ? buyer.name : 'Unknown', 
-        };
-      }));
-  
+
+      // const ordersWithDetails = await Promise.all(
+      //   orders.map(async (order: { productId: string; buyerId: string }) => {
+      //     const product = await this._ProductRepository.getProductById(
+      //       order.productId
+      //     );
+      //     const buyer = await this._UserRepository.findById(order.buyerId);
+
+      //     return {
+      //       ...order,
+      //       productName: product?.itemTitle,
+      //       buyerName: buyer ? buyer.name : "Unknown"
+      //     };
+      //   })
+      // );
+
       return {
         status: 200,
         message: "Orders fetched successfully",
-        orders: ordersWithDetails
+        orders: orders
       };
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -294,12 +320,11 @@ class SellerUseCase {
       };
     }
   }
-  
 
   async fetchAllSeller(): Promise<Seller[]> {
-    console.log('fetch all seller ')
+    console.log("fetch all seller ");
     const sellerDatas = await this._SellerRepository.getAllSeller();
-    return sellerDatas
+    return sellerDatas;
   }
 
   async updateOrderStatus(orderId: string, newStatus: string): Promise<any> {
@@ -309,6 +334,7 @@ class SellerUseCase {
         newStatus
       );
       console.log(updatedOrder, "updatedOrder");
+
       return {
         status: 200,
         message: "Order status updated successfully",

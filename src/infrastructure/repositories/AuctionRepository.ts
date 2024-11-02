@@ -3,6 +3,7 @@ import bidModel from '../../entities_models/bidModel';
 import mongoose from "mongoose";
 import ProductModel from "../../entities_models/productModal";
 import { Product } from "../../interfaces/model/seller";
+
 class AuctionRepository implements IAuctionRepository {
     async placeBid(bidderId: string, auctionId: string, sellerId: string, currentBid: Number,bidAmount:Number): Promise<any | null> {
         try {
@@ -22,6 +23,17 @@ class AuctionRepository implements IAuctionRepository {
         }
     }
 
+
+    async updateAuctionBid(auctionId: string, newBid: Number): Promise<void> {
+        const auction = await ProductModel.findById(auctionId);
+        if (!auction) {
+          throw new Error("Auction not found");
+        }
+      
+        auction.currentBid = newBid;
+        await auction.save();
+      }
+      
     async getBiddings(auctionId:string):Promise<any[]>{
         try {
             console.log(`Fetching bids for auction ID: ${auctionId}`); 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { Request, Response } from 'express-serve-static-core';
 import {adminController} from '../../providers/controllers'; 
-import upload from '../../middilewares/multer';
+import {uploadFields} from '../../middilewares/multer';
 
 const router = express.Router();
 
@@ -11,11 +11,20 @@ const handleAddCategory = (req:Request,res:Response)=>  adminController.addCateg
 const handleGetAllCategory = (req:Request,res:Response)=>adminController.getAllCategory(req,res);
 const handleUpdateCategory = (req: Request, res: Response) =>  adminController.updateCategory(req, res); 
 const handleDeleteCategory = (req:Request,res:Response)=>adminController.deleteCategory(req,res);   
+const handleSendNotification = (req:Request,res:Response)=>adminController.sendWatsappNotification(req,res)
+const handleReportAdd = (req:Request,res:Response)=>adminController.addReport(req,res);
+const handleGetReports = (req:Request,res:Response)=>adminController.getReports(req,res);
+const handleUpdateStatus = (req:Request,res:Response)=>adminController.updateReportStatus(req,res)
+const handleAuctionNotification = (req:Request,res:Response)=> adminController.auctionNotification(req,res)
 router.get('/get-user', handleGetAllUser);
 router.post('/user-status',handleUserBlockAndUnblock)
-router.post('/categories', upload.fields([{ name: 'image' }, { name: 'icon' }]),handleAddCategory);
+router.post('/categories', uploadFields, handleAddCategory);
 router.get('/categories',handleGetAllCategory)
-router.put('/categories/:id',upload.fields([{name:'image'},{name:'icon'}]), handleUpdateCategory);
+router.put('/categories/:id', uploadFields, handleUpdateCategory);
 router.delete('/categories/:id',handleDeleteCategory);
-
+router.post('/send-notification',handleSendNotification)
+router.post('/report',handleReportAdd)
+router.get('/getreports',handleGetReports)
+router.patch('/status/:id', handleUpdateStatus);
+router.post('/auction-notification',handleAuctionNotification)
 export default router;

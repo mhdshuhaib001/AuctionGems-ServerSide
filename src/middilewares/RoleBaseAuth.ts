@@ -5,7 +5,7 @@
         return (req: Request, res: Response, next: NextFunction) => {
           try {
             // Log the incoming headers for debugging
-            console.log('Request Headers:', req.headers);
+            // console.log('Request Headers:', req.headers);
       
             let authHeader: string | undefined;
             let token: string | undefined;
@@ -29,7 +29,7 @@
             token = authHeader.split(' ')[1];
       
             // Log the extracted token
-            console.log('Extracted Token:', token);
+            // console.log('Extracted Token:', token);
       
             if (!token) {
               console.log('No token found after splitting the authorization header');
@@ -41,7 +41,7 @@
             const decoded = jwt.verifyToken(token) as JwtPayload;
       
             // Log the decoded token information
-            console.log('Decoded Token Payload:', decoded);
+            // console.log('Decoded Token Payload:', decoded);
       
             if (!decoded || typeof decoded !== 'object' || !decoded.role) {
               console.log('Invalid token or role information missing');

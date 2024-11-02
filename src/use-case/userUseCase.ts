@@ -4,7 +4,7 @@ import UserOTPRepository from "../infrastructure/repositories/UserOtpRepositorie
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import { Login, User } from "../interfaces/model/user";
 import UserOutPut from "../interfaces/model/userOutPut";
-import { AddressData} from '../interfaces/model/address'
+import { AddressData } from "../interfaces/model/address";
 import NodeMailer from "../providers/nodeMailer";
 import GenerateOTP from "../providers/generateOTP";
 import JWT from "../providers/jwt";
@@ -113,21 +113,26 @@ class UserUseCase implements IUserUseCase {
         if (isPasswordValid) {
           const role = user.role || "user";
           const token = this._jwt.createAccessToken(userData.email, role);
-          const refreshToken = this._jwt.createRefreshToken(userData.email, role);
+          const refreshToken = this._jwt.createRefreshToken(
+            userData.email,
+            role
+          );
           let sellerToken: string | undefined;
-          let sellerId: string | undefined; 
+          let sellerId: string | undefined;
           if (role === "seller") {
             const sellerExists = await this._sellerRepository.existsByUserId(
               user._id as string
             );
-            console.log(`Seller exists: ${sellerExists}`); 
+            console.log(`Seller exists: ${sellerExists}`);
 
             if (sellerExists) {
-              const seller = await this._sellerRepository.existsByUserId(user._id as string);
-              sellerId = seller?._id; 
-              console.log(sellerId,'this is placed on the loginj area ')
+              const seller = await this._sellerRepository.existsByUserId(
+                user._id as string
+              );
+              sellerId = seller?._id;
+              console.log(sellerId, "this is placed on the loginj area ");
               sellerToken = this._jwt.createAccessToken(userData.email, role);
-             
+
               console.log(`Generated sellerToken: ${sellerToken}`);
             }
           }
@@ -153,28 +158,23 @@ class UserUseCase implements IUserUseCase {
     }
   }
 
-
   async refreshToken(refreshToken: string): Promise<{ status: number; accessToken?: string; message?: string }> {
-try {
-  const decoded = this._jwt.verifyToken(refreshToken);
-  if(!decoded || typeof decoded === 'string'){
-    return {status:403,message:'Invalid refresh token'}
+    try {
+      const decoded = this._jwt.verifyToken(refreshToken);
+      if (!decoded || typeof decoded === 'string') {
+        return { status: 403, message: 'Invalid refresh token' };
+      }
+      const user = await this._userRepository.findByEmail(decoded.email);
+      if (!user) {
+        return { status: 404, message: 'User not found' };
+      }
+      const newAccessToken = this._jwt.createAccessToken(decoded.email, user.role || 'user');
+      return { status: 200, accessToken: newAccessToken };
+    } catch (error) {
+      return { status: 500, message: "Internal server error" };
+    }
   }
-  const user = await this._userRepository.findByEmail(decoded.id);
-  if (!user) {
-    return { status: 404, message: "User not found" };
-  }
-  const newAccessToken = this._jwt.createAccessToken(decoded.email, user.role || 'user'); 
-  return {
-    status: 200,
-    accessToken: newAccessToken,
-  };
-} catch (error) {
-  console.error("Error in refreshToken:", error);
-  return { status: 500, message: "Internal server error" };
-}
-}
-
+  
   async googleRegister(name: string, email: string, password: string) {
     const user = await this._userRepository.findByEmail(email);
     if (user) {
@@ -210,14 +210,13 @@ try {
   async getCategory(): Promise<any | null> {
     try {
       const categories = await this._adminRepository.getAllCategorys();
-      console.log(categories,'categories')
+      console.log(categories, "categories");
       return categories;
     } catch (error) {
       console.error("Error fetching categories:", error);
       return null;
     }
   }
-
 
   async forgetPasswordReq(email: string) {
     try {
@@ -280,114 +279,100 @@ try {
     }
   }
 
-
-
-  async addAddress(addressData:AddressData):Promise<boolean>{
+  async addAddress(addressData: AddressData): Promise<boolean> {
     try {
-      const result = await this._userRepository.saveAddress(addressData)
-      return result
+      const result = await this._userRepository.saveAddress(addressData);
+      return result;
     } catch (error) {
-      console.error("Error in addAddress :",error)
-      return false
-
+      console.error("Error in addAddress :", error);
+      return false;
     }
   }
 
-  async getAddress(userId:string):Promise<AddressData[]>{
+  async getAddress(userId: string): Promise<AddressData[]> {
     try {
-
-      console.log(userId,'userId in usecase')
-      const result = await this._userRepository.getAddress(userId)
-      return result
+      console.log(userId, "userId in usecase");
+      const result = await this._userRepository.getAddress(userId);
+      return result;
     } catch (error) {
-      console.error("Error in getAddress :",error)
-      return []
+      console.error("Error in getAddress :", error);
+      return [];
     }
   }
 
-  async getAllAddress():Promise<AddressData[]>{
+  async getAllAddress(): Promise<AddressData[]> {
     try {
-      const result = await this._userRepository.getAllAddress()
-      return result
+      const result = await this._userRepository.getAllAddress();
+      return result;
     } catch (error) {
-      console.error("Error in getAllAddress :",error)
-      return []
+      console.error("Error in getAllAddress :", error);
+      return [];
     }
   }
-  async deleteAddress(addressId:string):Promise<boolean>{
+  async deleteAddress(addressId: string): Promise<boolean> {
     try {
-      const result = await this._userRepository.deleteAddress(addressId)
-      return result
+      const result = await this._userRepository.deleteAddress(addressId);
+      return result;
     } catch (error) {
-      console.error("Error in deleteAddress :",error)
-      return false
-    }
-  }
-
-  async updateAddress(addressId:string,addressData:Partial<AddressData>):Promise<AddressData | null>{
-    try {
-      const updatedAddress = await this._userRepository.updateAddress(addressId,addressData)
-      return updatedAddress
-    } catch (error) {
-      console.error('Error in updateAddress:',error)
-      return null
+      console.error("Error in deleteAddress :", error);
+      return false;
     }
   }
 
-  async updateUser(userId: string, userData: Partial<User>, profileImage?: Express.Multer.File): Promise<User | null> {
+  async updateAddress(
+    addressId: string,
+    addressData: Partial<AddressData>
+  ): Promise<AddressData | null> {
+    try {
+      const updatedAddress = await this._userRepository.updateAddress(
+        addressId,
+        addressData
+      );
+      return updatedAddress;
+    } catch (error) {
+      console.error("Error in updateAddress:", error);
+      return null;
+    }
+  }
+
+  async updateUser(
+    userId: string,
+    userData: Partial<User>,
+    profileImage?: Express.Multer.File
+  ): Promise<User | null> {
     try {
       if (profileImage) {
-        const imageUrl = await this._cloudinaryHelper.uploadBuffer(profileImage.buffer, 'profileImages'); 
-        userData.profileImage = imageUrl; 
-        console.log(imageUrl,'image url ')
+        const imageUrl = await this._cloudinaryHelper.uploadBuffer(
+          profileImage.buffer,
+          "profileImages"
+        );
+        userData.profileImage = imageUrl;
+        console.log(imageUrl, "image url ");
       }
 
-      const updatedUser = await this._userRepository.updateUser(userId, userData);
+      const updatedUser = await this._userRepository.updateUser(
+        userId,
+        userData
+      );
       return updatedUser;
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
       throw error;
     }
   }
-  
+
   async getUser(userId: string): Promise<User | null> {
     try {
       const user = await this._userRepository.findById(userId);
       return user;
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error("Error fetching user:", error);
       throw error;
     }
   }
 
-  async subscribeToAuction(userId: string, auctionId: string, fcmToken: string) {
-    const auctionItem = await this._sellerRepository.getProductById(auctionId);
-    console.log(auctionItem?.auctionStartDateTime, 'auctionItem');
-    const auctionStartTime = auctionItem?.auctionStartDateTime ?? '';
-    console.log(auctionStartTime, 'auctionStartTime');
-    
-    await this._userRepository.saveFCMToken(userId, auctionId, fcmToken, auctionStartTime);
-    
-    await this.sendNotification(fcmToken, 'The auction is starting soon! This is a test notification.');
-}
+ 
 
-
-async sendNotification(fcmToken:string,message:string){
-  const notificationMessage = {
-    notification: {
-        title: 'Auction Notification',
-        body: message,
-    },
-    token: fcmToken,
-};
-try {
-  const response = await messaging.send(notificationMessage);
-  console.log('Notification sent:', response);
-} catch (error) {
-  console.error('Error sending notification:', error);
-}
-
-}
 
 }
 

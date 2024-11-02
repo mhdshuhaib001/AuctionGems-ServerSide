@@ -3,7 +3,7 @@ import { DBconfig } from "./infrastructure/config/DBconfig";
 import dotenv from "dotenv";
 import { socketIoInit } from "./infrastructure/config/services/socket-io";
 import { initAuctionCronJob } from "./providers/corn";
-import { initSocket } from './infrastructure/config/services/auctionSocket';
+// import { initSocket } from './infrastructure/config/services/auctionSocket';
 
 dotenv.config();
 
@@ -17,12 +17,12 @@ const startServer = async () => {
 
     const { app, server } = createServer();
 
-    initSocket(server)
+    // initSocket(server)
     // Initialize Socket.io
     socketIoInit(server);
     // Initialize the auction cron job
 
-    initAuctionCronJob();
+    // initAuctionCronJob();
     server.listen(port, () => console.log(`Server running at ${url}`));
   } catch (error) {
     console.error("Error starting server:", error);

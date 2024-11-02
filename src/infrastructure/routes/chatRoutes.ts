@@ -11,4 +11,4 @@ const handleGetMessage = (req: Request, res: Response) => chatController.getMess
   chatRoute.post('/send-message',handleSendMessage);
 chatRoute.get('/get-message/:senderId/:receiverId',handleGetMessage);
 chatRoute.post('/chatbot',handleChatBotMessage)
-export default chatRoute;
+export default chatRoute;   

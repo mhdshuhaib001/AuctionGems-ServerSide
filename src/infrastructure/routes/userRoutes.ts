@@ -1,6 +1,6 @@
 import express,{Request,Response  } from "express";
 import { userController } from "../../providers/controllers";
-import upload from "../../middilewares/multer";
+import {uploadSingleImage} from "../../middilewares/multer";
 
 const route = express.Router()
 
@@ -14,15 +14,15 @@ const handleUpdateAddress = (req:Request,res:Response)=>userController.updateAdd
 const handleDeleteAddress = (req:Request,res:Response)=>userController.deleteAddress(req,res);
 const handleGetCategory = (req:Request,res:Response)=>userController.getCategory(req,res);
 const handleNotifyAuctionStart = (req:Request,res:Response)=>userController.notifyAuctionStart(req,res);
-const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
+// const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
 route.post("/address",handleAddAddress)
 route.get("/address",handleGetAllAddress)
 route.get("/address/:id",handleGetAddress)
-route.put("/user", upload.single('profileImage'), handleUpdateUser);
+route.put("/user", uploadSingleImage, handleUpdateUser);
 route.get("/user/:id", handleGetUser);
 route.put("/address/:id",handleUpdateAddress)
 route.delete("/address/:id",handleDeleteAddress)
 route.get('/categories',handleGetCategory)
-route.post('/subscribe-notification',handleAuctionNotification)
-route.post('/auctionNotification',handleAuctionNotification)
+// route.post('/subscribe-notification',handleAuctionNotification)
+// route.post('/auctionNotification',handleAuctionNotification)
 export default route    

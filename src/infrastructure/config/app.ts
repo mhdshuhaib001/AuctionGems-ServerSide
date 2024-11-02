@@ -12,11 +12,13 @@ import webhook from "./services/webhook";
 import http from 'http';  
 import chatRoute from "../routes/chatRoutes";
 import auctionRout from '../routes/auctionRoutes'
+import morgan from "morgan";
 
 export const createServer = () => {
   try {
     const app = express();
     dotenv.config();
+    app.use(morgan("dev"));
 
     // Parse JSON bodies
     app.use(express.json({ limit: '10mb' }));

@@ -17,11 +17,13 @@ class SellerController {
 
   async createProduct(req: Request, res: Response) {
     try {
-      console.log(req.body);
       const productData = req.body;
+      console.log(productData,'0000000000000000000000000000000000000000000000')
       const sellerId = req.body.sellerId;
-      console.log("Seller ID:", sellerId);
-      const images: string[] = req.body.images;
+      const imagesFile = req.files as Express.Multer.File[];
+
+      // Process images and convert to buffers if storing directly in DB
+      const images = imagesFile.map((file) => file.buffer);      
 
       const result = await this._sellerUseCase.createProduct(
         productData,
@@ -62,7 +64,6 @@ class SellerController {
   async fetchSellerProducts(req: Request, res: Response) {
     try {
       const sellerId = req.params.sellerId;
-      console.log(sellerId, "sellerId");
       const products = await this._sellerUseCase.fetchSellerProducts(sellerId);
       res.status(products.status).json(products);
     } catch (error) {
@@ -83,20 +84,27 @@ class SellerController {
     }
   }
 
+
   async getAllProducts(req: Request, res: Response) {
+    const { page = 1, limit = 10 } = req.query;
+console.log(req.query,'===========================================')
+    // Convert to integers
+    const pageNumber = parseInt(page as string, 10) || 1; 
+    const limitNumber = parseInt(limit as string, 10) || 10;
+
     try {
-      const products = await this._sellerUseCase.getAllProducts();
-      console.log(products,'haloooo')
-      res.status(products.status).json(products);
+        const products = await this._sellerUseCase.getAllProducts(pageNumber, limitNumber);
+        res.status(200).json(products);
     } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ message: "Error fetching products." });
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Error fetching products." });
     }
-  }
+}
+
+  
 
   async fetchSeller(req: Request, res: Response) {
     try {
-      console.log('halooooo my monee');
       
       const sellerId = req.params.sellerId;
       const response = await this._sellerUseCase.fetchSeller(sellerId);
@@ -113,6 +121,7 @@ class SellerController {
     try {
       const sellerId = req.params.sellerId;
       const response = await this._sellerUseCase.getAllOrders(sellerId);
+      
       return res.status(response.status).json(response);
     } catch (error) {
       console.error("Error fetching orders:", error);
