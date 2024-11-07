@@ -45,8 +45,9 @@ class UserController {
   async refreshToken(req: Request, res: Response) {
     try {
       const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) return res.status(403).json({ message: 'No refresh token provided' });
-  
+      if (!refreshToken)
+        return res.status(403).json({ message: "No refresh token provided" });
+
       const result = await this._userUseCase.refreshToken(refreshToken);
       if (result.accessToken) {
         res.status(200).json({ accessToken: result.accessToken });
@@ -54,10 +55,10 @@ class UserController {
         res.status(result.status).json({ message: result.message });
       }
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: "Internal server error" });
     }
   }
-  
+
   async googleRegister(req: Request, res: Response) {
     try {
       const gAuthId = req.body.idToken;
@@ -99,6 +100,7 @@ class UserController {
   }
   async forgetPassword(req: Request, res: Response) {
     try {
+      console.log(req.body,'===========================================')
       const { token, newPassword } = req.body;
       const result = await this._userUseCase.forgetPassword(token, newPassword);
     } catch (error) {
@@ -150,7 +152,6 @@ class UserController {
   async getAddress(req: Request, res: Response) {
     try {
       const userId = req.params.id;
-      console.log(userId, "userId");
       const result = await this._userUseCase.getAddress(userId as string);
       res.status(200).json(result);
     } catch (error) {
@@ -229,8 +230,20 @@ class UserController {
     }
   }
 
- 
-  
+  async changePassword(req: Request, res: Response) {
+    try {
+      console.log(req.body,'change password')
+      const { userId, newPassword,currentPassword } = req.body;
+      const result = await this._userUseCase.changePassword(userId, newPassword,currentPassword);
+
+      res.status(200).json({ result});
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res
+        .status(500)
+        .json({ message: "An error occurred in changePassword the user" });
+    }
+  }
 
   async notifyAuctionStart(req: Request, res: Response) {
     // try{

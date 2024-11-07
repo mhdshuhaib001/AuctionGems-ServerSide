@@ -5,7 +5,7 @@ import ChatRepository from "../../repositories/ChatRepository";
 import SellerRepository from "../../repositories/SellerRepository";
 
 let io: SocketIOServer | null = null;
-
+const onlineUsers = new Map<string, string>();
 const chatRepository = new ChatRepository();
 const sellerRepository = new SellerRepository();
 const chatUseCase = new ChatUseCase(chatRepository, sellerRepository);
@@ -26,6 +26,15 @@ export const socketIoInit = (HttpServer: HttpServer) => {
   });
 
   io.on("connection", (socket) => {
+
+    socket.on("user_connected", (userId: string) => {
+      console.log("User connected event received:", userId);
+      onlineUsers.set(userId, socket.id);
+      console.log("Current online users:", Array.from(onlineUsers.entries()));
+      io?.emit("user_online", userId);
+  });
+
+
     socket.on("send_message", async (message) => {
       try {
         await chatUseCase.sendMessage(
@@ -52,16 +61,36 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
 
     socket.on("place_bid", (bid) => { 
-      console.log("bid==========================", bid);
       io?.to(bid.auctionId).emit("new_bid", bid);
     });
 
-    socket.on("typing", (room) => socket.in(room).emit("typing"));
-    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.id}`);
+    socket.on('typing', ({ userId, room }) => {
+      socket.to(room).emit('typing', { userId, room });
     });
+  
+    socket.on('stop_typing', ({ userId, room }) => {
+      console.log('typing stopped')
+      socket.to(room).emit('stop_typing', { userId, room });
+    });
+
+       socket.on("disconnect", () => {
+            let disconnectedUserId: string | undefined;
+            
+            for (const [userId, socketId] of onlineUsers.entries()) {
+                if (socketId === socket.id) {
+                    disconnectedUserId = userId;
+                    break;
+                }
+            }
+
+            if (disconnectedUserId) {
+              console.log("User disconnected:", disconnectedUserId);
+              onlineUsers.delete(disconnectedUserId);
+              io?.emit("user_offline", disconnectedUserId);
+              console.log("Updated online users:", Array.from(onlineUsers.entries()));
+          }
+        });
+
   });
 
   return io;

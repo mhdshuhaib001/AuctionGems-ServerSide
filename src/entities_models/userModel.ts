@@ -34,6 +34,6 @@ const userSchema = new Schema<User>({
     enum: ['user', 'seller'],
     default: 'user',
   },
-});
+}, { timestamps: true });
 
 export const UserModel = model<User>("User", userSchema);

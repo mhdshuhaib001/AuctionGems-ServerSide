@@ -28,7 +28,7 @@ const sellerSchema = new Schema<Seller>({
     profile: {
       type: String,
     },
-  });
+  }, { timestamps: true });
   
   const SellerModel: Model<Seller> = model<Seller>('Seller', sellerSchema);
 

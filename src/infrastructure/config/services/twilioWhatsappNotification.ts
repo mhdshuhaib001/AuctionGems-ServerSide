@@ -4,23 +4,35 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
-export const whatsAppNotification = async (     
+export const whatsAppNotification = async (
   to: string,
-  message: string,
+  productName: string,
+  price: string,
+  productUrl: string,
   imageUrl: string
 ): Promise<void> => {
   try {
+    const message = `
+🛍️ Auction Reminder!
+The auction for "${productName}" is starting in 5 minutes!
+
+📅 Starting Price: ${price}
+🔗 Product Link: ${productUrl}
+
+Don't miss your chance to bid!
+`;
+
     const response = await client.messages.create({
-      from: "whatsapp:+14155238886",
-      to: `whatsapp:${to}`,
+      from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
+      to: `whatsapp:+${to}`,
       body: message,
       mediaUrl: [imageUrl]
     });
 
+    console.log(response, "this is the response I get just for check this one");
     console.log(`Message sent: ${response.sid}`);
   } catch (error) {
     console.error("Error sending message:", error);
     throw error;
   }
 };
-

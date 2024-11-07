@@ -13,6 +13,7 @@ import http from 'http';
 import chatRoute from "../routes/chatRoutes";
 import auctionRout from '../routes/auctionRoutes'
 import morgan from "morgan";
+import helmet from "helmet";
 
 export const createServer = () => {
   try {
@@ -30,6 +31,17 @@ export const createServer = () => {
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true
     }));
+
+    app.use(helmet());
+
+    app.use((req, res, next) => {
+      res.setHeader("Content-Security-Policy", 
+        "default-src 'self'; " +
+        "script-src 'self' https://js.stripe.com 'sha256-5+YTmTcBwCYdJ8Jetbr6kyjGp0Ry/H7ptpoun6CrSwQ='; " + 
+        "connect-src 'self' https://api.stripe.com; " +
+        "frame-src https://js.stripe.com;");
+      next();
+    });
 
     // Swagger Documentation
     app.use("/api-docs", swaggerDocs.serve, swaggerDocs.setup);

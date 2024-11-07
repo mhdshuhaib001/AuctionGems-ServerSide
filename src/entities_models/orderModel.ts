@@ -21,7 +21,7 @@ const OrderSchema: Schema<IOrder> = new Schema({
     trackingNumber: { type: String },
     paymentStatus: { type: String, required: true, enum: ['pending', 'completed', 'failed'], default: 'pending' },
     paymentId: { type: String},
-});
+}, { timestamps: true });
 
 // Create the model
 const OrderModel  = mongoose.model<IOrder>('Order', OrderSchema);

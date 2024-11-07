@@ -10,18 +10,17 @@ const userRepository = new UserRepository();
 const adminRepository = new AdminRepository()
 const mailer = new NodeMailer()
 const auctionUseCase = new AuctionUseCase(auctionRepository, userRepository,mailer,adminRepository);
-
 export const initAuctionCronJob = () => {
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('* * * * *', async () => {  
     console.log('Checking for ended auctions...');
     try {
       const auctions = await auctionUseCase.getAllActiveAuctions(); 
-
-      console.log(auctions,'================================================')
+      console.log(auctions, 'Active Auctions fetched');
+      
       for (const auction of auctions) {
-        console.log('haloooooooooooo................')
-        await auctionUseCase.endAuctionAndNotifyWinner(auction.id);
+        await auctionUseCase.endAuctionAndNotifyWinner(auction._id.toString());
       }
+
       console.log('Auction check completed.');
     } catch (error) {
       console.error('Error during auction check:', error);

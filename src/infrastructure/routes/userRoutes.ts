@@ -15,6 +15,7 @@ const handleDeleteAddress = (req:Request,res:Response)=>userController.deleteAdd
 const handleGetCategory = (req:Request,res:Response)=>userController.getCategory(req,res);
 const handleNotifyAuctionStart = (req:Request,res:Response)=>userController.notifyAuctionStart(req,res);
 // const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
+const handleChangePassword = (req:Request,res:Response) => userController.changePassword(req,res)
 route.post("/address",handleAddAddress)
 route.get("/address",handleGetAllAddress)
 route.get("/address/:id",handleGetAddress)
@@ -25,4 +26,5 @@ route.delete("/address/:id",handleDeleteAddress)
 route.get('/categories',handleGetCategory)
 // route.post('/subscribe-notification',handleAuctionNotification)
 // route.post('/auctionNotification',handleAuctionNotification)
+route.post('/change-password',handleChangePassword)
 export default route    

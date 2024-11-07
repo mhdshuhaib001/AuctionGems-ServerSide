@@ -33,11 +33,10 @@ router.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req
   if (event.type === 'checkout.session.completed') {
     const checkoutSession = event.data.object as Stripe.Checkout.Session;
     const orderId = checkoutSession.metadata?.orderId;
-    console.log(orderId,'orderId============================================');
     const orderRepository = new OrderRepository();
     try {
-      console.log('Checkout session completed:', checkoutSession.id);
       const order = await orderRepository.findOrderId(orderId as string);
+      console.log(order,'=========================================================================')
       if (order) {
         order.paymentStatus = 'paid';
         await orderRepository.updateOrder(order);

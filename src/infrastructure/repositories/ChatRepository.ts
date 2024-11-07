@@ -5,9 +5,6 @@ import { ChatModel } from "../../entities_models/chatModale";
 import { UserModel } from "../../entities_models/userModel";
 import SellerModel from "../../entities_models/sellerModel";
 class ChatRepository implements IChatRepository {
-
-
-
   async createRoom(
     userId: string,
     receiverId: string,
@@ -20,35 +17,34 @@ class ChatRepository implements IChatRepository {
         throw new Error(`User not found with userId: ${userId}`);
       }
 
-      console.log(
-        `Fetching receiver data for receiverId: ${receiverId} and isReceiverSeller: ${isReceiverSeller}`
-      );
+    
       const receiverData = isReceiverSeller
         ? await SellerModel.findById(receiverId)
         : await UserModel.findById(receiverId);
-console.log(receiverData,'this is for the resiver id ')
       if (!receiverData) {
         throw new Error(
           `Receiver not found with receiverId: ${receiverId} and isReceiverSeller: ${isReceiverSeller}`
         );
       }
 
-      let chat = await ChatModel.findOne({userId:userId,receiverId:receiverData._id})
-
-      if(!chat){
-        const chatName =
-        isReceiverSeller && "companyName" in receiverData
-          ? `Chat between ${userData.name} and Seller ${receiverData.companyName}`
-          : `Chat between ${userData.name} and `;
-
-     chat = await ChatModel.create({
-        chatName: chatName || "Unnamed Chat",
-        userId: userData._id.toString(),
-        receiverId: receiverData._id.toString(),
-        latestMessage: []
+      let chat = await ChatModel.findOne({
+        userId: userId,
+        receiverId: receiverData._id
       });
+
+      if (!chat) {
+        const chatName =
+          isReceiverSeller && "companyName" in receiverData
+            ? `Chat between ${userData.name} and Seller ${receiverData.companyName}`
+            : `Chat between ${userData.name} and `;
+
+        chat = await ChatModel.create({
+          chatName: chatName || "Unnamed Chat",
+          userId: userData._id.toString(),
+          receiverId: receiverData._id.toString(),
+          latestMessage: []
+        });
       }
-   
 
       return {
         chatId: chat._id.toString(),

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { socketIoInit } from "./infrastructure/config/services/socket-io";
 import { initAuctionCronJob } from "./providers/corn";
 // import { initSocket } from './infrastructure/config/services/auctionSocket';
+import { startAuctionCronJob } from "./providers/AuctionNotificationScheduler";
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const startServer = async () => {
     // Initialize Socket.io
     socketIoInit(server);
     // Initialize the auction cron job
-
+    // startAuctionCronJob()
     // initAuctionCronJob();
     server.listen(port, () => console.log(`Server running at ${url}`));
   } catch (error) {

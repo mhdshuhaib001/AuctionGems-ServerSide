@@ -9,6 +9,6 @@ const ReportSchema: Schema<IReport> = new Schema({
     status: { type: String, enum: ['Pending', 'Resolved', 'Dismissed'], default: 'Pending' },
     reportedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
     sellerId: { type: Schema.Types.ObjectId, ref: 'Seller', required: true }, 
-});
+}, { timestamps: true });
 
 export default mongoose.model<IReport>('Report', ReportSchema);

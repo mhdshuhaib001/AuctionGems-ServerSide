@@ -30,20 +30,22 @@ class AuctionUseCase implements IAuctionUseCase {
 
   async placeBid(bid: BidTypes): Promise<void> {
     try {
-      const { auctionId, bidderId, currentBid, bidAmount, sellerId, time } = bid;
-  
+      const { auctionId, bidderId, currentBid, bidAmount, sellerId, time } =
+        bid;
+      console.log(bid);
       // Fetch the auction details to get the current highest bid
       const auction = await this._auctionRepository.getAuctionItem(auctionId);
-      
+
       if (!auction) {
         throw new Error("Auction not found");
       }
-  
+
       // Check if the new bid is greater than the current highest bid
+      console.log(bidAmount, auction.currentBid, "befor check the bid amount ");
       if (bidAmount <= auction.currentBid) {
         throw new Error("Bid amount must be higher than the current bid");
       }
-  
+
       // Call the repository method to place the bid
       const result = await this._auctionRepository.placeBid(
         bidderId,
@@ -52,20 +54,18 @@ class AuctionUseCase implements IAuctionUseCase {
         bidAmount,
         currentBid
       );
-  
+
       if (!result) {
         throw new Error("Failed to place bid in the database");
       }
-  
+
       // Update the auction with the new highest bid
       await this._auctionRepository.updateAuctionBid(auctionId, bidAmount);
-  
     } catch (error) {
       console.error("Error placing bid:", error);
       throw error;
     }
   }
-  
 
   async fetchBidders(auctionId: string): Promise<any[]> {
     try {
@@ -111,19 +111,19 @@ class AuctionUseCase implements IAuctionUseCase {
   //     if (!auctionItem) {
   //       throw new Error("Auction not found");
   //     }
-  
+
   //     const currentTime = new Date();
   //     if (currentTime < auctionItem.auctionEndDateTime) {
   //       console.log("Auction is still running...");
   //       return;
   //     }
-  
+
   //     const bids = await this._auctionRepository.getBiddings(auctionId);
   //     if (!bids || bids.length === 0) {
   //       console.log("No bids placed for this auction.");
   //       return;
   //     }
-  
+
   //     const sortedBids = bids.sort((a, b) => b.currentBid - a.currentBid || new Date(b.time).getTime() - new Date(a.time).getTime());
   //     const highestBid = sortedBids[0];
   //     const winner = await this._userRepository.findById(highestBid.buyerID.toString());
@@ -138,20 +138,20 @@ class AuctionUseCase implements IAuctionUseCase {
   //       console.log("No notification subscription found for winner.");
   //       return;
   //     }
-  
+
   //     const { fcmToken, whatsappNumber } = subscription;
   //     const productName = auctionItem.itemTitle;
   //     const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
   //     const message = `Congratulations! You won the auction for "${productName}" with a bid of ${highestBid.currentBid}.`;
-  
+
   //     // if (fcmToken) await sendAuctionAlert(fcmToken, message, auctionItem.images[0], paymentLink);
   //     // if (whatsappNumber) await whatsAppNotification(whatsappNumber, message, auctionItem.images[0]);
-  
+
   //     const emailSent = await this._mailer.sendWinnerMail(winner.email, productName, highestBid.currentBid, paymentLink, auctionItem.images[0]);
   //     if (emailSent) console.log("Winner email sent successfully.");
-  
+
   //     await ProductModel.findByIdAndUpdate(auctionId, { sold: true, finalBidAmount: highestBid.currentBid });
-  
+
   //     const io = getSocketInstance();
   //     if (winner?._id) io.to(auctionId).emit("auctionEnded", { winner: winner._id.toString(), amount: highestBid.currentBid });
   //   } catch (error) {
@@ -159,36 +159,271 @@ class AuctionUseCase implements IAuctionUseCase {
   //     throw error;
   //   }
   // }
-  
-  async endAuctionAndNotifyWinner(auctionId: string): Promise<{ winnerId: string; paymentLink: string; productName: string; image: string; currentBid: number }> {
+
+  // async endAuctionAndNotifyWinner(auctionId: string): Promise<{ winnerId: string; paymentLink: string; productName: string; image: string; currentBid: number }> {
+  //   try {
+  //     console.log(`Ending auction for auctionId: ${auctionId}`);
+
+  //     // Fetch the auction item
+  //     const auctionItem = await this._auctionRepository.getAuctionItem(auctionId);
+  //     if (!auctionItem) {
+  //       console.error("Auction not found");
+  //       throw new Error("Auction not found");
+  //     }
+  //     console.log(`Auction item found: ${auctionItem.itemTitle}`);
+
+  //     // Check if the auction has ended
+  //     const currentTime = new Date();
+  //     if (currentTime < auctionItem.auctionEndDateTime) {
+  //       console.log("Auction is still running...");
+  //       throw new Error("Auction is still running");
+  //     }
+  //     console.log("Auction has ended, proceeding to determine the winner...");
+
+  //     // Fetch the bids placed on the auction item
+  //     const bids = await this._auctionRepository.getBiddings(auctionId);
+  //     console.log(`Bids fetched: ${bids.length}`);
+  //     if (!bids || bids.length === 0) {
+  //       console.log("No bids placed for this auction.");
+  //       // Optionally, you can mark the auction as unsold
+  //       await ProductModel.findByIdAndUpdate(auctionId, { sold: false });
+  //       console.log(`Auction marked as unsold for auctionId: ${auctionId}`);
+  //       // Return a default or placeholder value to match the expected return type
+  //       return {
+  //         winnerId: "",
+  //         paymentLink: "",
+  //         productName: "",
+  //         image: "",
+  //         currentBid: 0
+  //       };
+  //     }
+
+  //     // Sort bids to find the highest one
+  //     const sortedBids = bids.sort((a, b) => {
+  //       return b.currentBid - a.currentBid || new Date(b.time).getTime() - new Date(a.time).getTime();
+  //     });
+  //     const highestBid = sortedBids[0];
+  //     console.log(`Highest bid found: ${highestBid.currentBid} by user: ${highestBid.buyerID}`);
+
+  //     // Find the winner based on the highest bid
+  //     const winner = await this._userRepository.findById(highestBid.buyerID.toString());
+  //     if (!winner) {
+  //       console.error("Winner not found");
+  //       throw new Error("Winner not found");
+  //     }
+
+  //     // Ensure the winner has a valid ID
+  //     if (!winner._id) {
+  //       console.error("Winner ID not found");
+  //       throw new Error("Winner ID not found");
+  //     }
+  //     console.log(`Winner found: ${winner.email}`);
+
+  //     // // Fetch notification subscription for the winner
+  //     // const subscription = await this._adminRepository.getNotificationSubscription(auctionId, winner._id.toString());
+  //     // if (!subscription) {
+  //     //   console.log("No notification subscription found for winner.");
+  //     //   throw new Error("No notification subscription found for winner."); // or handle it as needed
+  //     // }
+
+  //     // const { fcmToken, whatsappNumber } = subscription;
+  //     const productName = auctionItem.itemTitle;
+  //     const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
+  //     const message = `Congratulations! You won the auction for "${productName}" with a bid of ${highestBid.currentBid}.`;
+
+  //     // Send an email to the winner
+  //     const emailSent = await this._mailer.sendWinnerMail(winner.email, productName, highestBid.currentBid, paymentLink, auctionItem.images[0]);
+  //     if (emailSent) {
+  //       console.log("Winner email sent successfully.");
+  //     } else {
+  //       console.error("Failed to send winner email.");
+  //     }
+
+  //     // Mark the product as sold and update the final bid amount
+  //     await ProductModel.findByIdAndUpdate(auctionId, { sold: true, finalBidAmount: highestBid.currentBid });
+  //     console.log(`Product marked as sold for auctionId: ${auctionId}, final bid amount: ${highestBid.currentBid}`);
+
+  //     const io = getSocketInstance();
+  //     io.to(auctionId).emit('auction_winner', {
+  //       auctionId,
+  //       winnerId: winner._id.toString(),
+  //       winningBid: highestBid.currentBid ,
+  //       productTitle: auctionItem.itemTitle,
+  //       productImage: auctionItem.images[0],
+  //       checkoutLink: `${process.env.FRONTEND_URL}/checkout/${auctionId}`
+  //     });
+
+  //     // Return winner details for frontend
+  //     return {
+  //       winnerId: winner._id.toString(),
+  //       paymentLink,
+  //       productName,
+  //       image: auctionItem.images[0],
+  //       currentBid: highestBid.currentBid
+  //     };
+
+  //   } catch (error) {
+  //     console.error("Error ending auction or notifying winner:", error);
+  //     throw error;
+  //   }
+  // }
+
+  // async endAuctionAndNotifyWinner(
+  //   auctionId: string
+  // ): Promise<{
+  //   winnerId: string;
+  //   paymentLink: string;
+  //   productName: string;
+  //   image: string;
+  //   currentBid: number;
+  // }> {
+  //   try {
+  //     console.log(`Ending auction for auctionId: ${auctionId}`);
+
+  //     const auctionItem =
+  //       await this._auctionRepository.getAuctionItem(auctionId);
+  //     if (!auctionItem) {
+  //       console.error("Auction not found");
+  //       throw new Error("Auction not found");
+  //     }
+  //     console.log(`Auction item found: ${auctionItem.itemTitle}`);
+
+  //     const currentTime = new Date();
+  //     if (currentTime < auctionItem.auctionEndDateTime) {
+  //       console.log("Auction is still running...");
+  //       throw new Error("Auction is still running");
+  //     }
+  //     console.log("Auction has ended, determining the winner...");
+
+  //     const bids = await this._auctionRepository.getBiddings(auctionId);
+  //     console.log(`Bids fetched: ${bids.length}`);
+  //     if (!bids || bids.length === 0) {
+  //       console.log("No bids placed for this auction.");
+  //       await ProductModel.findByIdAndUpdate(auctionId, {
+  //         sold: false,
+  //         auctionStatus: "unsold"
+  //       });
+  //       return {
+  //         winnerId: "",
+  //         paymentLink: "",
+  //         productName: "",
+  //         image: "",
+  //         currentBid: 0
+  //       };
+  //     }
+
+  //     const sortedBids = bids.sort(
+  //       (a, b) =>
+  //         b.currentBid - a.currentBid ||
+  //         new Date(b.time).getTime() - new Date(a.time).getTime()
+  //     );
+  //     const highestBid = sortedBids[0];
+  //     console.log(
+  //       `Highest bid: ${highestBid.currentBid} by user: ${highestBid.buyerID}`
+  //     );
+
+  //     const winner = await this._userRepository.findById(
+  //       highestBid.buyerID.toString()
+  //     );
+  //     if (!winner || !winner._id) {
+  //       console.error("Winner not found or missing ID");
+  //       throw new Error("Winner not found or missing ID");
+  //     }
+  //     console.log(`Winner found: ${winner.email}`);
+
+  //     const productName = auctionItem.itemTitle;
+  //     const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
+  //     const emailSent = await this._mailer.sendWinnerMail(
+  //       winner.email,
+  //       productName,
+  //       highestBid.currentBid,
+  //       paymentLink,
+  //       auctionItem.images[0]
+  //     );
+  //     if (emailSent) {
+  //       console.log("Winner email sent successfully.");
+  //     } else {
+  //       console.error("Failed to send winner email.");
+  //     }
+
+  //     await ProductModel.findByIdAndUpdate(auctionId, {
+  //       sold: true,
+  //       finalBidAmount: highestBid.currentBid,
+  //       auctionStatus: "sold"
+  //     });
+
+  //     await this._auctionRepository.updateAuctionStatus(auctionId, "sold");
+
+
+  //     console.log(
+  //       `Product marked as sold for auctionId: ${auctionId}, final bid amount: ${highestBid.currentBid}`
+  //     );
+
+  //     const io = getSocketInstance();
+  //     io.to(auctionId).emit("auction_winner", {
+  //       auctionId,
+  //       winnerId: winner._id.toString(),
+  //       winningBid: highestBid.currentBid,
+  //       productTitle: auctionItem.itemTitle,
+  //       productImage: auctionItem.images[0],
+  //       checkoutLink: paymentLink
+  //     });
+
+  //     return {
+  //       winnerId: winner._id.toString(),
+  //       paymentLink,
+  //       productName,
+  //       image: auctionItem.images[0],
+  //       currentBid: highestBid.currentBid
+  //     };
+  //   } catch (error) {
+  //     console.error("Error ending auction or notifying winner:", error);
+  //     throw error;
+  //   }
+  // }
+
+
+
+
+
+  async endAuctionAndNotifyWinner(
+    auctionId: string
+  ): Promise<{
+    winnerId: string;
+    paymentLink: string;
+    productName: string;
+    image: string;
+    currentBid: number;
+  }> {
     try {
-      console.log(`Ending auction for auctionId: ${auctionId}`);
-      
-      // Fetch the auction item
-      const auctionItem = await this._auctionRepository.getAuctionItem(auctionId);
+
+      const auctionItem =
+        await this._auctionRepository.getAuctionItem(auctionId);
       if (!auctionItem) {
         console.error("Auction not found");
         throw new Error("Auction not found");
       }
-      console.log(`Auction item found: ${auctionItem.itemTitle}`);
-  
-      // Check if the auction has ended
+      console.log(`Auction item found: ${auctionItem.itemTitle}-------------------------------`);
       const currentTime = new Date();
-      if (currentTime < auctionItem.auctionEndDateTime) {
-        console.log("Auction is still running...");
-        throw new Error("Auction is still running"); 
+      const endTime = new Date(auctionItem.auctionEndDateTime);
+      
+      if (currentTime < endTime) {
+        console.log(`Auction ${auctionId} hasn't ended yet. Current: ${currentTime}, End: ${endTime}`);
+throw new Error('auction is not ended')
       }
-      console.log("Auction has ended, proceeding to determine the winner...");
-  
-      // Fetch the bids placed on the auction item
+      // const currentTime = new Date();
+      // if (currentTime < auctionItem.auctionEndDateTime) {
+      //   console.log("Auction is still running...");
+      //   throw new Error("Auction is still running");
+      // }
+
       const bids = await this._auctionRepository.getBiddings(auctionId);
-      console.log(`Bids fetched: ${bids.length}`);
       if (!bids || bids.length === 0) {
-        console.log("No bids placed for this auction.");
-        // Optionally, you can mark the auction as unsold
-        await ProductModel.findByIdAndUpdate(auctionId, { sold: false });
-        console.log(`Auction marked as unsold for auctionId: ${auctionId}`);
-        // Return a default or placeholder value to match the expected return type
+        // console.log("No bids placed for this auction.");
+        await ProductModel.findByIdAndUpdate(auctionId, {
+          sold: false,
+          auctionStatus: "unsold"
+        });
         return {
           winnerId: "",
           paymentLink: "",
@@ -197,91 +432,85 @@ class AuctionUseCase implements IAuctionUseCase {
           currentBid: 0
         };
       }
-  
-      // Sort bids to find the highest one
-      const sortedBids = bids.sort((a, b) => {
-        return b.currentBid - a.currentBid || new Date(b.time).getTime() - new Date(a.time).getTime();
-      });
+
+      const sortedBids = bids.sort(
+        (a, b) =>
+          b.currentBid - a.currentBid ||
+          new Date(b.time).getTime() - new Date(a.time).getTime()
+      );
       const highestBid = sortedBids[0];
-      console.log(`Highest bid found: ${highestBid.currentBid} by user: ${highestBid.buyerID}`);
-  
-      // Find the winner based on the highest bid
-      const winner = await this._userRepository.findById(highestBid.buyerID.toString());
-      if (!winner) {
-        console.error("Winner not found");
-        throw new Error("Winner not found");
-      }
-  
-      // Ensure the winner has a valid ID
-      if (!winner._id) {
-        console.error("Winner ID not found");
-        throw new Error("Winner ID not found");
+      // console.log(
+      //   `Highest bid: ${highestBid.currentBid} by user: ${highestBid.buyerID}`
+      // );
+
+      const winner = await this._userRepository.findById(
+        highestBid.buyerID.toString()
+      );
+      if (!winner || !winner._id) {
+        console.error("Winner not found or missing ID");
+        throw new Error("Winner not found or missing ID");
       }
       console.log(`Winner found: ${winner.email}`);
-  
-      // // Fetch notification subscription for the winner
-      // const subscription = await this._adminRepository.getNotificationSubscription(auctionId, winner._id.toString());
-      // if (!subscription) {
-      //   console.log("No notification subscription found for winner.");
-      //   throw new Error("No notification subscription found for winner."); // or handle it as needed
-      // }
-  
-      // const { fcmToken, whatsappNumber } = subscription;
+
       const productName = auctionItem.itemTitle;
       const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
-      const message = `Congratulations! You won the auction for "${productName}" with a bid of ${highestBid.currentBid}.`;
-  
-      // Send notifications (uncomment these lines if you have implemented these functions)
-      // if (fcmToken) await sendAuctionAlert(fcmToken, message, auctionItem.images[0], paymentLink);
-      // if (whatsappNumber) await whatsAppNotification(whatsappNumber, message, auctionItem.images[0]);
-  
-      // Send an email to the winner
-      const emailSent = await this._mailer.sendWinnerMail(winner.email, productName, highestBid.currentBid, paymentLink, auctionItem.images[0]);
+      const emailSent = await this._mailer.sendWinnerMail(
+        winner.email,
+        productName,
+        highestBid.currentBid,
+        paymentLink,
+        auctionItem.images[0]
+      );
       if (emailSent) {
         console.log("Winner email sent successfully.");
       } else {
         console.error("Failed to send winner email.");
       }
-  
-      // Mark the product as sold and update the final bid amount
-      await ProductModel.findByIdAndUpdate(auctionId, { sold: true, finalBidAmount: highestBid.currentBid });
-      console.log(`Product marked as sold for auctionId: ${auctionId}, final bid amount: ${highestBid.currentBid}`);
-  
-      const io = getSocketInstance();
-      io.to(auctionId).emit('auction_winner', {
-        auctionId,
-        winnerId: winner._id.toString(),
-        winningBid: highestBid.currentBid ,
-        productTitle: auctionItem.itemTitle,
-        productImage: auctionItem.images[0],
-        checkoutLink: `${process.env.FRONTEND_URL}/checkout/${auctionId}`
+
+      await ProductModel.findByIdAndUpdate(auctionId, {
+        sold: true,
+        finalBidAmount: highestBid.currentBid,
+        auctionStatus: "sold"
       });
 
-      // Return winner details for frontend
+      await this._auctionRepository.updateAuctionStatus(auctionId, "sold");
+
+
+      console.log(
+        `Product marked as sold for auctionId: ${auctionId}, final bid amount: ${highestBid.currentBid}`
+      );
+
+      const io = getSocketInstance();
+      io.to(auctionId).emit("auction_winner", {
+        auctionId,
+        winnerId: winner._id.toString(),
+        winningBid: highestBid.currentBid,
+        productTitle: auctionItem.itemTitle,
+        productImage: auctionItem.images[0],
+        checkoutLink: paymentLink
+      });
+
       return {
         winnerId: winner._id.toString(),
         paymentLink,
         productName,
-        image: auctionItem.images[0], 
+        image: auctionItem.images[0],
         currentBid: highestBid.currentBid
       };
-  
     } catch (error) {
       console.error("Error ending auction or notifying winner:", error);
       throw error;
     }
   }
-  
-  
-
 
   async getAllActiveAuctions(): Promise<any[]> {
     try {
-      // const currentTime = new Date();
-      const currentTime = new Date("2024-10-23T04:01:00Z");
-
+      const currentTime = new Date().toISOString();
+      const currentTimeInIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString();
+      console.log(`${currentTimeInIST}=========================================================================Checking auctions at: ${currentTime}`);
+      console.log(currentTime, "this is the current time ");
       const activeAuctions =
-        await this._auctionRepository.getActiveAuctions(currentTime);
+        await this._auctionRepository.getActiveAuctions(currentTimeInIST);
 
       return activeAuctions;
     } catch (error) {

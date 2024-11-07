@@ -6,6 +6,9 @@ import ProductRepository from "../infrastructure/repositories/ProductRepository"
 import { Product } from "../interfaces/model/seller";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
+import { IReview } from "../interfaces/model/IReview";
+import mongoose, { Types } from "mongoose";
+import { DashboardData } from "../interfaces/model/ISellerDashBord";
 class SellerUseCase {
   constructor(
     private readonly _SellerRepository: SellerRepository,
@@ -115,7 +118,6 @@ class SellerUseCase {
     images: Buffer[]
   ): Promise<{ status: number; message: string; productData?: Product }> {
     try {
-
       if (!Array.isArray(images) || images.length === 0) {
         throw new Error("No images provided");
       }
@@ -128,35 +130,26 @@ class SellerUseCase {
       );
       const imageUrl = await Promise.all(uploadPromise);
       const updatedProductData = { ...productData, images: imageUrl };
+
+      const currentTime = new Date();
+      if (productData.auctionFormat === "auction") {
+        if (new Date(productData.auctionStartDateTime) > currentTime) {
+          updatedProductData.auctionStatus = "upcoming";
+        } else {
+          updatedProductData.auctionStatus = "live";
+        }
+      } else {
+        updatedProductData.auctionStatus = "live";
+      }
+
       const product = await this._ProductRepository.insertOne(
         updatedProductData as any
       );
 
-      // Upload each image (base64 string) to Cloudinary
-      // const uploadPromises = images.map((imageBase64) =>
-      //   cloudinary.uploader.upload(imageBase64, {
-      //     folder: "auction_gems/product_images"
-      //   })
-      // );
-      // // cloudinary image adding area
-      // const uploadResults = await Promise.all(uploadPromises);
-      // const imageUrls = uploadResults.map(
-      //   (result: { secure_url: string }) => result.secure_url
-      // );
-
-      // const updatedProductData = {
-      //   ...productData,
-      //   images: imageUrls
-      // };
-
-      // const product = await this._ProductRepository.insertOne(
-      //   updatedProductData as any
-      // );
-
       return {
         status: 201,
-        message: "Product created successfully"
-        // productData: product
+        message: "Product created successfully",
+        productData: product
       };
     } catch (error) {
       console.error("Error creating product:", error);
@@ -169,24 +162,25 @@ class SellerUseCase {
   ): Promise<{ status: number; message: string; products?: Product[] }> {
     try {
       const products = await this._SellerRepository.getAllProducts(sellerId);
-      console.log(products,'this is the porductsssssssss')
+      console.log(products, "this is the porductsssssssss");
       if (products.length > 0) {
-        // Map through products to format response if needed
         const productsWithCategory = products.map((product) => {
           const plainProduct = product.toObject();
-          // Include the category directly within the product
-          plainProduct.category = plainProduct.categoryId || { id: null, name: "Unknown Category" }; // Handle missing categories
-          delete plainProduct.categoryId; // Remove categoryId if not needed
+          plainProduct.category = plainProduct.categoryId || {
+            id: null,
+            name: "Unknown Category"
+          };
+          delete plainProduct.categoryId;
           return plainProduct;
         });
-  
+
         return {
           status: 200,
           message: "Products fetched successfully",
           products: productsWithCategory
         };
       }
-  
+
       return {
         status: 404,
         message: "No products found for this seller"
@@ -199,7 +193,6 @@ class SellerUseCase {
       };
     }
   }
-  
 
   async deleteProduct(productId: string): Promise<SellerResponse> {
     try {
@@ -239,7 +232,10 @@ class SellerUseCase {
     }
   }
 
-  async getAllProducts(page: number, limit: number): Promise<{
+  async getAllProducts(
+    page: number,
+    limit: number
+  ): Promise<{
     status: number;
     message: string;
     products?: Product[];
@@ -259,7 +255,7 @@ class SellerUseCase {
       };
     }
   }
-  
+
   async fetchSeller(
     sellerId: any
   ): Promise<{ status: number; message: string; seller?: Seller | null }> {
@@ -347,6 +343,94 @@ class SellerUseCase {
         message: "Failed to update order status"
       };
     }
+  }
+
+  async createReview(
+    sellerId: string,
+    userId: string,
+    rating: number,
+    comment: string
+  ): Promise<any> {
+    const reviewData: Partial<IReview> = {
+      sellerId: new mongoose.Types.ObjectId(sellerId),
+      user: new mongoose.Types.ObjectId(userId),
+      rating,
+      comment
+    };
+
+    try {
+      const newReview = await this._SellerRepository.addReview(
+        reviewData as IReview
+      );
+      return {
+        status: 201,
+        message: "Review added successfully",
+        review: newReview
+      };
+    } catch (error) {
+      console.error("Failed to add review:", error);
+      return {
+        status: 500,
+        message: "Failed to add review"
+      };
+    }
+  }
+
+  // async getReviews(sellerId: string): Promise<IReview[]> {
+  //   try {
+  //     console.log(sellerId, "sellerId in the review area");
+  //     const response = await this._SellerRepository.getReview(sellerId);
+  //     return response;
+  //   } catch (error) {
+  //     console.error("Error fetching review data:", error);
+  //     throw new Error(`Failed to get review data: `);
+  //   }
+  // }
+
+  async fetchFullSellerProfile(sellerId: string): Promise<{
+    sellerProfile: Seller | null;
+    sellerProducts: Product[];
+    sellerReviews: IReview[];
+  }> {
+    try {
+      const sellerProfile = await this._SellerRepository.findSeller(sellerId);
+      if (!sellerProfile) {
+        throw new Error("Seller not found");
+      }
+
+      const sellerProducts =
+        await this._SellerRepository.getAllProducts(sellerId);
+
+      const sellerReviews =
+        await this._SellerRepository.findReviewsBySellerId(sellerId);
+
+      return { sellerProfile, sellerProducts, sellerReviews };
+    } catch (error) {
+      console.error("Error fetching full seller profile:", error);
+
+      throw new Error(`Failed to fetch seller profile: `);
+    }
+  }
+
+  async execute(sellerId: string, timeframe: string): Promise<DashboardData> {
+    const sellerObjectId = new Types.ObjectId(sellerId);
+
+    const [metrics, salesData, categoryDistribution] = await Promise.all([
+      this._SellerRepository.getSellerMetrics(sellerObjectId),
+      this._SellerRepository.getSalesData(sellerObjectId, timeframe),
+      this._SellerRepository.getCategoryDistribution(sellerObjectId)
+    ]);
+
+    return {
+      metrics,
+      salesData: {
+        daily: timeframe === 'daily' ? salesData : [],
+        weekly: timeframe === 'weekly' ? salesData : [],
+        monthly: timeframe === 'monthly' ? salesData : [],
+        yearly: timeframe === 'yearly' ? salesData : []
+      },
+      categoryDistribution
+    };
   }
 }
 

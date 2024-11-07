@@ -59,6 +59,7 @@ class UserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
     try {
       const user = await UserModel.findById(id).exec();
+      console.log(user,'=====================================')
       return user ? user.toObject() : null;
     } catch (error) {
       console.error("Error finding user by ID:", error);
@@ -221,6 +222,20 @@ class UserRepository implements IUserRepository {
       auctionId
     });
     return subscriptions.map((sub) => sub.fcmToken);
+  }
+
+  async changePassword(
+    userId: string,
+    hashedPassword: string
+  ): Promise<boolean> {
+    try {
+      await UserModel.updateOne({ _id: userId }, { password: hashedPassword });
+      return true;
+    } catch (error) {
+      console.error("Error in changePassword:", error);
+
+      return false;
+    }
   }
 }
 

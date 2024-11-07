@@ -12,7 +12,7 @@ const addressSchema = new Schema<IAddress>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
-});
+},{ timestamps: true });
 
 const AddressModal = model<IAddress>('Address', addressSchema);
 

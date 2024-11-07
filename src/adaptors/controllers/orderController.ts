@@ -77,6 +77,27 @@ class OrderController {
       res.status(500).json({ message: "Internal server error" });
     }
   }
+
+  async createSellerRevenue(req: Request, res: Response): Promise<void> {
+    try {
+      const revenueData = req.body;
+
+      const newRevenue = await this._orderUsecase.execute(revenueData);
+
+      res.status(201).json({
+        success: true,
+        message: 'Seller Revenue created successfully!',
+        data: newRevenue,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: 'Error creating seller revenue',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
 }
 
 export default OrderController;

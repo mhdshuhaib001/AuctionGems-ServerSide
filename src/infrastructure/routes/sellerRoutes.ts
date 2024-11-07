@@ -31,11 +31,21 @@ const handleUpdateOrderStatus = (req: Request, res: Response) =>
   sellerController.updateOrderStatus(req, res);
 const handleFetchAllSeller = (req: Request, res: Response) =>
   sellerController.fetchAllSellers(req, res);
+
+const handleCreateReview = (req: Request, res: Response) =>
+  sellerController.createReview(req, res);
+const handleGetReviews = (req: Request, res: Response) =>
+  sellerController.getReview(req, res);
+
+const handleFetchFullSellerProfile = (req: Request, res: Response) =>
+  sellerController.fetchFullSellerProfile(req, res);
+const handlegetDashboardData = (req: Request, res: Response) =>
+  sellerController.getDashboardData(req, res);
 router.post("/createseller", handleSellerCreater);
 router.put("/updateseller", uploadSingleImage, handleUpdateSeller);
 router.post(
   "/createproduct",
-  userAuth(["seller", "admin"]),
+
   uploadMultipleImages,
   handleCreateProduct
 );
@@ -55,6 +65,8 @@ router.get("/getproducts", handleFetchAllProduct);
 router.put("/order/:orderId", handleUpdateOrderStatus);
 router.get("/get-seller", handleFetchAllSeller);
 router.get("/:sellerId", handleSellerFetch);
-
-
+router.post("/review", handleCreateReview);
+router.get("/review/:sellerId", handleGetReviews);
+router.get("/:sellerId/full-profile", handleFetchFullSellerProfile);
+router.get("/:sellerId/dashboard", handlegetDashboardData);
 export default router;

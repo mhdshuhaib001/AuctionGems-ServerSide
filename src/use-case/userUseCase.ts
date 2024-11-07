@@ -158,23 +158,28 @@ class UserUseCase implements IUserUseCase {
     }
   }
 
-  async refreshToken(refreshToken: string): Promise<{ status: number; accessToken?: string; message?: string }> {
+  async refreshToken(
+    refreshToken: string
+  ): Promise<{ status: number; accessToken?: string; message?: string }> {
     try {
       const decoded = this._jwt.verifyToken(refreshToken);
-      if (!decoded || typeof decoded === 'string') {
-        return { status: 403, message: 'Invalid refresh token' };
+      if (!decoded || typeof decoded === "string") {
+        return { status: 403, message: "Invalid refresh token" };
       }
       const user = await this._userRepository.findByEmail(decoded.email);
       if (!user) {
-        return { status: 404, message: 'User not found' };
+        return { status: 404, message: "User not found" };
       }
-      const newAccessToken = this._jwt.createAccessToken(decoded.email, user.role || 'user');
+      const newAccessToken = this._jwt.createAccessToken(
+        decoded.email,
+        user.role || "user"
+      );
       return { status: 200, accessToken: newAccessToken };
     } catch (error) {
       return { status: 500, message: "Internal server error" };
     }
   }
-  
+
   async googleRegister(name: string, email: string, password: string) {
     const user = await this._userRepository.findByEmail(email);
     if (user) {
@@ -267,7 +272,6 @@ class UserUseCase implements IUserUseCase {
       if (!updatedUser) {
         return { status: 500, message: "Failed to update password" };
       }
-
       return {
         status: 200,
         message: "Password updated successfully",
@@ -371,9 +375,41 @@ class UserUseCase implements IUserUseCase {
     }
   }
 
- 
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<any> {
+    try {
+      const user = await this._userRepository.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+console.log(user.password)
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        throw new Error("Current password is incorrect");
+      }
 
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      if (user._id) {
+        const response = await this._userRepository.changePassword(
+          user._id,
+          hashedPassword
+        );
+        console.log(response,'password changed')
 
+      } else {
+        throw new Error("User ID is undefined");
+      }
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error in changePassword UseCase:", error);
+      return { success: false, message: error.message };
+
+      
+    }
+  }
 }
 
 export default UserUseCase;

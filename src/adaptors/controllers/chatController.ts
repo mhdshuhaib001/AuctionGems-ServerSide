@@ -8,7 +8,6 @@ class ChatController {
     try {
       const userId = req.body.userId;
       const receiverId = req.body.selectedChatId;
-      console.log(userId, req.body, "suiiiiiiiiiiiiiiiii");
       const result = await this._chatUseCase.createChat(userId, receiverId);
       console.log(result, "this is the result ");
       res.status(200).json(result);
@@ -22,8 +21,6 @@ class ChatController {
     }
   }
   async sendMessage(req: Request, res: Response) {
-    console.log("cehk thsi working or not ");
-    console.log(req.body, "siooooooooooooooooooo");
     const { senderId, receiverId, message } = req.body;
     const response = await this._chatUseCase.sendMessage(
       senderId,
@@ -50,7 +47,6 @@ class ChatController {
   async handleChatBotMessage(req: Request, res: Response) {
     try {
       const { message, itemDetails } = req.body;
-      console.log(message, itemDetails, "Handling chatbot interaction");
       const response = await this._chatUseCase.chatBot(message, itemDetails);
       return res.status(200).json({ message: response });
     } catch (error) {

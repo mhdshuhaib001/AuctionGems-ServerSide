@@ -5,6 +5,17 @@ import { Seller, Product } from "../../interfaces/model/seller";
 import OrderModel from "../../entities_models/orderModel";
 import IOrder from "../../interfaces/model/order";
 import { console } from "inspector";
+import { IReview } from "../../interfaces/model/IReview";
+import ReviewModel from "../../entities_models/reviewModel";
+import SellerRevenue from '../../entities_models/sellerRevanue';
+
+import { 
+  ISellerDashboardRepository, 
+  SalesMetrics, 
+  SalesDataPoint,
+  CategoryDistribution 
+} from '../../interfaces/model/ISellerDashBord';
+import mongoose, { ObjectId, Types } from "mongoose";
 
 class SellerRepository implements ISellerRepository {
   existsByEmail(email: string) {
@@ -67,20 +78,19 @@ class SellerRepository implements ISellerRepository {
   async getAllProducts(sellerId: string): Promise<Product[]> {
     try {
       const products = await ProductModel.find({ sellerId })
-        .populate('categoryId', 'name') 
+        .populate("categoryId", "name")
         .exec();
-  
+
       if (!products || products.length === 0) {
         throw new Error("No products found for this seller.");
       }
-  
+
       return products;
     } catch (error) {
       console.error("Error getting all products for seller:", error);
       throw new Error("Failed to get products.");
     }
   }
-  
 
   async deleteProduct(productId: string): Promise<void> {
     try {
@@ -96,8 +106,11 @@ class SellerRepository implements ISellerRepository {
 
   async findSeller(id: string): Promise<Seller | null> {
     try {
-      const seller = await SellerModel.findById(id).populate('userId', 'email').exec();
-      
+      console.log(id,'sellerId')
+      const seller = await SellerModel.findById(id)
+        .populate("userId", "email")
+        .exec();
+
       return seller;
     } catch (error) {
       console.error("Error finding seller by ID:", error);
@@ -105,15 +118,15 @@ class SellerRepository implements ISellerRepository {
     }
   }
 
-
   async getProductById(productId: string): Promise<Product | null> {
     try {
       const result = await ProductModel.findById(productId)
-      .populate({
-          path: 'sellerId',
-          select: 'companyName profile'
-      })
-      .exec();      if (!result) {
+        .populate({
+          path: "sellerId",
+          select: "companyName profile"
+        })
+        .exec();
+      if (!result) {
         throw new Error("Product not found");
       }
       console.log(result, "result");
@@ -128,16 +141,15 @@ class SellerRepository implements ISellerRepository {
     try {
       const total = await ProductModel.countDocuments();
       const products = await ProductModel.find()
-        .populate('categoryId', 'name')
+        .populate("categoryId", "name")
         .skip((page - 1) * limit)
         .limit(limit);
-        return products;
+      return products;
     } catch (error) {
-        console.error("Error getting all products:", error);
-        throw new Error("Failed to get products.");
+      console.error("Error getting all products:", error);
+      throw new Error("Failed to get products.");
     }
-}
-
+  }
 
   async updateSeller(
     sellerId: string,
@@ -162,9 +174,9 @@ class SellerRepository implements ISellerRepository {
   async getAllOrders(sellerId: string): Promise<any> {
     try {
       const orders = await OrderModel.find({ sellerId })
-      .populate('productId', 'itemTitle images') 
-      .populate('buyerId', 'name') 
-      .exec();
+        .populate("productId", "itemTitle images")
+        .populate("buyerId", "name")
+        .exec();
       return orders;
     } catch (error) {
       console.error("Error getting all orders for seller:", error);
@@ -213,6 +225,193 @@ class SellerRepository implements ISellerRepository {
     }
   }
 
+  async addReview(reviewData: IReview): Promise<IReview> {
+    try {
+      const response = await ReviewModel.create(reviewData);
+      return response;
+    } catch (error) {
+      console.error("Error adding review:", error);
+      throw new Error("Could not add review");
+    }
+  }
+  async findReviewsBySellerId(sellerId: string): Promise<IReview[]> {
+    try {
+      const Id = new mongoose.Types.ObjectId(sellerId);
+      const response = ReviewModel.find({ sellerId: Id }).populate('user','name profileImage' );
+      console.log(response,'this is the review response')
+      return response;
+    } catch (error) {
+      throw new Error("Could not find review");
+    }
+  }
+
+
+  async getSellerMetrics(sellerId: Types.ObjectId): Promise<SalesMetrics> {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const [totalEarnings, monthlySpend, currentMonthSales, lastMonthSales] = await Promise.all([
+      SellerRevenue.aggregate([
+        { $match: { sellerId } },
+        { $group: { _id: null, total: { $sum: "$sellerEarnings" } } }
+      ]),
+      
+      SellerRevenue.aggregate([
+        {
+          $match: {
+            sellerId,
+            createdAt: { $gte: firstDayOfMonth }
+          }
+        },
+        { $group: { _id: null, total: { $sum: "$platformFee" } } }
+      ]),
+
+      SellerRevenue.aggregate([
+        {
+          $match: {
+            sellerId,
+            createdAt: { $gte: firstDayOfMonth }
+          }
+        },
+        { $group: { _id: null, total: { $sum: "$sellerEarnings" } } }
+      ]),
+
+      SellerRevenue.aggregate([
+        {
+          $match: {
+            sellerId,
+            createdAt: { 
+              $gte: firstDayOfLastMonth,
+              $lt: firstDayOfMonth
+            }
+          }
+        },
+        { $group: { _id: null, total: { $sum: "$sellerEarnings" } } }
+      ])
+    ]);
+
+    const currentSales = currentMonthSales[0]?.total || 0;
+    const previousSales = lastMonthSales[0]?.total || 0;
+    const salesGrowth = previousSales === 0 ? 100 : 
+      ((currentSales - previousSales) / previousSales) * 100;
+
+    return {
+      totalEarnings: totalEarnings[0]?.total || 0,
+      monthlySpend: monthlySpend[0]?.total || 0,
+      totalSales: currentSales,
+      salesGrowth
+    };
+  }
+
+  async getSalesData(sellerId: Types.ObjectId, timeframe: string): Promise<SalesDataPoint[]> {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const aggregation = await SellerRevenue.aggregate([
+      {
+        $match: {
+          sellerId,
+          createdAt: { $gte: oneYearAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            week: { $week: "$createdAt" },
+            day: { $dayOfWeek: "$createdAt" }
+          },
+          sales: { $sum: "$sellerEarnings" }
+        }
+      }
+    ]);
+
+    return this.formatSalesData(aggregation, timeframe);
+  }
+
+  async getCategoryDistribution(sellerId: Types.ObjectId): Promise<CategoryDistribution[]> {
+    const distribution = await ProductModel.aggregate([
+      {
+        $match: { sellerId, sold: true }
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      {
+        $group: {
+          _id: "$categoryId",
+          name: { $first: "$category.name" },
+          value: { $sum: 1 }
+        }
+      }
+    ]);
+
+    return distribution.map(item => ({
+      name: item.name[0] || 'Uncategorized',
+      value: item.value
+    }));
+  }
+
+  private formatSalesData(aggregation: any[], timeframe: string): SalesDataPoint[] {
+    const timeFrameFormats: Record<string, { labels: string[], length: number }> = {
+      daily: { 
+        labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        length: 7
+      },
+      weekly: {
+        labels: Array.from({ length: 4 }, (_, i) => `Week ${i + 1}`),
+        length: 4
+      },
+      monthly: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        length: 12
+      },
+      yearly: {
+        labels: Array.from({ length: 4 }, (_, i) => `${new Date().getFullYear() - 3 + i}`),
+        length: 4
+      }
+    };
+
+    const format = timeFrameFormats[timeframe];
+    const formatted = Array.from({ length: format.length }, (_, i) => ({
+      label: format.labels[i],
+      sales: 0
+    }));
+
+    // Populate with actual data
+    aggregation.forEach(item => {
+      const { year, month, week, day } = item._id;
+      let index = 0;
+
+      switch (timeframe) {
+        case 'daily':
+          index = day - 1;
+          break;
+        case 'weekly':
+          index = week % 4;
+          break;
+        case 'monthly':
+          index = month - 1;
+          break;
+        case 'yearly':
+          index = year - (new Date().getFullYear() - 3);
+          break;
+      }
+
+      if (index >= 0 && index < format.length) {
+        formatted[index].sales = item.sales;
+      }
+    });
+
+    return formatted;
+  }
 }
 
 export default SellerRepository;

@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import { OrderRepository } from "../infrastructure/repositories/OrderRepository";
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import UserRepository from "../infrastructure/repositories/UserRepositories";
 import IOrderUsecase from "../interfaces/iUseCases/iOrderUseCase";
+import { ISellerRevenue } from "../interfaces/model/ISellerRevenue";
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -15,49 +17,110 @@ class OrderUsecase implements IOrderUsecase {
 
 
 
-    async createOrder(
-        userId: string,
-        sellerId: string,
-        addressId: string,
-        productId: string,
-    ): Promise<string> { 
-        try {
-            const product = await this._sellerRepository.getProductById(productId);
-            const address = await this._userRepository.getAddressById(addressId);
-            if (!product) throw new Error("Product not found");
-            if (!address) throw new Error("Address not found");
+    // async createOrder(
+    //     userId: string,
+    //     sellerId: string,
+    //     addressId: string,
+    //     productId: string,
+    // ): Promise<string> { 
+    //     try {
+    //         const product = await this._sellerRepository.getProductById(productId);
+    //         const address = await this._userRepository.getAddressById(addressId);
+    //         if (!product) throw new Error("Product not found");
+    //         if (!address) throw new Error("Address not found");
     
-            const orderData = {
-                productId,
-                buyerId: userId,
-                sellerId,
-                bidAmount: product.reservePrice,
-                shippingAddress: {
-                    fullName: address.fullName,
-                    phoneNumber: address.phoneNumber,
-                    streetAddress: address.streetAddress,
-                    city: address.city,
-                    state: address.state,
-                    postalCode: address.postalCode,
-                    country: address.country,
-                },
-                shippingType: 'standard',
-                paymentStatus: 'pending',
-                orderStatus: 'pending',
-            };
+    //         const orderData = {
+    //             productId,
+    //             buyerId: userId,
+    //             sellerId,
+    //             bidAmount: product.reservePrice,
+    //             shippingAddress: {
+    //                 fullName: address.fullName,
+    //                 phoneNumber: address.phoneNumber,
+    //                 streetAddress: address.streetAddress,
+    //                 city: address.city,
+    //                 state: address.state,
+    //                 postalCode: address.postalCode,
+    //                 country: address.country,
+    //             },
+    //             shippingType: 'standard',
+    //             paymentStatus: 'pending',
+    //             orderStatus: 'pending',
+    //         };
     
-            const order = await this._orderRepository.saveOrder(orderData);
+    //         const order = await this._orderRepository.saveOrder(orderData);
 
-            console.log(order._id, 'order._id============================================');
-            return order._id; 
-        } catch (error: unknown) {
-            console.error("Error during order creation:", error instanceof Error ? error.message : error);
-            throw new Error("Order creation failed: " + (error instanceof Error ? error.message : "An unknown error occurred"));
-        }
+    //         console.log(order._id, 'order._id============================================');
+    //         return order._id; 
+    //     } catch (error: unknown) {
+    //         console.error("Error during order creation:", error instanceof Error ? error.message : error);
+    //         throw new Error("Order creation failed: " + (error instanceof Error ? error.message : "An unknown error occurred"));
+    //     }
+    // }
+
+
+   async createOrder(
+    userId: string,
+    sellerId: string,
+    addressId: string,
+    productId: string,
+): Promise<string> { 
+    try {
+        const product = await this._sellerRepository.getProductById(productId);
+        const address = await this._userRepository.getAddressById(addressId);
+
+        if (!product) throw new Error("Product not found");
+        if (!address) throw new Error("Address not found");
+        if (!product.reservePrice) throw new Error("Reserve price is missing for the product");
+
+        const reservePrice = Math.floor(Number(product.reservePrice) || 0);
+
+        const orderData = {
+            productId,
+            buyerId: userId,
+            sellerId,
+            bidAmount: reservePrice,
+            shippingAddress: {
+                fullName: address.fullName,
+                phoneNumber: address.phoneNumber,
+                streetAddress: address.streetAddress,
+                city: address.city,
+                state: address.state,
+                postalCode: address.postalCode,
+                country: address.country,
+            },
+            shippingType: 'standard',
+            paymentStatus: 'pending',
+            orderStatus: 'pending',
+        };
+
+        const order = await this._orderRepository.saveOrder(orderData);
+
+        const platformFeePercentage = 0.02;    
+        const platformFee = reservePrice * platformFeePercentage;
+        const sellerEarnings = reservePrice - platformFee;
+
+        const revenueData = {
+            orderId: new mongoose.Types.ObjectId(order._id),
+            productId: new mongoose.Types.ObjectId(productId),
+            sellerId: new mongoose.Types.ObjectId(sellerId),
+            platformFee,
+            sellerEarnings,
+        } as ISellerRevenue;
+        
+            await this._orderRepository.sellerRevenue(revenueData);
+
+        return order._id;
+        
+    } catch (error: unknown) {
+        console.error("Error during order creation:", error instanceof Error ? error.message : error);
+        throw new Error("Order creation failed: " + (error instanceof Error ? error.message : "An unknown error occurred"));
     }
+}
 
     async createCheckoutSession(image: string,name: string,price: number,orderId: string ): Promise<any> {
         try {
+            console.log(price,'=======================================')
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 metadata: {
@@ -162,7 +225,14 @@ class OrderUsecase implements IOrderUsecase {
         }
     }
     
-    
+    async execute(revenueData: ISellerRevenue): Promise<ISellerRevenue> {
+        try {
+          const revenue = await this._orderRepository.sellerRevenue(revenueData);
+          return revenue;
+        } catch (error) {
+          throw new Error('Failed to add seller revenue');
+        }
+      }
     
 }
 

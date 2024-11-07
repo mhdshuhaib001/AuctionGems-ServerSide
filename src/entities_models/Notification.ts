@@ -8,7 +8,7 @@ const NotificationSubscriptionSchema: Schema = new Schema({
   fcmToken: { type: String},
   whatsappNumber:{type:String},
   email:{type:String},
-});
+}, { timestamps: true });
 
 const NotificationSubscriptionModel = mongoose.model<INotificationSubscription>("NotificationSubscription", NotificationSubscriptionSchema);
 

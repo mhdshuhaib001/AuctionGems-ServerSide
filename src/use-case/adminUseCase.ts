@@ -23,7 +23,7 @@ class AdminUseCase implements IAdminUseCase {
     private readonly _jwt: JWT,
     private readonly _adminRepository: AdminRepository,
     private readonly _cloudinaryHelper: CloudinaryHelper,
-    private readonly _sellerRepository:SellerRepository
+    private readonly _sellerRepository: SellerRepository
   ) {}
 
   async adminLogin(loginData: AdminLogin): Promise<AdminOutPut> {
@@ -196,14 +196,14 @@ class AdminUseCase implements IAdminUseCase {
     }
   }
 
-  async sendWhatsAppNotificationUseCase(
-    to: string,
-    message: string
-  ): Promise<void> {
-    console.log(to, message, "to send message is this ");
-    const imageUrl = "https://m.media-amazon.com/images/I/71tQC-279uL.jpg";
-    const response = await whatsAppNotification(to, message, imageUrl);
-  }
+  // async sendWhatsAppNotificationUseCase(
+  //   to: string,
+  //   message: string
+  // ): Promise<void> {
+  //   console.log(to, message, "to send message is this ");
+  //   const imageUrl = "https://m.media-amazon.com/images/I/71tQC-279uL.jpg";
+  //   const response = await whatsAppNotification(to, message, imageUrl);
+  // }
 
   async subscribeToAuction(
     userId: string,
@@ -214,23 +214,23 @@ class AdminUseCase implements IAdminUseCase {
     countryCode?: string
   ) {
     try {
-    
+      console.log(
+        phoneNumber ? countryCode + phoneNumber : undefined,
+        "sybjkdfngkvjlfbivfgvgvbj n"
+      );
       await this._adminRepository.upsertNotificationPreferences(
         userId,
         auctionId,
         fcmToken,
         email,
-        phoneNumber ? countryCode + phoneNumber : undefined,
+        phoneNumber ? countryCode + phoneNumber : undefined
       );
-  
     } catch (error) {
       console.error("Error in subscribeToAuction:", error);
       throw new Error("Failed to subscribe to auction notifications.");
     }
   }
-  
-  
-//  to send the firebase push notification 
+
   async sendPushNotification(fcmToken: string, message: string) {
     const notificationMessage = {
       notification: {
@@ -246,78 +246,81 @@ class AdminUseCase implements IAdminUseCase {
       console.error("Error sending notification:", error);
     }
   }
-  
 
   async getReports(): Promise<IReport[]> {
     const reports = await this._adminRepository.getReports();
     return reports as IReport[];
   }
 
-
-
-async updateReportStatus(
-  reportId: string,
-  status: string
-): Promise<{ updatedReport: IReport | null; sellerBlocked: boolean }> {
-  try {
-    console.log(status, '==========================================');
-    const updatedReport = await this._adminRepository.updateReportStatus(
-      reportId,
-      status
-    );
-
-    if (!updatedReport) {
-      console.error(`Report with ID ${reportId} not found`);
-      return { updatedReport: null, sellerBlocked: false };
-    }
-
-    let sellerBlocked = false;
-
-    // Get seller email using the sellerId
-    if (status === "warning") {
-      const seller = await this._sellerRepository.findSeller(updatedReport.sellerId.toString());
-      
-      if (seller) {
-        const sellerEmail = seller.userId.email;
-        const warningMessage = "Please review your actions on the platform to avoid potential penalties.";
-        const mailer = new NodeMailer();
-        const emailSent = await mailer.sendWarningEmail(sellerEmail, warningMessage);
-
-        if (!emailSent) {
-          console.error("Failed to send warning email to the seller");
-        }
-
-        const reportDetails = `A warning has been issued regarding your recent activities. Please be cautious.`;
-        const sellerName = seller.userId.name || "Seller";
-        await mailer.sendReportManagementEmail(sellerEmail, status, reportDetails, sellerName);
-      } else {
-        console.error(`Seller with ID ${updatedReport.sellerId} not found`);
-      }
-    }
-
-    if (status === "confirmed") {
-      const reportCount = await this._adminRepository.countConfirmedReports(
-        updatedReport.sellerId.toString()
+  async updateReportStatus(
+    reportId: string,
+    status: string
+  ): Promise<{ updatedReport: IReport | null; sellerBlocked: boolean }> {
+    try {
+      const updatedReport = await this._adminRepository.updateReportStatus(
+        reportId,
+        status
       );
 
-      if (reportCount >= 3) {
-        await this._adminRepository.blockSeller(
+      if (!updatedReport) {
+        console.error(`Report with ID ${reportId} not found`);
+        return { updatedReport: null, sellerBlocked: false };
+      }
+
+      let sellerBlocked = false;
+
+      // Get seller email using the sellerId
+      if (status === "warning") {
+        const seller = await this._sellerRepository.findSeller(
           updatedReport.sellerId.toString()
         );
-        sellerBlocked = true;
+
+        if (seller) {
+          const sellerEmail = seller.userId.email;
+          const warningMessage =
+            "Please review your actions on the platform to avoid potential penalties.";
+          const mailer = new NodeMailer();
+          const emailSent = await mailer.sendWarningEmail(
+            sellerEmail,
+            warningMessage
+          );
+
+          if (!emailSent) {
+            console.error("Failed to send warning email to the seller");
+          }
+
+          const reportDetails = `A warning has been issued regarding your recent activities. Please be cautious.`;
+          const sellerName = seller.userId.name || "Seller";
+          await mailer.sendReportManagementEmail(
+            sellerEmail,
+            status,
+            reportDetails,
+            sellerName
+          );
+        } else {
+          console.error(`Seller with ID ${updatedReport.sellerId} not found`);
+        }
       }
+
+      if (status === "confirmed") {
+        const reportCount = await this._adminRepository.countConfirmedReports(
+          updatedReport.sellerId.toString()
+        );
+
+        if (reportCount >= 3) {
+          await this._adminRepository.blockSeller(
+            updatedReport.sellerId.toString()
+          );
+          sellerBlocked = true;
+        }
+      }
+
+      return { updatedReport, sellerBlocked };
+    } catch (error) {
+      console.error("Error updating report status in use case:", error);
+      throw new Error("Could not update report status");
     }
-
-    return { updatedReport, sellerBlocked };
-  } catch (error) {
-    console.error("Error updating report status in use case:", error);
-    throw new Error("Could not update report status");
   }
-}
-
-  
-  
-  
 }
 
 export default AdminUseCase;

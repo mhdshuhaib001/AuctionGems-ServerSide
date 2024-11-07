@@ -15,7 +15,7 @@ const userOTPSchema = new Schema<OTP>({
         type: Date,
         required: true
     }
-})
+}, { timestamps: true })
 
 const otpModel = model<OTP>('userOtp', userOTPSchema)
 

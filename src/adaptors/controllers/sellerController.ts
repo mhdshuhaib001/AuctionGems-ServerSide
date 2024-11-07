@@ -87,8 +87,6 @@ class SellerController {
 
   async getAllProducts(req: Request, res: Response) {
     const { page = 1, limit = 10 } = req.query;
-console.log(req.query,'===========================================')
-    // Convert to integers
     const pageNumber = parseInt(page as string, 10) || 1; 
     const limitNumber = parseInt(limit as string, 10) || 10;
 
@@ -154,6 +152,74 @@ console.log(req.query,'===========================================')
       console.log('fetch All seller')
       return res.status(500).json({ message: "Failed to fetch all seller" });
 
+    }
+  }
+  async createReview(req:Request,res:Response){
+    try {
+const {sellerId,userId,rating,comment} = req.body
+      const response = await this._sellerUseCase.createReview(sellerId,userId,rating,comment)
+      return res.status(200).json(response)
+
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to create review" });
+
+    }
+  }
+
+  async getReview(req: Request, res: Response) {
+    try {
+      const sellerId = req.params.sellerId;
+  
+      const result = await this._sellerUseCase.fetchFullSellerProfile(sellerId);
+      
+      return res.status(200).json({result,message:'review send successfully'}); 
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+  
+      return res.status(500).json({ message: 'Failed to fetch reviews' });
+    }
+  }
+  
+  async fetchFullSellerProfile(req: Request, res: Response) {
+    try {
+      const sellerId = req.params.sellerId;
+      const data = await this._sellerUseCase.fetchFullSellerProfile(sellerId);
+
+      if (!data.sellerProfile) {
+        return res.status(404).json({ message: "Seller not found" });
+      }
+
+      res.status(200).json({
+        status: 200,
+        message: "Seller profile fetched successfully",
+        data,
+      });
+    } catch (error) {
+      console.error("Error fetching seller profile:", error);
+      res.status(500).json({ message: "Error fetching seller profile" });
+    }
+  }
+
+  async getDashboardData(req: Request, res: Response): Promise<void> {
+    try {
+      const { sellerId } = req.params;
+      const { timeframe = 'monthly' } = req.query;
+
+      const dashboardData = await this._sellerUseCase.execute(
+        sellerId,
+        timeframe as string
+      );
+
+      res.status(200).json({
+        success: true,
+        data: dashboardData
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching dashboard data',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 }

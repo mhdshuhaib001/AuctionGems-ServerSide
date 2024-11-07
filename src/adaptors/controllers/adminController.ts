@@ -121,28 +121,27 @@ class AdminController {
     }
   }
 
-  async sendWatsappNotification(req: Request, res: Response) {
-    try {
-      res.status(200);
-      const { to, message } = req.body;
-      console.log(req.body, "fffffffffffffffffffffffffffffffffffffffffff");
-      if (!to || !message) {
-        return res
-          .status(400)
-          .json({ success: false, message: "To and message are required." });
-      }
+  // async sendWatsappNotification(req: Request, res: Response) {
+  //   try {
+  //     res.status(200);
+  //     const { to, message } = req.body;
+  //     if (!to || !message) {
+  //       return res
+  //         .status(400)
+  //         .json({ success: false, message: "To and message are required." });
+  //     }
 
-      const response = this._AdminUsecase.sendWhatsAppNotificationUseCase(
-        to,
-        message
-      );
+  //     const response = this._AdminUsecase.sendWhatsAppNotificationUseCase(
+  //       to,
+  //       message
+  //     );
 
-      res.status(200).json({ success: true, message: "Notification sent!" });
-    } catch (error) {
-      console.error("Error in sendMessage controller:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
+  //     res.status(200).json({ success: true, message: "Notification sent!" });
+  //   } catch (error) {
+  //     console.error("Error in sendMessage controller:", error);
+  //     res.status(500).json({ error: "Internal server error" });
+  //   }
+  // }
 
   async addReport(req: Request, res: Response) {
     try {
@@ -163,7 +162,6 @@ class AdminController {
 
   async auctionNotification(req: Request, res: Response) {
     try {
-      console.log(req.body,'===================================================================================')
       const { auctionId, userId, fcmToken, email, phoneNumber, countryCode } =
         req.body;
 

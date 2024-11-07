@@ -45,7 +45,6 @@ class AuctionController {
   async auctionWinnerCheck(req: Request, res: Response) {
     try {
       const auctionId = req.params.auctionId;
-      console.log(auctionId,'auction Id On the controllers=====================================================================================',req.params)
       const winner = this._auctionUseCase.endAuctionAndNotifyWinner(auctionId);
       res.status(200).json(winner);
     } catch (error) {

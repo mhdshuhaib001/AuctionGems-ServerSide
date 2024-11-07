@@ -78,6 +78,12 @@
 //   });
 
 // };
+
+
+
+
+
+
 import cron from "node-cron";
 import NotificationSubscriptionModel from "../entities_models/Notification";
 import ProductModel from "../entities_models/productModal";
@@ -90,63 +96,70 @@ const scheduledNotifications = new Set();
 export const startAuctionCronJob = () => {
   cron.schedule("* * * * *", async () => {
     try {
-      console.log("Cron job running for scheduled auction notifications...");
-
       const now = new Date();
+      const nowISO = now.toISOString();
       const nowUTCMinutes = now.getUTCMinutes();
       const nowUTCHours = now.getUTCHours();
 
+ 
+
       const subscriptions = await NotificationSubscriptionModel.find({});
-      console.log(`Found ${subscriptions.length} subscriptions to process.`);
 
       for (const subscription of subscriptions) {
         const { _id, fcmToken, auctionId, whatsappNumber, email } = subscription;
 
         if (scheduledNotifications.has(_id.toString())) {
-          console.log(`Notification for auction ${auctionId} already scheduled. Skipping...`);
+          console.log(`⏩ Notification for auction ${auctionId} already scheduled. Skipping.`);
           continue;
         }
+
         const auction = await ProductModel.findById(auctionId);
-        const auctionStartTime = auction?.auctionStartDateTime ? new Date(auction.auctionStartDateTime) : null;
+        console.log(`🔎 Processing auction ID: ${auctionId}`);
+
+        if (!auction) {
+          console.warn(`⚠️ Auction ID ${auctionId} not found in database.`);
+          continue;
+        }
+
+        const auctionStartTime = auction.auctionStartDateTime ? new Date(auction.auctionStartDateTime) : null;
 
         if (!auctionStartTime || isNaN(auctionStartTime.getTime())) {
-          console.error(`Invalid or missing start time for auction ${auctionId}. Skipping notification.`);
+          console.error(`🚫 Invalid or missing start time for auction ID ${auctionId}. Skipping.`);
           continue;
         }
 
-        // Calculate the UTC time 5 minutes before the auction starts
-        const notificationTime = new Date(auctionStartTime.getTime() - 5 * 60 * 1000);
+        const auctionStartISO = auctionStartTime.toISOString();
+
+        const notificationTime = new Date(auctionStartTime.getTime() - 2 * 60 * 1000);
+        const notificationISO = notificationTime.toISOString();
         const notificationHours = notificationTime.getUTCHours();
         const notificationMinutes = notificationTime.getUTCMinutes();
-
-        // Check if the current time matches the notification time
+        
         if (nowUTCHours === notificationHours && nowUTCMinutes === notificationMinutes) {
-          console.log(`Sending pre-auction notification for auction ${auctionId}`);
 
-          const productName = auction?.itemTitle ?? "Unknown Product";
-          const productImage = auction?.images?.[0] ?? "";
+          const productName = auction.itemTitle || "Unknown Product";
+          const productImage = auction.images?.[0] || "";
           const productUrl = `http://localhost:5173/product-details/${auctionId}`;
-          const price = auction?.reservePrice ?? '0';
+          const price = auction.reservePrice || '0';
 
-          // Send Firebase push notification
           if (fcmToken) {
-            await sendAuctionAlert(
-              fcmToken,
-              `Auction Alert: "${productName}" starts soon!`,
-              productImage,
-              productUrl
-            );
-            console.log(`Push notification sent for auction ${auctionId} - Product: ${productName}`);
-          }
-
-          // Send WhatsApp notification
+            console.log('💕💕💕💕💕💕💕💕💕💕💕 push notification is working on it')
+            await sendAuctionAlert(fcmToken, `Auction Alert: "${productName}" starts soon!`, productImage, productUrl);
+            console.log(`✅ Push notification sent for auction ${auctionId} - Product: ${productName}`);
+          } 
           if (whatsappNumber) {
-            const message = `Reminder: The auction for '${productName}' is starting in 5 minutes! Visit: ${productUrl}`;
-            await whatsAppNotification(whatsappNumber, message, productImage);
-            console.log(`WhatsApp message sent to ${whatsappNumber} for auction ${auctionId}`);
+            const productName = auction.itemTitle || "Unknown Product";
+            const productImage = auction.images?.[0] || "";
+            const productUrl = `${process.env.FRONTEND_URL}/product-details/${auctionId}`;
+            console.log(productUrl,'=================================product url.')
+            const price = auction.reservePrice || '0';
+          
+            console.log(`💬 Sending WhatsApp notification to ${whatsappNumber}`);
+            await whatsAppNotification(whatsappNumber, productName, price, productUrl, productImage);
+            console.log(`✅ WhatsApp message sent to ${whatsappNumber} for auction ${auctionId}`);
           }
+          
 
-          // Send email notification
           if (email) {
             const nodeMailer = new NodeMailer();
             await nodeMailer.sendAuctionStartingSoonEmail(
@@ -154,21 +167,22 @@ export const startAuctionCronJob = () => {
               productUrl,
               productName,
               price,
-              auctionStartTime.toISOString(),
+              auctionStartISO,
               productImage
             );
-            console.log(`Email sent to ${email} for auction ${auctionId}`);
+            console.log(`✅ Email sent to ${email} for auction ${auctionId}`);
           }
 
           scheduledNotifications.add(_id.toString());
         } else {
-          console.warn(`Skipping auction ${auctionId}, notification time not reached.`);
+          console.log(`⏲️ Notification time not yet reached for auction ${auctionId}. Current time (ISO): ${nowISO}`);
         }
       }
 
-      console.log("Cron job completed successfully.");
+      console.log("✅ Cron job execution completed.");
     } catch (error) {
-      console.error("Error in cron job for auction notifications:", error);
+      console.error("❌ Error encountered in cron job for auction notifications:", error);
     }
   });
 };
+

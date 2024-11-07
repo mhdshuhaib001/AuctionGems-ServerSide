@@ -16,10 +16,10 @@ export interface Seller extends Document {
 export interface Product extends Document {
   name: any;
   category?: string;
-  sellerId: Seller; 
-    itemTitle: string;
+  sellerId: Seller;
+  itemTitle: string;
   categoryId: mongoose.Types.ObjectId;
-  categoryName?:string
+  categoryName?: string;
   description?: string;
   condition: "new" | "used" | "vintage";
   images: string[];
@@ -27,14 +27,14 @@ export interface Product extends Document {
   auctionStartDateTime: string;
   auctionEndDateTime: Date;
   reservePrice?: string;
-  auctionStatus: 'live' | 'upcoming' | 'ended' | 'sold';
+  auctionStatus: "live" | "upcoming" | "end" | "sold" | "unsold";
   shippingType: "standard" | "express";
   shippingCost?: number;
   handlingTime?: number;
   itemLocation?: string;
   zipCode?: string;
   city?: string;
-  currentBid:Number
+  currentBid: Number;
   state?: string;
   returnDuration?: number;
 }
