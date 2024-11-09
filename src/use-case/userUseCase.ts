@@ -113,6 +113,7 @@ class UserUseCase implements IUserUseCase {
         if (isPasswordValid) {
           const role = user.role || "user";
           const token = this._jwt.createAccessToken(userData.email, role);
+          
           const refreshToken = this._jwt.createRefreshToken(
             userData.email,
             role
@@ -136,7 +137,6 @@ class UserUseCase implements IUserUseCase {
               console.log(`Generated sellerToken: ${sellerToken}`);
             }
           }
-          console.log(sellerToken, "this is th usecase");
           return {
             status: 200,
             accessToken: token,
@@ -182,11 +182,30 @@ class UserUseCase implements IUserUseCase {
 
   async googleRegister(name: string, email: string, password: string) {
     const user = await this._userRepository.findByEmail(email);
+    const accessToken = this._jwt.createAccessToken(email, "user");
+    const refreshToken = this._jwt.createRefreshToken(email, "user");
     if (user) {
-      const accessToken = this._jwt.createAccessToken(email, "user");
+
+      if(user.isActive){
+        return {status:403,message:'Your account is blocked'};
+      }
+      let sellerToken: string|undefined;
+      let sellerId :string|undefined;
+      let role = user.role||'user'
+      if(role==='seller'){
+        const sellerExists = await this._sellerRepository.existsByUserId(user._id as string)
+
+        if(sellerExists){
+          sellerToken  = this._jwt.createAccessToken(user.email,role)
+
+        }
+      }
       return {
         status: 200,
         accessToken: accessToken,
+        refreshToken,
+        sellerToken,
+        userData:user,
         message: "Login successfully"
       };
     } else {
@@ -196,12 +215,12 @@ class UserUseCase implements IUserUseCase {
         email,
         password: randomPassword
       });
-
       if (userData) {
         const accessToken = this._jwt.createAccessToken(userData.email, "user");
         return {
           status: 200,
           accessToken: accessToken,
+          userData,
           message: "Login successfully"
         };
       }
@@ -228,8 +247,8 @@ class UserUseCase implements IUserUseCase {
       const user = await this._userRepository.findByEmail(email);
       if (user) {
         const role = user.role || "user";
-        const resetToken = this._jwt.createAccessToken(user.email, role);
-        const forgetUrl = `${process.env.FRONTEND_URL}/forget-password?token=${resetToken}`;
+        const resetToken = this._jwt.createResetPasswordToken(user.email, role);
+        const forgetUrl = `${process.env.FRONTEND_URL}/forget-password/${resetToken}`;
         const mailSent = await this._mailer.forgetMail(email, forgetUrl);
 
         if (mailSent) {
@@ -254,34 +273,44 @@ class UserUseCase implements IUserUseCase {
 
   async forgetPassword(token: string, password: string): Promise<UserOutPut> {
     try {
-      // Verify the token
       const decodedToken = this._jwt.verifyToken(token);
+      
       if (!decodedToken || typeof decodedToken === "string") {
         return { status: 400, message: "Invalid or expired token" };
       }
+  
       const email = decodedToken.email;
+  
       const user = await this._userRepository.findByEmail(email);
       if (!user) {
         return { status: 404, message: "User not found" };
       }
+  
+      // Hash the new password
       const hashedPassword = await bcrypt.hash(password, 10);
-      const updatedUser = await this._userRepository.updatePassword(
-        email,
-        hashedPassword
-      );
+  
+      // Update the user's password
+      const updatedUser = await this._userRepository.updatePassword(email, hashedPassword);
       if (!updatedUser) {
         return { status: 500, message: "Failed to update password" };
       }
+  
       return {
         status: 200,
         message: "Password updated successfully",
         userData: updatedUser
       };
-    } catch (error) {
+    } catch (error :any) {
       console.error("Error in forgetPassword:", error);
+      
+      if (error.name === 'TokenExpiredError') {
+        return { status: 400, message: "Token has expired" };
+      }
+  
       return { status: 500, message: "Internal server error" };
     }
   }
+  
 
   async addAddress(addressData: AddressData): Promise<boolean> {
     try {

@@ -56,7 +56,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
 
     socket.on("join_auction", (auctionId, userId) => {
-      console.log("user joined to the room");
       socket.join(auctionId);
     });
 
@@ -69,7 +68,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
   
     socket.on('stop_typing', ({ userId, room }) => {
-      console.log('typing stopped')
       socket.to(room).emit('stop_typing', { userId, room });
     });
 
@@ -84,7 +82,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
             }
 
             if (disconnectedUserId) {
-              console.log("User disconnected:", disconnectedUserId);
               onlineUsers.delete(disconnectedUserId);
               io?.emit("user_offline", disconnectedUserId);
               console.log("Updated online users:", Array.from(onlineUsers.entries()));

@@ -23,7 +23,6 @@ class SellerRepository implements ISellerRepository {
   }
   async insertOne(sellerData: Omit<Seller, "_id">): Promise<Seller> {
     try {
-      console.log(sellerData, "suiiiiiiii");
       const newSeller = new SellerModel(sellerData);
 
       await newSeller.save();

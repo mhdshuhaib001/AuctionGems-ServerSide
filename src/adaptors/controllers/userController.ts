@@ -100,9 +100,10 @@ class UserController {
   }
   async forgetPassword(req: Request, res: Response) {
     try {
-      console.log(req.body,'===========================================')
       const { token, newPassword } = req.body;
+      console.log(req.body,'000000000')
       const result = await this._userUseCase.forgetPassword(token, newPassword);
+      res.status(200).json(result)
     } catch (error) {
       console.error("Error in forgetPassword:", error);
       res.status(500).json({ message: "Internal server error" });

@@ -27,7 +27,7 @@ export const createServer = () => {
 
     // CORS configuration
     app.use(cors({
-      origin: "http://localhost:5173",
+      origin: process.env.FRONTEND_URL,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true
     }));

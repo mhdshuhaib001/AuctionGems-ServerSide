@@ -11,8 +11,7 @@ class JWT {
   constructor() {
     this._secretKey = process.env.JWT_KEY;
     this._refreshSecretKey = process.env.JWT_KEY; 
-    console.log("JWT_SECRET_KEY", this._secretKey); 
-    console.log("JWT_REFRESH_KEY", this._refreshSecretKey); 
+
   }
 
   createAccessToken(email: string, role: 'user' | 'seller' | 'admin') {
@@ -22,6 +21,15 @@ class JWT {
     const payload = { email, role };
     return sign(payload, this._secretKey, { expiresIn: '24h' });
   }
+
+  createResetPasswordToken(email: string, role: 'user' | 'seller' | 'admin') {
+    if (!this._secretKey) {
+      throw new Error('Secret key is undefined');
+    }
+    const payload = { email, role };
+    return sign(payload, this._secretKey, { expiresIn: '1h' });
+  }
+
 
   createRefreshToken(email: string, role: 'user' | 'seller' | 'admin') {
     if (!this._refreshSecretKey) {

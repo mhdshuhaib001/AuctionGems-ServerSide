@@ -17,7 +17,7 @@ const handleUserGoogleAuthRegister = (req: Request, res: Response) =>
 const handleAdminLogin = (req: Request, res: Response) =>
   adminController.adminLogin(req, res);
 const handleUserForegtPasswordRequest = (req:Request,res:Response)=>userController.forgetPasswordReq(req,res)
-const handleUserForgetPassword = (req:Request,res:Response)=>userController.forgetPassword(req,res)
+const handleUserForgetPassword = (req:Request,res:Response)=> userController.forgetPassword(req,res)
 const handleIsBlocked = (req:Request,res:Response)=>userController.checkIsBlock(req,res)
 const handleTokenRefresh = (req: Request, res: Response) => userController.refreshToken(req, res);
 

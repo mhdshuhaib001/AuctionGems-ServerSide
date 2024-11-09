@@ -191,16 +191,15 @@ class OrderUsecase implements IOrderUsecase {
     async fetchOrderById(orderId: string): Promise<any | null> {
         try {
             const order = await this._orderRepository.fetchOrderById(orderId);
-            console.log(order, "=========================================================");
-    
+    if(!order|| order.length===0){
+        return []
+    }
             const product = await this._sellerRepository.getProductById(order.productId);
-            console.log(product, 'productData==================================');
     
             if (!product) {
                 throw new Error("Product not found");
             }
     
-            // Now product.sellerId should be of type ISeller
             const responseData = {
                 orderId: order._id,
                 orderDate: order.orderDate,

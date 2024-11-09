@@ -1,6 +1,20 @@
 import admin from 'firebase-admin';
-import serviceAccount from '../services/serviceAccountKey.json';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
+const serviceAccount = {
+  type: process.env.FIREBASE_TYPE,
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: process.env.FIREBASE_AUTH_URI,
+  token_uri: process.env.FIREBASE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+  universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+};
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
 });
@@ -10,7 +24,6 @@ export const messaging = admin.messaging();
 
 
 export const sendAuctionAlert = async (fcmToken: string, auctionTitle: string, auctionImage: string,productUrl:string) => {
-  console.log(fcmToken, "fcmToken===============================================");
 
   const message = `The auction "${auctionTitle}" is starting in 20 minutes!`;
   const payload = {
@@ -27,8 +40,6 @@ export const sendAuctionAlert = async (fcmToken: string, auctionTitle: string, a
     token: fcmToken,
   };
 
-  console.log(payload, 'payload');
-  
   try {
     const response = await admin.messaging().send(payload);
     console.log('Successfully sent notification:', response);

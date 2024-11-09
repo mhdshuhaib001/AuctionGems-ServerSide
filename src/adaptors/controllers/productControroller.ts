@@ -34,7 +34,6 @@ class ProductController {
   async getAllProducts(req: Request, res: Response) {
     try {
       const products = await this._productUseCase.getProducts();
-      console.log(products,'products get in here so what nxt then ?')
       res.status(200).json(products);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch products" });
