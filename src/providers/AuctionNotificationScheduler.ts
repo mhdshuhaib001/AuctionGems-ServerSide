@@ -1,6 +1,4 @@
 
-
-
 import cron from "node-cron";
 import NotificationSubscriptionModel from "../entities_models/Notification";
 import ProductModel from "../entities_models/productModal";

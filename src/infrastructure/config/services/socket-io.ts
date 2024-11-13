@@ -45,6 +45,19 @@ export const socketIoInit = (HttpServer: HttpServer) => {
 
         const roomId = generateRoomId(message.senderId, message.receiverId);
         io?.to(roomId).emit("receive_message", message);
+
+        const receiverSocketId= onlineUsers.get(message.receiverId);
+        if(receiverSocketId){
+          console.log('messagesend to the resver')
+
+          io?.to(receiverSocketId).emit("new_message_notification", {
+            id: Date.now().toString(),
+            senderId: message.senderId,
+            message: message.message,
+            timestamp: new Date().toISOString(),
+            isRead: false
+          });
+        }
       } catch (error) {
         console.error("Failed to process message:", error);
       }
@@ -64,6 +77,7 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
 
     socket.on('typing', ({ userId, room }) => {
+      console.log('typing.......')
       socket.to(room).emit('typing', { userId, room });
     });
   
