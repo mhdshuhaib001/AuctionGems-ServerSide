@@ -14,46 +14,6 @@ class OrderUsecase implements IOrderUsecase {
     private readonly _userRepository: UserRepository
   ) {}
 
-  // async createOrder(
-  //     userId: string,
-  //     sellerId: string,
-  //     addressId: string,
-  //     productId: string,
-  // ): Promise<string> {
-  //     try {
-  //         const product = await this._sellerRepository.getProductById(productId);
-  //         const address = await this._userRepository.getAddressById(addressId);
-  //         if (!product) throw new Error("Product not found");
-  //         if (!address) throw new Error("Address not found");
-
-  //         const orderData = {
-  //             productId,
-  //             buyerId: userId,
-  //             sellerId,
-  //             bidAmount: product.reservePrice,
-  //             shippingAddress: {
-  //                 fullName: address.fullName,
-  //                 phoneNumber: address.phoneNumber,
-  //                 streetAddress: address.streetAddress,
-  //                 city: address.city,
-  //                 state: address.state,
-  //                 postalCode: address.postalCode,
-  //                 country: address.country,
-  //             },
-  //             shippingType: 'standard',
-  //             paymentStatus: 'pending',
-  //             orderStatus: 'pending',
-  //         };
-
-  //         const order = await this._orderRepository.saveOrder(orderData);
-
-  //         console.log(order._id, 'order._id============================================');
-  //         return order._id;
-  //     } catch (error: unknown) {
-  //         console.error("Error during order creation:", error instanceof Error ? error.message : error);
-  //         throw new Error("Order creation failed: " + (error instanceof Error ? error.message : "An unknown error occurred"));
-  //     }
-  // }
 
   async createOrder(
     userId: string,
@@ -127,7 +87,6 @@ class OrderUsecase implements IOrderUsecase {
     orderId: string
   ): Promise<any> {
     try {
-      console.log(price, "=======================================");
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         metadata: {
@@ -177,10 +136,7 @@ class OrderUsecase implements IOrderUsecase {
       const address = await this._userRepository.getAddressById(
         order.addressId
       );
-      console.log(
-        address,
-        "address============================================="
-      );
+
       if (product) {
         const responseData = {
           orderId: order.id,
