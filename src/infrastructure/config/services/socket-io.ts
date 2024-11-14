@@ -28,7 +28,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
   io.on("connection", (socket) => {
 
     socket.on("user_connected", (userId: string) => {
-      console.log("User connected event received:", userId);
       onlineUsers.set(userId, socket.id);
       console.log("Current online users:", Array.from(onlineUsers.entries()));
       io?.emit("user_online", userId);
@@ -48,7 +47,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
 
         const receiverSocketId= onlineUsers.get(message.receiverId);
         if(receiverSocketId){
-          console.log('messagesend to the resver')
 
           io?.to(receiverSocketId).emit("new_message_notification", {
             id: Date.now().toString(),
@@ -77,7 +75,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
 
     socket.on('typing', ({ userId, room }) => {
-      console.log('typing.......')
       socket.to(room).emit('typing', { userId, room });
     });
   

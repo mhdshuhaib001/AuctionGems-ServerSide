@@ -81,13 +81,12 @@ class AuctionUseCase implements IAuctionUseCase {
             return null;
           }
 
-          console.log(bid);
           return {
             id: bid._id,
             bidder: userData.name,
             amount: bid.currentBid,
             time: bid.time,
-            avatar: userData.profileImage || "default-avatar-url"
+            avatar: userData.profileImage 
           };
         })
       );
@@ -124,15 +123,10 @@ class AuctionUseCase implements IAuctionUseCase {
         );
         throw new Error("auction is not ended");
       }
-      // const currentTime = new Date();
-      // if (currentTime < auctionItem.auctionEndDateTime) {
-      //   console.log("Auction is still running...");
-      //   throw new Error("Auction is still running");
-      // }
+  
 
       const bids = await this._auctionRepository.getBiddings(auctionId);
       if (!bids || bids.length === 0) {
-        // console.log("No bids placed for this auction.");
         await ProductModel.findByIdAndUpdate(auctionId, {
           sold: false,
           auctionStatus: "unsold"
@@ -152,9 +146,6 @@ class AuctionUseCase implements IAuctionUseCase {
           new Date(b.time).getTime() - new Date(a.time).getTime()
       );
       const highestBid = sortedBids[0];
-      // console.log(
-      //   `Highest bid: ${highestBid.currentBid} by user: ${highestBid.buyerID}`
-      // );
 
       const winner = await this._userRepository.findById(
         highestBid.buyerID.toString()
@@ -163,7 +154,6 @@ class AuctionUseCase implements IAuctionUseCase {
         console.error("Winner not found or missing ID");
         throw new Error("Winner not found or missing ID");
       }
-      console.log(`Winner found: ${winner.email}`);
 
       const productName = auctionItem.itemTitle;
       const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;

@@ -15,29 +15,7 @@ class ChatUseCase implements IChatUseCase {
     private readonly _sellerRepository: SellerRepository
   ) {}
 
-  // async createChat(
-  //   userId: string,
-  //   receiverId: string
-  // ): Promise<{ chatId: string; messages: any[] }> {
-  //   console.log("Creating chat session...");
-
-  //   // Check if the receiver is a seller
-  //   const isReceiverSeller = await this._sellerRepository.findById(receiverId);
-  //   console.log(`Is receiver a seller? ${isReceiverSeller}`);
-
-  //   const result = await this._chatRepository.createRoom(
-  //     userId,
-  //     receiverId,
-  //     !!isReceiverSeller
-  //   );
-  //   console.log(`Chat room created: ${result.chatId}`);
-
-  //   return {
-  //     chatId: result.chatId,
-  //     messages: result.message
-  //   };
-  // }
-
+ 
   async sendMessage(
     sender: string,
     receiver: string,
