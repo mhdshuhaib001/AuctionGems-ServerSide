@@ -107,10 +107,13 @@ class AuctionRepository implements IAuctionRepository {
       throw error;
     }
   }
-  async findById(auctionId: string) {
+  async findById(auctionId: string):Promise<any> {
     try {
       return await OrderModel.findOne({ productId: auctionId });
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error fetching await findById:", error);
+      throw error;
+    }
   }
 
   async resetAuctionBids(auctionId: string): Promise<void> {

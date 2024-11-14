@@ -59,7 +59,6 @@ class UserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
     try {
       const user = await UserModel.findById(id).exec();
-      console.log(user,'=====================================')
       return user ? user.toObject() : null;
     } catch (error) {
       console.error("Error finding user by ID:", error);
@@ -67,10 +66,9 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async updateRole(userId: string, role: "user" | "seller") {
+  async updateRole(userId: string, role: "user" | "seller"):Promise<boolean> {
     try {
       const user = await UserModel.findById(userId).exec();
-      console.log("Output:this is the seller changing area ", user);
 
       if (user) {
         user.role = role;
@@ -103,10 +101,7 @@ class UserRepository implements IUserRepository {
 
   async saveAddress(addressData: AddressData): Promise<boolean> {
     try {
-      console.log(
-        addressData,
-        "this is the address usecase area i placed this "
-      );
+
       const {
         fullName,
         phoneNumber,

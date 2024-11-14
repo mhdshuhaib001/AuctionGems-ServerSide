@@ -9,8 +9,7 @@ import JWT from "../providers/jwt";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 import { IReport } from "../interfaces/model/IReport";
-import { whatsAppNotification } from "../infrastructure/config/services/twilioWhatsappNotification";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import { messaging } from "../infrastructure/config/services/fireBaseConfig";
 import NodeMailer from "../providers/nodeMailer";
@@ -130,7 +129,6 @@ class AdminUseCase implements IAdminUseCase {
             "category"
           );
 
-          console.log(imageUrl, "image url chek on here ");
           updateData.imageUrl = imageUrl || "";
         }
 
@@ -196,14 +194,7 @@ class AdminUseCase implements IAdminUseCase {
     }
   }
 
-  // async sendWhatsAppNotificationUseCase(
-  //   to: string,
-  //   message: string
-  // ): Promise<void> {
-  //   console.log(to, message, "to send message is this ");
-  //   const imageUrl = "https://m.media-amazon.com/images/I/71tQC-279uL.jpg";
-  //   const response = await whatsAppNotification(to, message, imageUrl);
-  // }
+
 
   async subscribeToAuction(
     userId: string,
@@ -212,12 +203,9 @@ class AdminUseCase implements IAdminUseCase {
     email?: string,
     phoneNumber?: string,
     countryCode?: string
-  ) {
+  ):Promise<void>{
     try {
-      console.log(
-        phoneNumber ? countryCode + phoneNumber : undefined,
-        "sybjkdfngkvjlfbivfgvgvbj n"
-      );
+      
       await this._adminRepository.upsertNotificationPreferences(
         userId,
         auctionId,

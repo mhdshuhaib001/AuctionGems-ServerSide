@@ -129,7 +129,6 @@ class AdminRepository implements IAdminRepository {
   }
   async getReports(): Promise<IReport[] | null> {
     try {
-      console.log("Fetching reports...");
 
       const reports = await reportModal
         .find()
@@ -137,7 +136,6 @@ class AdminRepository implements IAdminRepository {
         .populate("sellerId", "companyName")
         .lean<IReport[]>();
 
-      console.log(reports, "this is for the report area");
       return reports;
     } catch (error) {
       throw new Error(`Error fetching reports: ${error}`);
@@ -183,16 +181,15 @@ class AdminRepository implements IAdminRepository {
     }
   }
 
-  // async getSellerById
 
   async upsertNotificationPreferences(
     userId: string,
     auctionId: string,
     fcmToken?: string,
     email?: string,
-    whatsappNumber?: string,
+    whatsappNumber?: string,  
     auctionStartTime?: string
-  ) {
+  ) :Promise<void>{
     try {
       await NotificationSubscriptionModel.findOneAndUpdate(
         { userId, auctionId },

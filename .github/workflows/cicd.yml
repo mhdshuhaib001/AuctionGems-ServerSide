@@ -1,0 +1,29 @@
+name: Deploy Node Application
+
+on:
+ push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Image
+        run: docker build -t shuhaib109/auctiongems-server .
+      - name: Publish Image  to docker hub
+        run: docker push shuhaib109/auctiongems-server:latest
+  
+  deploy:
+    needs: build 
+    runs-on: self-hosted
+    steps: 
+      - name: pull image  from docker hub
+        run: docker pull shuhaib109/auctiongems-server:latest
+      - name: Run Docker Container
+        run: docker run -d -p 4000:4000 --name auctiongems-server-container -e DATABASE_URL=${{ secrets.DATABASE_URL }} shuhaib109/auctiongems-server
+      

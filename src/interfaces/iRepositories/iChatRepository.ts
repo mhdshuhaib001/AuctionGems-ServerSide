@@ -1,7 +1,7 @@
+import Chat from "../../interfaces/model/chat";
+
 interface IChatRepository {
-    // createMessage(message: Chat): Promise<Chat>;
-    // getMessages(senderId: string, recipientId: string): Promise<Chat[]>;
-    // updateMessageStatus(messageId: string, status: string): Promise<Chat | null>;
+  getMessages(sender: string, receiver: string): Promise<Chat[]>;
 }
 
 export default IChatRepository;
