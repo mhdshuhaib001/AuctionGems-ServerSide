@@ -33,20 +33,17 @@ class AuctionUseCase implements IAuctionUseCase {
       const { auctionId, bidderId, currentBid, bidAmount, sellerId, time } =
         bid;
       console.log(bid);
-      // Fetch the auction details to get the current highest bid
       const auction = await this._auctionRepository.getAuctionItem(auctionId);
 
       if (!auction) {
         throw new Error("Auction not found");
       }
 
-      // Check if the new bid is greater than the current highest bid
       console.log(bidAmount, auction.currentBid, "befor check the bid amount ");
       if (bidAmount <= auction.currentBid) {
         throw new Error("Bid amount must be higher than the current bid");
       }
 
-      // Call the repository method to place the bid
       const result = await this._auctionRepository.placeBid(
         bidderId,
         auctionId,
@@ -59,7 +56,6 @@ class AuctionUseCase implements IAuctionUseCase {
         throw new Error("Failed to place bid in the database");
       }
 
-      // Update the auction with the new highest bid
       await this._auctionRepository.updateAuctionBid(auctionId, bidAmount);
     } catch (error) {
       console.error("Error placing bid:", error);
