@@ -20,7 +20,7 @@ class NodeMailer implements mailer {
     const mailOptions = {
       from: process.env.GMAIL,
       to: email,
-      subject: "Atiqgem - OTP for Email Verification",
+      subject: "AuctionGems - OTP for Email Verification",
       html: `
               <div style="font-family: Arial, sans-serif; padding: 20px;">
                   <h2 style="color: #333;">Welcome to Atiqgem!</h2>
@@ -47,7 +47,7 @@ class NodeMailer implements mailer {
     const mailOptions = {
       from: process.env.GMAIL,
       to: email,
-      subject: "Antigo - Password Forget Request",
+      subject: "AuctionGems - Password Forget Request",
       html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px;">
               <h2 style="text-align: center; color: #2c3e50;">Antigo - Password Reset</h2>
