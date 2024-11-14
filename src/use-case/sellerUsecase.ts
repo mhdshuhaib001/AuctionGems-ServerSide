@@ -162,7 +162,6 @@ class SellerUseCase {
   ): Promise<{ status: number; message: string; products?: Product[] }> {
     try {
       const products = await this._SellerRepository.getAllProducts(sellerId);
-      console.log(products, "this is the porductsssssssss");
       if (products.length > 0) {
         const productsWithCategory = products.map((product) => {
           const plainProduct = product.toObject();
