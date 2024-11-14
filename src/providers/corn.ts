@@ -36,8 +36,7 @@ export const initRelistAuctionCronJob = () => {
     console.log('Checking for auctions to relist...');
     try {
       const auctionsToRelist = await auctionRepository.getAuctionsAwaitingPayment();
-      console.log(auctionsToRelist,'=====================================================================')
-      console.log(auctionsToRelist, 'Auctions to relist fetched');
+    
       
       for (const auction of auctionsToRelist) {
         await auctionUseCase.relistAuction(auction._id.toString());

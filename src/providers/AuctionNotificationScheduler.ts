@@ -46,7 +46,6 @@ export const startAuctionCronJob = () => {
         const auctionStartISO = auctionStartTime.toISOString();
 
         const notificationTime = new Date(auctionStartTime.getTime() - 1 * 60 * 1000);
-        console.log(notificationTime,'==============================================================')
         const notificationISO = notificationTime.toISOString();
         const notificationHours = notificationTime.getUTCHours();
         const notificationMinutes = notificationTime.getUTCMinutes();
@@ -66,10 +65,8 @@ export const startAuctionCronJob = () => {
             const productName = auction.itemTitle || "Unknown Product";
             const productImage = auction.images?.[0] || "";
             const productUrl = `${process.env.FRONTEND_URL}/product-details/${auctionId}`;
-            console.log(productUrl,'=================================product url.')
             const price = auction.reservePrice || '0';
           
-            console.log(`💬 Sending WhatsApp notification to ${whatsappNumber}`);
             await whatsAppNotification(whatsappNumber, productName, price, productUrl, productImage);
             console.log(`✅ WhatsApp message sent to ${whatsappNumber} for auction ${auctionId}`);
           }
