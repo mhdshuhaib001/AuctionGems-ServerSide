@@ -37,10 +37,10 @@ jobs:
 
       - name: Run Docker Container
         run: |
-          docker run -d --restart unless-stopped -p 8000:8000 \
+          docker run -d --restart unless-stopped -p 8080:8080 \
             --name auctiongems-server-container \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e PORT=${{ secrets.PORT }} \
+            -e PORT=8080 \
             -e GMAIL=${{ secrets.GMAIL }} \
             -e PASS=${{ secrets.PASS }} \
             -e JWT_KEY=${{ secrets.JWT_KEY }} \
