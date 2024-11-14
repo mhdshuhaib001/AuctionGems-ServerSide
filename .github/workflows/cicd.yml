@@ -20,18 +20,47 @@ jobs:
         
       - name: Publish Image to Docker Hub
         run: docker push shuhaib109/auctiongems-server:latest
-  
-  deploy:
-    needs: build
-    runs-on: self-hosted
-    steps:
-      - name: Pull Docker Image from Docker Hub
-        run: docker pull shuhaib109/auctiongems-server:latest
-        
-      - name: Stop and Remove Existing Container
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+  # Deploy to EC2
+      - name: Deploy to EC2
+        env:
+          HOST: 51.20.144.118
+          USER: ubuntu
+          REPO_DIR: /actions-runner-server
         run: |
-          docker stop auctiongems-server-container || true
-          docker rm auctiongems-server-container || true
-        
-      - name: Run Docker Container
-        run: docker run -d -p 4000:4000 --name auctiongems-server-container -e DATABASE_URL=${{ secrets.DATABASE_URL }} shuhaib109/auctiongems-server:latest
+          ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+            # Print current directory
+            echo "Current Directory: $(pwd)"
+            
+            # Navigate to the repository directory
+            cd actions-runner-server/
+            
+            # Print the directory after changing
+            echo "Changed to Directory: $(pwd)"
+            
+            # List files in the current directory
+            echo "Files in Directory:"
+            ls -la
+            
+            # Check if the directory is a git repository
+            if [ ! -d ".git" ]; then
+              echo "Not a Git repository. Exiting."
+              exit 1
+            fi
+            
+            # Pull the latest changes from the main branch
+            git pull origin main
+            
+            # Install dependencies
+            npm install
+            
+            # Restart the application
+            pm2 restart index
+            
+            # Print the end message
+            echo "Deployment completed."
+          EOF
