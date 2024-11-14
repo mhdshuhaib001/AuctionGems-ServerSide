@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Expose the port your application will run on
-EXPOSE 8001
+EXPOSE 8000
 
 # Clean up build dependencies to reduce image size
 RUN apk del .build-deps
