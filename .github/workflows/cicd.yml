@@ -17,42 +17,42 @@ jobs:
         run: docker build -t shuhaib109/auctiongems-server .
       - name: Publish Image to Docker Hub
         run: docker push shuhaib109/auctiongems-server:latest
-  deploy:
-   needs: build
-   runs-on: self-hosted
-   steps:
-    - name: Pull image from Docker Hub
-      run: docker pull shuhaib109/auctiongems-server:latest
 
-    - name: Run Docker Container
-      run: |
-        docker run -d -p 8000:8000 \
-          --name auctiongems-server-container \
-          -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-          -e PORT=${{ secrets.PORT }} \
-          -e GMAIL=${{ secrets.GMAIL }} \
-          -e PASS=${{ secrets.PASS }} \
-          -e JWT_KEY=${{ secrets.JWT_KEY }} \
-          -e CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }} \
-          -e CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }} \
-          -e CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }} \
-          -e ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }} \
-          -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
-          -e STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
-          -e STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
-          -e TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
-          -e TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
-          -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
-          -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
-          -e FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }} \
-          -e FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
-          -e FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }} \
-          -e FIREBASE_PRIVATE_KEY="${{ secrets.FIREBASE_PRIVATE_KEY }}" \
-          -e FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }} \
-          -e FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }} \
-          -e FIREBASE_AUTH_URI=${{ secrets.FIREBASE_AUTH_URI }} \
-          -e FIREBASE_TOKEN_URI=${{ secrets.FIREBASE_TOKEN_URI }} \
-          -e FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL }} \
-          -e FIREBASE_CLIENT_X509_CERT_URL=${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }} \
-          -e FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }} \
-          shuhaib109/auctiongems-server:latest
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull image from Docker Hub
+        run: docker pull shuhaib109/auctiongems-server:latest
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 8000:8000 \
+            --name auctiongems-server-container \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -e PORT=${{ secrets.PORT }} \
+            -e GMAIL=${{ secrets.GMAIL }} \
+            -e PASS=${{ secrets.PASS }} \
+            -e JWT_KEY=${{ secrets.JWT_KEY }} \
+            -e CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }} \
+            -e CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }} \
+            -e CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }} \
+            -e ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }} \
+            -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+            -e STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+            -e STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            -e TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
+            -e TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
+            -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+            -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            -e FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }} \
+            -e FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
+            -e FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }} \
+            -e FIREBASE_PRIVATE_KEY="${{ secrets.FIREBASE_PRIVATE_KEY }}" \
+            -e FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }} \
+            -e FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }} \
+            -e FIREBASE_AUTH_URI=${{ secrets.FIREBASE_AUTH_URI }} \
+            -e FIREBASE_TOKEN_URI=${{ secrets.FIREBASE_TOKEN_URI }} \
+            -e FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL }} \
+            -e FIREBASE_CLIENT_X509_CERT_URL=${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }} \
+            -e FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }} \
+            shuhaib109/auctiongems-server:latest
