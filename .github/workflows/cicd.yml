@@ -21,6 +21,10 @@ jobs:
       - name: Publish Image to Docker Hub
         run: docker push shuhaib109/auctiongems-server:latest
 
+
+      - name: Clean up Docker to free space
+        run: docker system prune -f --volumes
+
   deploy:
     needs: build
     runs-on: self-hosted
