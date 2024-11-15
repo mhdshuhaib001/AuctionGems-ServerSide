@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Node.js 
+name: CI/CD Pipeline for Node.js
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Specifies the self-hosted runner on your Ubuntu server
 
     steps:
       # Check out the code from the repository
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20.11.1' # Set your Node.js version
+          node-version: '20.11.1' 
 
       # Install dependencies
       - name: Install dependencies
@@ -29,63 +29,34 @@ jobs:
 
       # Run tests
       - name: Run tests
-        run: npm test  # Ensure you have tests defined; otherwise, skip this step
+        run: npm test 
 
       # Uncomment if you have a build process
       # - name: Build application
       #   run: npm run build
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Runs the deployment step on the self-hosted runner
     needs: build
 
     steps:
-      # Check out the code again for deployment
+      # Checkout code (if needed, the code should already be present)
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up SSH to connect to the EC2 instance
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-      # Deploy to EC2
-      - name: Deploy to EC2
-        env:
-          HOST: 16.171.153.46
-          USER: ubuntu
-          REPO_DIR: /E-commerce
+      # Deploy the application on the self-hosted Ubuntu instance
+      - name: Deploy application
         run: |
-          ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
-            # Print current directory
-            echo "Current Directory: $(pwd)"
-            
-            # Navigate to the repository directory
-            cd E-commerce/
-            
-            # Print the directory after changing
-            echo "Changed to Directory: $(pwd)"
-            
-            # List files in the current directory
-            echo "Files in Directory:"
-            ls -la
-            
-            # Check if the directory is a git repository
-            if [ ! -d ".git" ]; then
-              echo "Not a Git repository. Exiting."
-              exit 1
-            fi
-            
-            # Pull the latest changes from the main branch
-            git pull origin main
-            
-            # Install dependencies
-            npm install
-            
-            # Restart the application
-            pm2 restart index
-            
-            # Print the end message
-            echo "Deployment completed."
-          EOF
+          # Change to the repository directory (modify this path as needed)
+          cd /path/to/your/repo
+          
+          # Pull the latest changes
+          git pull origin main
+          
+          # Install dependencies
+          npm install
+          
+          # Restart the application with PM2
+          pm2 restart index || pm2 start index.js --name "index"
+          
+          echo "Deployment completed."
