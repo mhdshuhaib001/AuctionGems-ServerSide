@@ -1,62 +1,33 @@
-name: CI/CD Pipeline for Node.js
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
   build:
-    runs-on: self-hosted  # Specifies the self-hosted runner on your Ubuntu server
+
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.11.1]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      # Check out the code from the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Set up Node.js with the specified version
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.11.1' 
-
-      # Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Run tests
-      - name: Run tests
-        run: npm test 
-
-      # Uncomment if you have a build process
-      # - name: Build application
-      #   run: npm run build
-
-  deploy:
-    runs-on: self-hosted  # Runs the deployment step on the self-hosted runner
-    needs: build
-
-    steps:
-      # Checkout code (if needed, the code should already be present)
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Deploy the application on the self-hosted Ubuntu instance
-      - name: Deploy application
-        run: |
-          # Change to the repository directory (modify this path as needed)
-          cd /path/to/your/repo
-          
-          # Pull the latest changes
-          git pull origin main
-          
-          # Install dependencies
-          npm install
-          
-          # Restart the application with PM2
-          pm2 restart index || pm2 start index.js --name "index"
-          
-          echo "Deployment completed."
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: |
+        touch .env
+        echo "${{ secrets.PROD_ENV_FILE }}" > .env
+        

@@ -11,7 +11,6 @@ const handleAddCategory = (req:Request,res:Response)=>  adminController.addCateg
 const handleGetAllCategory = (req:Request,res:Response)=>adminController.getAllCategory(req,res);
 const handleUpdateCategory = (req: Request, res: Response) =>  adminController.updateCategory(req, res); 
 const handleDeleteCategory = (req:Request,res:Response)=>adminController.deleteCategory(req,res);   
-// const handleSendNotification = (req:Request,res:Response)=>adminController.sendWatsappNotification(req,res)
 const handleReportAdd = (req:Request,res:Response)=>adminController.addReport(req,res);
 const handleGetReports = (req:Request,res:Response)=>adminController.getReports(req,res);
 const handleUpdateStatus = (req:Request,res:Response)=>adminController.updateReportStatus(req,res)
@@ -22,7 +21,6 @@ router.post('/categories', uploadFields, handleAddCategory);
 router.get('/categories',handleGetAllCategory)
 router.put('/categories/:id', uploadFields, handleUpdateCategory);
 router.delete('/categories/:id',handleDeleteCategory);
-// router.post('/send-notification',handleSendNotification)
 router.post('/report',handleReportAdd)
 router.get('/getreports',handleGetReports)
 router.patch('/status/:id', handleUpdateStatus);
