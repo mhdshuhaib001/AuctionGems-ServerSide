@@ -16,13 +16,10 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build --pull -t shuhaib109/auctiongems-server:latest .
+        run: docker build -t shuhaib109/auctiongems-server:latest .
 
       - name: Publish Image to Docker Hub
         run: docker push shuhaib109/auctiongems-server:latest
-
-      - name: Logout from Docker Hub
-        run: docker logout
 
   deploy:
     needs: build
@@ -40,7 +37,7 @@ jobs:
 
       - name: Run Docker Container
         run: |
-          docker run -d --restart unless-stopped -p 8080:8080 \
+          docker run shuhaib109/auctiongems-server:latest -d --restart unless-stopped -p 8000:8000 \
             --name auctiongems-server-container \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e PORT=8080 \
@@ -69,7 +66,4 @@ jobs:
             -e FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL }} \
             -e FIREBASE_CLIENT_X509_CERT_URL=${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }} \
             -e FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }} \
-            shuhaib109/auctiongems-server:latest  
-
-      - name: Logout from Docker Hub
-        run: docker logout
+            shuhaib109/auctiongems-server:latest
