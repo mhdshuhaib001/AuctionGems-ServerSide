@@ -25,20 +25,12 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
-      - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Pull image from Docker Hub
         run: docker pull shuhaib109/auctiongems-server:latest
-
-      - name: Stop and Remove Existing Container
-        run: |
-          docker rm -f auctiongems-server-container || true
-
+      
       - name: Run Docker Container
         run: |
-          docker run shuhaib109/auctiongems-server:latest -d --restart unless-stopped -p 8000:8000 \
-            --name auctiongems-server-container \
+          docker run -d -p 8000:8000  --name auctiongems-server-container \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e PORT=8080 \
             -e GMAIL=${{ secrets.GMAIL }} \
