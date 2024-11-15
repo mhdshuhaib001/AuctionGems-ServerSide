@@ -10,47 +10,7 @@ class ProductUseCase implements IProductUseCase {
     private readonly _sellerRepository: SellerRepository
   ) {}
 
-  // async createProduct(
-  //     productData: Product,
-  //     images: string[]
-  //   ): Promise<{ status: number; message: string; productData?: Product }> {
-  //     try {
-  //       // console.log(productData, "this is the product Dataaaaaaaaaaaa");
 
-  //       if (!Array.isArray(images) || images.length === 0) {
-  //         throw new Error("No images provided");
-  //       }
-
-  //       // Upload each image (base64 string) to Cloudinary
-  //       const uploadPromises = images.map((imageBase64) =>
-  //         cloudinary.uploader.upload(imageBase64, {
-  //           folder: "auction_gems/product_images"
-  //         })
-  //       );
-  //       // cloudinary image adding area
-  //       const uploadResults = await Promise.all(uploadPromises);
-  //       const imageUrls = uploadResults.map(
-  //         (result: { secure_url: string }) => result.secure_url
-  //       );
-
-  //       const updatedProductData: Product = {
-  //         ...productData,
-  //         images: imageUrls
-  //       };
-
-  //       const product =
-  //         await this._ProductRepository.insertOne(updatedProductData);
-
-  //       return {
-  //         status: 201,
-  //         message: "Product created successfully",
-  //         productData: product
-  //       };
-  //     } catch (error) {
-  //       console.error("Error creating product:", error);
-  //       throw new Error("Failed to create product.");
-  //     }
-  //   }
 
   async getProduct(productId: string): Promise<any> {
     try {

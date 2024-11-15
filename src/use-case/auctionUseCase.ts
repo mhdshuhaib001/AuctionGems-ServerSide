@@ -63,6 +63,8 @@ class AuctionUseCase implements IAuctionUseCase {
     }
   }
 
+  // fetch alll the bids
+
   async fetchBidders(auctionId: string): Promise<any[]> {
     try {
       const bids = await this._auctionRepository.getBiddings(auctionId);
@@ -100,6 +102,7 @@ class AuctionUseCase implements IAuctionUseCase {
     }
   }
 
+  // to check the winner on aftr the auction end
   async endAuctionAndNotifyWinner(auctionId: string): Promise<{
     winnerId: string;
     paymentLink: string;
