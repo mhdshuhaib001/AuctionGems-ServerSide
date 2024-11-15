@@ -16,10 +16,13 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t shuhaib109/auctiongems-server:latest .
+        run: docker build --pull -t shuhaib109/auctiongems-server:latest .
 
       - name: Publish Image to Docker Hub
         run: docker push shuhaib109/auctiongems-server:latest
+
+      - name: Logout from Docker Hub
+        run: docker logout
 
   deploy:
     needs: build
@@ -66,4 +69,7 @@ jobs:
             -e FIREBASE_AUTH_PROVIDER_X509_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL }} \
             -e FIREBASE_CLIENT_X509_CERT_URL=${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }} \
             -e FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }} \
-            shuhaib109/auctiongems-server:latest
+            shuhaib109/auctiongems-server:latest  
+
+      - name: Logout from Docker Hub
+        run: docker logout

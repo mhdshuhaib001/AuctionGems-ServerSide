@@ -16,6 +16,8 @@ class NodeMailer implements mailer {
       }
     });
   }
+
+// Email verifying otp send 
   async sendMail(email: string, otp: number): Promise<boolean> {
     const mailOptions = {
       from: process.env.GMAIL,
@@ -23,7 +25,7 @@ class NodeMailer implements mailer {
       subject: "AuctionGems - OTP for Email Verification",
       html: `
               <div style="font-family: Arial, sans-serif; padding: 20px;">
-                  <h2 style="color: #333;">Welcome to Atiqgem!</h2>
+                  <h2 style="color: #333;">Welcome to AuctionGems!</h2>
                   <p style="font-size: 16px;">Thank you for signing up. Please verify your email address by using the OTP below:</p>
                   <h3 style="background-color: #f2f2f2; padding: 10px; border-radius: 5px; display: inline-block; font-size: 24px; color: #555;">
                       ${otp}
@@ -43,6 +45,7 @@ class NodeMailer implements mailer {
     }
   }
 
+  // Forget password area 
   async forgetMail(email: string, forgetUrl: string): Promise<boolean> {
     const mailOptions = {
       from: process.env.GMAIL,
@@ -79,6 +82,8 @@ class NodeMailer implements mailer {
     }
   }
 
+
+  // Auction Winner email
   async sendWinnerMail(
     email: string,
     auctionName: string,
@@ -162,7 +167,6 @@ class NodeMailer implements mailer {
     }
   }
 
-
   async sendReportManagementEmail(
     email: string,
     reportStatus: string,
@@ -186,10 +190,10 @@ class NodeMailer implements mailer {
         </div>
       `
     };
-  
+
     try {
       await this._transporter.sendMail(mailOptions);
-      console.log('Report management email sent successfully.');
+      console.log("Report management email sent successfully.");
       return true;
     } catch (error) {
       console.error("Error sending report management email:", error);
@@ -197,9 +201,12 @@ class NodeMailer implements mailer {
     }
   }
 
-  async sendWarningEmail(email: string, warningMessage: string): Promise<boolean> {
+  async sendWarningEmail(
+    email: string,
+    warningMessage: string
+  ): Promise<boolean> {
     const mailOptions = {
-      from: process.env.GMAIL, 
+      from: process.env.GMAIL,
       to: email,
       subject: "Warning Notification from Atiqgem",
       html: `
@@ -222,7 +229,6 @@ class NodeMailer implements mailer {
       return false;
     }
   }
-  
 }
 
 export default NodeMailer;

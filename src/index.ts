@@ -10,7 +10,6 @@ dotenv.config();
 
 const startServer = async () => {
   try {
-    // Initialize the database connection
     await DBconfig();
 
     const port = process.env.PORT || 8001;
@@ -21,7 +20,7 @@ const startServer = async () => {
     // initSocket(server)
     // Initialize Socket.io
     socketIoInit(server);
-    // Initialize the auction cron job
+    // Auction Notifgication corn 
     // startAuctionCronJob()
     // initAuctionCronJob();
     server.listen(port, () => console.log(`Server running at ${url}`));
