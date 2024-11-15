@@ -10,6 +10,7 @@ interface IUserAuctionHistory extends Document {
   actionDate: Date; 
 }
 
+// auction History scema 
 const UserAuctionHistorySchema: Schema = new Schema({
   userId: { type: String, required: true },
   auctionId: { type: String, required: true },
