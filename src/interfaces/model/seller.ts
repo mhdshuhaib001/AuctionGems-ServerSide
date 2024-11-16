@@ -27,7 +27,7 @@ export interface Product extends Document {
   auctionStartDateTime: string;
   auctionEndDateTime: Date;
   reservePrice?: string;
-  auctionStatus: "live" | "upcoming" | "end" | "sold" | "unsold";
+  auctionStatus: "live" | "upcoming" | "end" | "sold" | "unsold"|'relisted';
   shippingType: "standard" | "express";
   shippingCost?: number;
   handlingTime?: number;

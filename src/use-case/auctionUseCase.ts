@@ -105,12 +105,7 @@ class AuctionUseCase implements IAuctionUseCase {
     }
   }
 
-
-
-
-  async endAuctionAndNotifyWinner(
-    auctionId: string
-  ): Promise<{
+  async endAuctionAndNotifyWinner(auctionId: string): Promise<{
     winnerId: string;
     paymentLink: string;
     productName: string;
@@ -118,20 +113,20 @@ class AuctionUseCase implements IAuctionUseCase {
     currentBid: number;
   }> {
     try {
-
       const auctionItem =
         await this._auctionRepository.getAuctionItem(auctionId);
       if (!auctionItem) {
         console.error("Auction not found");
         throw new Error("Auction not found");
       }
-      console.log(`Auction item found: ${auctionItem.itemTitle}-------------------------------`);
       const currentTime = new Date();
       const endTime = new Date(auctionItem.auctionEndDateTime);
-      
+
       if (currentTime < endTime) {
-        console.log(`Auction ${auctionId} hasn't ended yet. Current: ${currentTime}, End: ${endTime}`);
-throw new Error('auction is not ended')
+        console.log(
+          `Auction ${auctionId} hasn't ended yet. Current: ${currentTime}, End: ${endTime}`
+        );
+        throw new Error("auction is not ended");
       }
       // const currentTime = new Date();
       // if (currentTime < auctionItem.auctionEndDateTime) {
@@ -197,11 +192,6 @@ throw new Error('auction is not ended')
 
       await this._auctionRepository.updateAuctionStatus(auctionId, "sold");
 
-
-      console.log(
-        `Product marked as sold for auctionId: ${auctionId}, final bid amount: ${highestBid.currentBid}`
-      );
-
       const io = getSocketInstance();
       io.to(auctionId).emit("auction_winner", {
         auctionId,
@@ -225,11 +215,32 @@ throw new Error('auction is not ended')
     }
   }
 
+  async relistAuction(auctionId: string): Promise<void> {
+    try {
+      const auction = await this._auctionRepository.getAuctionItems(auctionId);
+      if (!auction) {
+        throw new Error('Auction not found');
+      }
+  
+      if (auction.auctionStatus === 'sold' && auction.paymentStatus === 'pending') {
+        await this._auctionRepository.updateAuctionStatus(auctionId, 'relisted');
+        await this._auctionRepository.resetAuctionBids(auctionId);
+        console.log(`Auction ${auctionId} has been relisted.`);
+      } else {
+        console.log(`Auction ${auctionId} cannot be relisted because payment was not pending.`);
+      }
+    } catch (error) {
+      console.error("Error relisting auction:", error);
+      throw error;
+    }
+  }
+  
   async getAllActiveAuctions(): Promise<any[]> {
     try {
       const currentTime = new Date().toISOString();
-      const currentTimeInIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString();
-      console.log(currentTime, "this is the current time ");
+      const currentTimeInIST = new Date(
+        Date.now() + 5.5 * 60 * 60 * 1000
+      ).toISOString();
       const activeAuctions =
         await this._auctionRepository.getActiveAuctions(currentTimeInIST);
 
@@ -237,6 +248,13 @@ throw new Error('auction is not ended')
     } catch (error) {
       console.error("Error fetching active auctions:", error);
       throw error;
+    }
+  }
+  async getAwaitPayment():Promise<any>{
+    try {
+      
+    } catch (error) {
+      
     }
   }
 }

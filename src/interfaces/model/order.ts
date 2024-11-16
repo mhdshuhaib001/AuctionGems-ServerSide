@@ -18,8 +18,10 @@ interface IOrder extends Document {
     };
     shippingType: 'standard' | 'express';
     orderStatus: 'pending' | 'completed' | 'canceled';
-    trackingNumber?: string;
-    paymentStatus: 'pending' | 'completed' | 'failed';
+    paymentDueDate?: Date;
+    trackingNumber:string
+    status:string
+    paymentStatus: 'pending' | 'completed' | 'failed'|'pending_payment';
 }
 
 export default IOrder;

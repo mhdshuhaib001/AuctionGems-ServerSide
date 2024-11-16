@@ -3,6 +3,7 @@ import bidModel from "../../entities_models/bidModel";
 import mongoose from "mongoose";
 import ProductModel from "../../entities_models/productModal";
 import { Product } from "../../interfaces/model/seller";
+import OrderModel from "../../entities_models/orderModel";
 
 class AuctionRepository implements IAuctionRepository {
   async placeBid(
@@ -44,7 +45,11 @@ class AuctionRepository implements IAuctionRepository {
       throw new Error("Auction not found");
     }
 
-    auction.auctionStatus = "sold";
+    if (status !== "sold" && status !== "live" && status !== "upcoming" && status !== "relisted" && status !== "end" && status !== "unsold") {
+      throw new Error("Invalid auction status");
+    }
+
+    auction.auctionStatus = status;
     await auction.save();
   }
 
@@ -76,11 +81,10 @@ class AuctionRepository implements IAuctionRepository {
   }
   async getActiveAuctions(currentTimeInIST: any): Promise<any[]> {
     try {
-      console.log("Current time:", currentTimeInIST);
-
       const activeAuctions = await ProductModel.find({
         auctionStatus: { $ne: "sold" },
-        auctionFormat: { $ne: "buy-it-now" }      });
+        auctionFormat: { $ne: "buy-it-now" }
+      });
 
       console.log("Fetched active auctions:", activeAuctions);
 
@@ -90,6 +94,82 @@ class AuctionRepository implements IAuctionRepository {
       throw error;
     }
   }
+
+  async getAuctionAwaitPayment() {
+    try {
+      return await OrderModel.find({
+        status: "sold",
+        paymentStatus: "pending",
+        paymentDueDate: { $lt: new Date() }
+      });
+    } catch (error) {
+      console.error("Error fetching await auctionPaymen:", error);
+      throw error;
+    }
+  }
+  async findById(auctionId: string) {
+    try {
+      return await OrderModel.findOne({ productId: auctionId });
+    } catch (error) {}
+  }
+
+  async resetAuctionBids(auctionId: string): Promise<void> {
+    try {
+      const auction = await ProductModel.findById(auctionId);
+      if (!auction) {
+        throw new Error("Auction not found");
+      }
+
+      auction.currentBid = 0;
+      auction.auctionStatus = "upcoming";
+      await auction.save();
+
+      await bidModel.deleteMany({ auctionId: auction._id });
+    } catch (error) {
+      console.error("Error resetting auction bids:", error);
+      throw error;
+    }
+  }
+
+  async getAuctionItems(id: string): Promise<any> {
+    try {
+      const auctionItems = await ProductModel.findById(id).exec();
+      if (!auctionItems) {
+        console.error("Auction item not found");
+        return null;
+      }
+
+      const auctionItem = await OrderModel.findOne({
+        productId: auctionItems._id
+      }).exec();
+
+      return auctionItem;
+    } catch (error) {
+      console.error("Error finding auction item:", error);
+      throw new Error("Error fetching auction item");
+    }
+  }
+
+
+  async getAuctionsAwaitingPayment(): Promise<any[]> {
+    try {
+
+      const sixDaysAgo = new Date();
+      sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
+
+      const orders = await OrderModel.find({
+        paymentStatus: 'pending',
+        paymentDueDate: { $lt: sixDaysAgo },
+        orderStatus: { $ne: 'completed' } 
+      }).populate('productId'); 
+  
+      const auctions = orders.map(order => order.productId);
+      return auctions;
+    } catch (error) {
+      console.error('Error fetching auctions awaiting payment:', error);
+      throw error;
+    }
+}
 }
 
 export default AuctionRepository;
