@@ -1,0 +1,62 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.auctionController = exports.chatController = exports.orderController = exports.productController = exports.adminController = exports.sellerController = exports.userController = void 0;
+const UserRepositories_1 = __importDefault(require("../infrastructure/repositories/UserRepositories"));
+const userUseCase_1 = __importDefault(require("../use-case/userUseCase"));
+const userController_1 = __importDefault(require("../adaptors/controllers/userController"));
+const sellerController_1 = __importDefault(require("../adaptors/controllers/sellerController"));
+const productControroller_1 = __importDefault(require("../adaptors/controllers/productControroller"));
+const generateOTP_1 = __importDefault(require("./generateOTP"));
+const nodeMailer_1 = __importDefault(require("./nodeMailer"));
+const UserOtpRepositories_1 = __importDefault(require("../infrastructure/repositories/UserOtpRepositories"));
+const ProductRepository_1 = __importDefault(require("../infrastructure/repositories/ProductRepository"));
+const SellerRepository_1 = __importDefault(require("../infrastructure/repositories/SellerRepository"));
+const sellerUsecase_1 = __importDefault(require("../use-case/sellerUsecase"));
+const jwt_1 = __importDefault(require("./jwt"));
+const productUseCase_1 = __importDefault(require("../use-case/productUseCase"));
+const adminUseCase_1 = __importDefault(require("../use-case/adminUseCase"));
+const adminController_1 = __importDefault(require("../adaptors/controllers/adminController"));
+const AdminRepository_1 = __importDefault(require("../infrastructure/repositories/AdminRepository"));
+const cloudinaryHelper_1 = __importDefault(require("./cloudinaryHelper"));
+const OrderRepository_1 = require("../infrastructure/repositories/OrderRepository");
+const orderUseCase_1 = require("../use-case/orderUseCase");
+const orderController_1 = __importDefault(require("../adaptors/controllers/orderController"));
+const chatController_1 = __importDefault(require("../adaptors/controllers/chatController"));
+const ChatRepository_1 = __importDefault(require("../infrastructure/repositories/ChatRepository"));
+const chatUseCase_1 = __importDefault(require("../use-case/chatUseCase"));
+const auctionUseCase_1 = __importDefault(require("../use-case/auctionUseCase"));
+const AuctionRepository_1 = __importDefault(require("../infrastructure/repositories/AuctionRepository"));
+const auctionController_1 = __importDefault(require("../adaptors/controllers/auctionController"));
+// Provider
+const jwt = new jwt_1.default();
+const OTPGenerator = new generateOTP_1.default();
+const mailer = new nodeMailer_1.default();
+const cloudinaryHelper = new cloudinaryHelper_1.default();
+// Repositoriesa
+const userRepository = new UserRepositories_1.default();
+const sellerRepository = new SellerRepository_1.default();
+const userOTPRepo = new UserOtpRepositories_1.default();
+const productRepository = new ProductRepository_1.default();
+const adminRepository = new AdminRepository_1.default();
+const orderRepository = new OrderRepository_1.OrderRepository();
+const chatRepository = new ChatRepository_1.default();
+const auctionRepository = new AuctionRepository_1.default();
+// UseCases
+const userUseCase = new userUseCase_1.default(OTPGenerator, userRepository, mailer, jwt, userOTPRepo, sellerRepository, cloudinaryHelper, adminRepository);
+const sellerUsecase = new sellerUsecase_1.default(sellerRepository, userRepository, jwt, productRepository, adminRepository, cloudinaryHelper);
+const adminUseCase = new adminUseCase_1.default(jwt, adminRepository, cloudinaryHelper, sellerRepository);
+const productUseCase = new productUseCase_1.default(productRepository, sellerRepository);
+const orderUseCase = new orderUseCase_1.OrderUsecase(orderRepository, sellerRepository, userRepository);
+const chatUseCase = new chatUseCase_1.default(chatRepository, sellerRepository);
+const auctionUseCase = new auctionUseCase_1.default(auctionRepository, userRepository, mailer, adminRepository);
+// Controller
+exports.userController = new userController_1.default(userUseCase, jwt);
+exports.sellerController = new sellerController_1.default(sellerUsecase);
+exports.adminController = new adminController_1.default(adminUseCase);
+exports.productController = new productControroller_1.default(productUseCase);
+exports.orderController = new orderController_1.default(orderUseCase);
+exports.chatController = new chatController_1.default(chatUseCase);
+exports.auctionController = new auctionController_1.default(auctionUseCase);
