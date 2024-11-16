@@ -75,6 +75,7 @@ export const socketIoInit = (HttpServer: HttpServer) => {
     });
 
     socket.on('typing', ({ userId, room }) => {
+      console.log('typing.......')
       socket.to(room).emit('typing', { userId, room });
     });
   

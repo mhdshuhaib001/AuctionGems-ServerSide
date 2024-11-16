@@ -14,6 +14,17 @@ class OrderUsecase implements IOrderUsecase {
     private readonly _userRepository: UserRepository
   ) {}
 
+  // async createOrder(
+  //     userId: string,
+  //     sellerId: string,
+  //     addressId: string,
+  //     productId: string,
+  // ): Promise<string> {
+  //     try {
+  //         const product = await this._sellerRepository.getProductById(productId);
+  //         const address = await this._userRepository.getAddressById(addressId);
+  //         if (!product) throw new Error("Product not found");
+  //         if (!address) throw new Error("Address not found");
 
   async createOrder(
     userId: string,
@@ -136,7 +147,6 @@ class OrderUsecase implements IOrderUsecase {
       const address = await this._userRepository.getAddressById(
         order.addressId
       );
-
       if (product) {
         const responseData = {
           orderId: order.id,
