@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 import ProductModel from "../../entities_models/productModal";
 import { Product } from "../../interfaces/model/seller";
 import OrderModel from "../../entities_models/orderModel";
+import {
+  IUserAuctionHistory,
+  UserAuctionHistory
+} from "../../entities_models/auctionHistory";
 
 class AuctionRepository implements IAuctionRepository {
   async placeBid(
@@ -45,7 +49,14 @@ class AuctionRepository implements IAuctionRepository {
       throw new Error("Auction not found");
     }
 
-    if (status !== "sold" && status !== "live" && status !== "upcoming" && status !== "relisted" && status !== "end" && status !== "unsold") {
+    if (
+      status !== "sold" &&
+      status !== "live" &&
+      status !== "upcoming" &&
+      status !== "relisted" &&
+      status !== "end" &&
+      status !== "unsold"
+    ) {
       throw new Error("Invalid auction status");
     }
 
@@ -55,11 +66,9 @@ class AuctionRepository implements IAuctionRepository {
 
   async getBiddings(auctionId: string): Promise<any[]> {
     try {
-      console.log(`Fetching bids for auction ID: ${auctionId}`);
       const objectId = new mongoose.Types.ObjectId(auctionId);
 
       const bidders = await bidModel.find({ auctionId: objectId }).exec();
-      console.log(bidders, "halooooooo");
       return bidders;
     } catch (error) {
       console.error("Error placing fetching bids:", error);
@@ -81,12 +90,12 @@ class AuctionRepository implements IAuctionRepository {
   }
   async getActiveAuctions(currentTimeInIST: any): Promise<any[]> {
     try {
+      console.log(currentTimeInIST, "halooooooo this is the main thing");
       const activeAuctions = await ProductModel.find({
         auctionStatus: { $ne: "sold" },
-        auctionFormat: { $ne: "buy-it-now" }
+        auctionFormat: { $ne: "buy-it-now" },
+        auctionEndDateTime: { $lte: currentTimeInIST }
       });
-
-      console.log("Fetched active auctions:", activeAuctions);
 
       return activeAuctions;
     } catch (error) {
@@ -107,7 +116,7 @@ class AuctionRepository implements IAuctionRepository {
       throw error;
     }
   }
-  async findById(auctionId: string):Promise<any> {
+  async findById(auctionId: string): Promise<any> {
     try {
       return await OrderModel.findOne({ productId: auctionId });
     } catch (error) {
@@ -153,26 +162,45 @@ class AuctionRepository implements IAuctionRepository {
     }
   }
 
-
   async getAuctionsAwaitingPayment(): Promise<any[]> {
     try {
-
       const sixDaysAgo = new Date();
       sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
 
       const orders = await OrderModel.find({
-        paymentStatus: 'pending',
+        paymentStatus: "pending",
         paymentDueDate: { $lt: sixDaysAgo },
-        orderStatus: { $ne: 'completed' } 
-      }).populate('productId'); 
-  
-      const auctions = orders.map(order => order.productId);
+        orderStatus: { $ne: "completed" }
+      }).populate("productId");
+
+      const auctions = orders.map((order) => order.productId);
       return auctions;
     } catch (error) {
-      console.error('Error fetching auctions awaiting payment:', error);
+      console.error("Error fetching auctions awaiting payment:", error);
       throw error;
     }
-}
+  }
+
+  async createAuctionHistory(
+    data: Partial<IUserAuctionHistory>
+  ): Promise<IUserAuctionHistory> {
+    try {
+      const history = new UserAuctionHistory(data);
+      return await history.save();
+    } catch (error) {
+      console.error("Error adding auction history:", error);
+      throw error;
+    }
+  }
+
+  async findByUserIdHistory(userId: string): Promise<IUserAuctionHistory[]> {
+    try {
+      return await UserAuctionHistory.find({ userId }).exec();
+    } catch (error) {
+      console.error("Error get auction history:", error);
+      throw error;
+    }
+  }
 }
 
 export default AuctionRepository;

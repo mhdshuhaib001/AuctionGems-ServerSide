@@ -26,13 +26,10 @@ export const socketIoInit = (HttpServer: HttpServer) => {
   });
 
   io.on("connection", (socket) => {
-
     socket.on("user_connected", (userId: string) => {
       onlineUsers.set(userId, socket.id);
-      console.log("Current online users:", Array.from(onlineUsers.entries()));
       io?.emit("user_online", userId);
-  });
-
+    });
 
     socket.on("send_message", async (message) => {
       try {
@@ -45,20 +42,32 @@ export const socketIoInit = (HttpServer: HttpServer) => {
         const roomId = generateRoomId(message.senderId, message.receiverId);
         io?.to(roomId).emit("receive_message", message);
 
-        const receiverSocketId= onlineUsers.get(message.receiverId);
-        if(receiverSocketId){
-
-          io?.to(receiverSocketId).emit("new_message_notification", {
+        if (message.receiverId) {
+          console.log("message send to tjhis ",message.receiverId);
+          io?.to(message.receiverId).emit("new_message_notification", {
             id: Date.now().toString(),
             senderId: message.senderId,
+            senderName: message.senderName,
             message: message.message,
             timestamp: new Date().toISOString(),
-            isRead: false
-          });
+            type: "message",
+            isRead: false,
+            senderRole: message.senderRole
+          }); 
+          console.log('✨ Creating New Notification:');
+
         }
       } catch (error) {
         console.error("Failed to process message:", error);
       }
+    });
+
+    socket.on("typing", ({ userId, room }) => {
+      socket.to(room).emit("typing", { userId, room });
+    });
+
+    socket.on("stop_typing", ({ userId, room }) => {
+      socket.to(room).emit("stop_typing", { userId, room });
     });
 
     socket.on("join chat", (userId, otherUserId) => {
@@ -70,36 +79,26 @@ export const socketIoInit = (HttpServer: HttpServer) => {
       socket.join(auctionId);
     });
 
-    socket.on("place_bid", (bid) => { 
+    socket.on("place_bid", (bid) => {
       io?.to(bid.auctionId).emit("new_bid", bid);
     });
 
-    socket.on('typing', ({ userId, room }) => {
-      console.log('typing.......')
-      socket.to(room).emit('typing', { userId, room });
+    socket.on("disconnect", () => {
+      let disconnectedUserId: string | undefined;
+
+      for (const [userId, socketId] of onlineUsers.entries()) {
+        if (socketId === socket.id) {
+          disconnectedUserId = userId;
+          break;
+        }
+      }
+
+      if (disconnectedUserId) {
+        onlineUsers.delete(disconnectedUserId);
+        io?.emit("user_offline", disconnectedUserId);
+        console.log("Updated online users:", Array.from(onlineUsers.entries()));
+      }
     });
-  
-    socket.on('stop_typing', ({ userId, room }) => {
-      socket.to(room).emit('stop_typing', { userId, room });
-    });
-
-       socket.on("disconnect", () => {
-            let disconnectedUserId: string | undefined;
-            
-            for (const [userId, socketId] of onlineUsers.entries()) {
-                if (socketId === socket.id) {
-                    disconnectedUserId = userId;
-                    break;
-                }
-            }
-
-            if (disconnectedUserId) {
-              onlineUsers.delete(disconnectedUserId);
-              io?.emit("user_offline", disconnectedUserId);
-              console.log("Updated online users:", Array.from(onlineUsers.entries()));
-          }
-        });
-
   });
 
   return io;
@@ -107,7 +106,9 @@ export const socketIoInit = (HttpServer: HttpServer) => {
 
 export const getSocketInstance = (): SocketIOServer => {
   if (!io) {
-    throw new Error("Socket.io not initialized! Make sure to call socketIoInit first");
+    throw new Error(
+      "Socket.io not initialized! Make sure to call socketIoInit first"
+    );
   }
   return io;
 };

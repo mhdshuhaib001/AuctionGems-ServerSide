@@ -9,6 +9,7 @@ import NotificationSubscriptionModel from "../entities_models/Notification";
 import { sendAuctionAlert } from "../infrastructure/config/services/fireBaseConfig";
 import { whatsAppNotification } from "../infrastructure/config/services/twilioWhatsappNotification";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
+import { IUserAuctionHistory } from "../entities_models/auctionHistory";
 require("dotenv").config();
 
 interface BidTypes {
@@ -88,7 +89,7 @@ class AuctionUseCase implements IAuctionUseCase {
             bidder: userData.name,
             amount: bid.currentBid,
             time: bid.time,
-            avatar: userData.profileImage 
+            avatar: userData.profileImage
           };
         })
       );
@@ -111,14 +112,18 @@ class AuctionUseCase implements IAuctionUseCase {
     currentBid: number;
   }> {
     try {
+      console.log(`Ending auction for auctionId: ${auctionId}`);
+
       const auctionItem =
         await this._auctionRepository.getAuctionItem(auctionId);
       if (!auctionItem) {
         console.error("Auction not found");
         throw new Error("Auction not found");
       }
+
       const currentTime = new Date();
       const endTime = new Date(auctionItem.auctionEndDateTime);
+      console.log(`Current time: ${currentTime}, End time: ${endTime}`);
 
       if (currentTime < endTime) {
         console.log(
@@ -126,14 +131,17 @@ class AuctionUseCase implements IAuctionUseCase {
         );
         throw new Error("auction is not ended");
       }
-  
 
       const bids = await this._auctionRepository.getBiddings(auctionId);
+
       if (!bids || bids.length === 0) {
         await ProductModel.findByIdAndUpdate(auctionId, {
           sold: false,
           auctionStatus: "unsold"
         });
+        console.log(
+          `No bids found for auction ${auctionId}. Marked as unsold.`
+        );
         return {
           winnerId: "",
           paymentLink: "",
@@ -149,12 +157,12 @@ class AuctionUseCase implements IAuctionUseCase {
           new Date(b.time).getTime() - new Date(a.time).getTime()
       );
       const highestBid = sortedBids[0];
+      console.log(`Highest bid: ${JSON.stringify(highestBid)}`);
 
       const winner = await this._userRepository.findById(
         highestBid.buyerID.toString()
       );
       if (!winner || !winner._id) {
-        console.error("Winner not found or missing ID");
         throw new Error("Winner not found or missing ID");
       }
 
@@ -169,8 +177,6 @@ class AuctionUseCase implements IAuctionUseCase {
       );
       if (emailSent) {
         console.log("Winner email sent successfully.");
-      } else {
-        console.error("Failed to send winner email.");
       }
 
       await ProductModel.findByIdAndUpdate(auctionId, {
@@ -191,6 +197,20 @@ class AuctionUseCase implements IAuctionUseCase {
         checkoutLink: paymentLink
       });
 
+      io.emit("new_order_notification", {
+        id: Date.now().toString(),
+        sellerId: auctionItem.sellerId,
+        orderId: auctionItem._id,
+        productName: auctionItem.itemTitle,
+        buyerId: auctionItem.sellerId,
+        price: auctionItem.currentBid,
+        timestamp: new Date().toISOString(),
+        isRead: false
+      });
+      console.log(
+        `Auction ${auctionId} ended. Winner ID: ${winner._id.toString()}`
+      );
+
       return {
         winnerId: winner._id.toString(),
         paymentLink,
@@ -208,43 +228,64 @@ class AuctionUseCase implements IAuctionUseCase {
     try {
       const auction = await this._auctionRepository.getAuctionItems(auctionId);
       if (!auction) {
-        throw new Error('Auction not found');
+        throw new Error("Auction not found");
       }
-  
-      if (auction.auctionStatus === 'sold' && auction.paymentStatus === 'pending') {
-        await this._auctionRepository.updateAuctionStatus(auctionId, 'relisted');
+
+      if (
+        auction.auctionStatus === "sold" &&
+        auction.paymentStatus === "pending"
+      ) {
+        await this._auctionRepository.updateAuctionStatus(
+          auctionId,
+          "relisted"
+        );
         await this._auctionRepository.resetAuctionBids(auctionId);
         console.log(`Auction ${auctionId} has been relisted.`);
       } else {
-        console.log(`Auction ${auctionId} cannot be relisted because payment was not pending.`);
+        console.log(
+          `Auction ${auctionId} cannot be relisted because payment was not pending.`
+        );
       }
     } catch (error) {
       console.error("Error relisting auction:", error);
       throw error;
     }
   }
-  
+
   async getAllActiveAuctions(): Promise<any[]> {
     try {
-      const currentTime = new Date().toISOString();
       const currentTimeInIST = new Date(
         Date.now() + 5.5 * 60 * 60 * 1000
       ).toISOString();
+      const customTimeInIST = "2024-11-18T20:32:00";
+      console.log(currentTimeInIST, "========", currentTimeInIST);
       const activeAuctions =
         await this._auctionRepository.getActiveAuctions(currentTimeInIST);
-
+      console.log(activeAuctions, "this is the active auctions ");
       return activeAuctions;
     } catch (error) {
       console.error("Error fetching active auctions:", error);
       throw error;
     }
   }
-  async getAwaitPayment():Promise<any>{
+  async getAwaitPayment(): Promise<any> {
     try {
-      
-    } catch (error) {
-      
+    } catch (error) {}
+  }
+  async createAuctionHistory(
+    data: Partial<IUserAuctionHistory>
+  ): Promise<IUserAuctionHistory> {
+    if (
+      !data.userId ||
+      !data.auctionId ||
+      !data.productName ||
+      !data.amount ||
+      !data.status ||
+      !data.actionDate
+    ) {
+      throw new Error("All required fields must be provided.");
     }
+    return await this._auctionRepository.createAuctionHistory(data);
   }
 }
 

@@ -1,16 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { IUserAuctionHistory } from '../interfaces/model/IAuctionHistory';
 
-interface IUserAuctionHistory extends Document {
-  userId: string; 
-  auctionId: string; 
-  productName: string;
-  amount: number;
-  status: 'attended' | 'failed' | 'canceled';
-  bidAmount?: number;
-  actionDate: Date; 
-}
 
-// auction History scema 
 const UserAuctionHistorySchema: Schema = new Schema({
   userId: { type: String, required: true },
   auctionId: { type: String, required: true },
@@ -18,7 +9,7 @@ const UserAuctionHistorySchema: Schema = new Schema({
   amount: { type: Number, required: true },
   status: { 
     type: String, 
-    enum: ['attended', 'failed', 'canceled'], 
+    enum: ['win', 'failed', 'canceled'], 
     required: true 
   },
   bidAmount: { type: Number }, 

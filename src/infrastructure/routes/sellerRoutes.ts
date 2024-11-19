@@ -7,7 +7,7 @@ import {
   uploadMultipleImages
 } from "../../middilewares/multer";
 const router = express.Router();
-router.use(userAuth(["seller", "admin"])); 
+// router.use(userAuth(["seller", "admin"])); 
 // Define route handlers
 const handleSellerCreater = (req: Request, res: Response) =>
   sellerController.createSeller(req, res);

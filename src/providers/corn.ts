@@ -15,7 +15,7 @@ export const initAuctionCronJob = () => {
     console.log('Checking for ended auctions...');
     try {
       const auctions = await auctionUseCase.getAllActiveAuctions(); 
-      console.log(auctions, 'Active Auctions fetched');
+      console.log(auctions, '');
       
       for (const auction of auctions) {
         await auctionUseCase.endAuctionAndNotifyWinner(auction._id.toString());
