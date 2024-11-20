@@ -80,6 +80,7 @@ class AuctionUseCase {
     endAuctionAndNotifyWinner(auctionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log(`Ending auction for auctionId: ${auctionId}`);
                 const auctionItem = yield this._auctionRepository.getAuctionItem(auctionId);
                 if (!auctionItem) {
                     console.error("Auction not found");
@@ -87,6 +88,7 @@ class AuctionUseCase {
                 }
                 const currentTime = new Date();
                 const endTime = new Date(auctionItem.auctionEndDateTime);
+                console.log(`Current time: ${currentTime}, End time: ${endTime}`);
                 if (currentTime < endTime) {
                     console.log(`Auction ${auctionId} hasn't ended yet. Current: ${currentTime}, End: ${endTime}`);
                     throw new Error("auction is not ended");
@@ -97,6 +99,7 @@ class AuctionUseCase {
                         sold: false,
                         auctionStatus: "unsold"
                     });
+                    console.log(`No bids found for auction ${auctionId}. Marked as unsold.`);
                     return {
                         winnerId: "",
                         paymentLink: "",
@@ -108,9 +111,9 @@ class AuctionUseCase {
                 const sortedBids = bids.sort((a, b) => b.currentBid - a.currentBid ||
                     new Date(b.time).getTime() - new Date(a.time).getTime());
                 const highestBid = sortedBids[0];
+                console.log(`Highest bid: ${JSON.stringify(highestBid)}`);
                 const winner = yield this._userRepository.findById(highestBid.buyerID.toString());
                 if (!winner || !winner._id) {
-                    console.error("Winner not found or missing ID");
                     throw new Error("Winner not found or missing ID");
                 }
                 const productName = auctionItem.itemTitle;
@@ -118,9 +121,6 @@ class AuctionUseCase {
                 const emailSent = yield this._mailer.sendWinnerMail(winner.email, productName, highestBid.currentBid, paymentLink, auctionItem.images[0]);
                 if (emailSent) {
                     console.log("Winner email sent successfully.");
-                }
-                else {
-                    console.error("Failed to send winner email.");
                 }
                 yield productModal_1.default.findByIdAndUpdate(auctionId, {
                     sold: true,
@@ -137,6 +137,17 @@ class AuctionUseCase {
                     productImage: auctionItem.images[0],
                     checkoutLink: paymentLink
                 });
+                io.emit("new_order_notification", {
+                    id: Date.now().toString(),
+                    sellerId: auctionItem.sellerId,
+                    orderId: auctionItem._id,
+                    productName: auctionItem.itemTitle,
+                    buyerId: auctionItem.sellerId,
+                    price: auctionItem.currentBid,
+                    timestamp: new Date().toISOString(),
+                    isRead: false
+                });
+                console.log(`Auction ${auctionId} ended. Winner ID: ${winner._id.toString()}`);
                 return {
                     winnerId: winner._id.toString(),
                     paymentLink,
@@ -156,10 +167,11 @@ class AuctionUseCase {
             try {
                 const auction = yield this._auctionRepository.getAuctionItems(auctionId);
                 if (!auction) {
-                    throw new Error('Auction not found');
+                    throw new Error("Auction not found");
                 }
-                if (auction.auctionStatus === 'sold' && auction.paymentStatus === 'pending') {
-                    yield this._auctionRepository.updateAuctionStatus(auctionId, 'relisted');
+                if (auction.auctionStatus === "sold" &&
+                    auction.paymentStatus === "pending") {
+                    yield this._auctionRepository.updateAuctionStatus(auctionId, "relisted");
                     yield this._auctionRepository.resetAuctionBids(auctionId);
                     console.log(`Auction ${auctionId} has been relisted.`);
                 }
@@ -176,9 +188,11 @@ class AuctionUseCase {
     getAllActiveAuctions() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const currentTime = new Date().toISOString();
                 const currentTimeInIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString();
+                const customTimeInIST = "2024-11-18T20:32:00";
+                console.log(currentTimeInIST, "========", currentTimeInIST);
                 const activeAuctions = yield this._auctionRepository.getActiveAuctions(currentTimeInIST);
+                console.log(activeAuctions, "this is the active auctions ");
                 return activeAuctions;
             }
             catch (error) {
@@ -191,8 +205,20 @@ class AuctionUseCase {
         return __awaiter(this, void 0, void 0, function* () {
             try {
             }
-            catch (error) {
+            catch (error) { }
+        });
+    }
+    createAuctionHistory(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!data.userId ||
+                !data.auctionId ||
+                !data.productName ||
+                !data.amount ||
+                !data.status ||
+                !data.actionDate) {
+                throw new Error("All required fields must be provided.");
             }
+            return yield this._auctionRepository.createAuctionHistory(data);
         });
     }
 }

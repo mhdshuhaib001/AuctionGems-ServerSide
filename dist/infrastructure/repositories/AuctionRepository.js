@@ -16,6 +16,7 @@ const bidModel_1 = __importDefault(require("../../entities_models/bidModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const productModal_1 = __importDefault(require("../../entities_models/productModal"));
 const orderModel_1 = __importDefault(require("../../entities_models/orderModel"));
+const auctionHistory_1 = require("../../entities_models/auctionHistory");
 class AuctionRepository {
     placeBid(bidderId, auctionId, sellerId, currentBid, bidAmount) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -52,7 +53,12 @@ class AuctionRepository {
             if (!auction) {
                 throw new Error("Auction not found");
             }
-            if (status !== "sold" && status !== "live" && status !== "upcoming" && status !== "relisted" && status !== "end" && status !== "unsold") {
+            if (status !== "sold" &&
+                status !== "live" &&
+                status !== "upcoming" &&
+                status !== "relisted" &&
+                status !== "end" &&
+                status !== "unsold") {
                 throw new Error("Invalid auction status");
             }
             auction.auctionStatus = status;
@@ -62,10 +68,8 @@ class AuctionRepository {
     getBiddings(auctionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(`Fetching bids for auction ID: ${auctionId}`);
                 const objectId = new mongoose_1.default.Types.ObjectId(auctionId);
                 const bidders = yield bidModel_1.default.find({ auctionId: objectId }).exec();
-                console.log(bidders, "halooooooo");
                 return bidders;
             }
             catch (error) {
@@ -92,11 +96,12 @@ class AuctionRepository {
     getActiveAuctions(currentTimeInIST) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log(currentTimeInIST, "halooooooo this is the main thing");
                 const activeAuctions = yield productModal_1.default.find({
                     auctionStatus: { $ne: "sold" },
-                    auctionFormat: { $ne: "buy-it-now" }
+                    auctionFormat: { $ne: "buy-it-now" },
+                    auctionEndDateTime: { $lte: currentTimeInIST }
                 });
-                console.log("Fetched active auctions:", activeAuctions);
                 return activeAuctions;
             }
             catch (error) {
@@ -174,15 +179,38 @@ class AuctionRepository {
                 const sixDaysAgo = new Date();
                 sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
                 const orders = yield orderModel_1.default.find({
-                    paymentStatus: 'pending',
+                    paymentStatus: "pending",
                     paymentDueDate: { $lt: sixDaysAgo },
-                    orderStatus: { $ne: 'completed' }
-                }).populate('productId');
-                const auctions = orders.map(order => order.productId);
+                    orderStatus: { $ne: "completed" }
+                }).populate("productId");
+                const auctions = orders.map((order) => order.productId);
                 return auctions;
             }
             catch (error) {
-                console.error('Error fetching auctions awaiting payment:', error);
+                console.error("Error fetching auctions awaiting payment:", error);
+                throw error;
+            }
+        });
+    }
+    createAuctionHistory(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const history = new auctionHistory_1.UserAuctionHistory(data);
+                return yield history.save();
+            }
+            catch (error) {
+                console.error("Error adding auction history:", error);
+                throw error;
+            }
+        });
+    }
+    findByUserIdHistory(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield auctionHistory_1.UserAuctionHistory.find({ userId }).exec();
+            }
+            catch (error) {
+                console.error("Error get auction history:", error);
                 throw error;
             }
         });

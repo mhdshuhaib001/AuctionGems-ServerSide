@@ -38,7 +38,6 @@ const socketIoInit = (HttpServer) => {
     io.on("connection", (socket) => {
         socket.on("user_connected", (userId) => {
             onlineUsers.set(userId, socket.id);
-            console.log("Current online users:", Array.from(onlineUsers.entries()));
             io === null || io === void 0 ? void 0 : io.emit("user_online", userId);
         });
         socket.on("send_message", (message) => __awaiter(void 0, void 0, void 0, function* () {
@@ -46,21 +45,31 @@ const socketIoInit = (HttpServer) => {
                 yield chatUseCase.sendMessage(message.senderId, message.receiverId, message.message);
                 const roomId = generateRoomId(message.senderId, message.receiverId);
                 io === null || io === void 0 ? void 0 : io.to(roomId).emit("receive_message", message);
-                const receiverSocketId = onlineUsers.get(message.receiverId);
-                if (receiverSocketId) {
-                    io === null || io === void 0 ? void 0 : io.to(receiverSocketId).emit("new_message_notification", {
+                if (message.receiverId) {
+                    console.log("message send to tjhis ", message.receiverId);
+                    io === null || io === void 0 ? void 0 : io.to(message.receiverId).emit("new_message_notification", {
                         id: Date.now().toString(),
                         senderId: message.senderId,
+                        senderName: message.senderName,
                         message: message.message,
                         timestamp: new Date().toISOString(),
-                        isRead: false
+                        type: "message",
+                        isRead: false,
+                        senderRole: message.senderRole
                     });
+                    console.log('✨ Creating New Notification:');
                 }
             }
             catch (error) {
                 console.error("Failed to process message:", error);
             }
         }));
+        socket.on("typing", ({ userId, room }) => {
+            socket.to(room).emit("typing", { userId, room });
+        });
+        socket.on("stop_typing", ({ userId, room }) => {
+            socket.to(room).emit("stop_typing", { userId, room });
+        });
         socket.on("join chat", (userId, otherUserId) => {
             const roomId = generateRoomId(userId, otherUserId);
             socket.join(roomId);
@@ -70,13 +79,6 @@ const socketIoInit = (HttpServer) => {
         });
         socket.on("place_bid", (bid) => {
             io === null || io === void 0 ? void 0 : io.to(bid.auctionId).emit("new_bid", bid);
-        });
-        socket.on('typing', ({ userId, room }) => {
-            console.log('typing.......');
-            socket.to(room).emit('typing', { userId, room });
-        });
-        socket.on('stop_typing', ({ userId, room }) => {
-            socket.to(room).emit('stop_typing', { userId, room });
         });
         socket.on("disconnect", () => {
             let disconnectedUserId;

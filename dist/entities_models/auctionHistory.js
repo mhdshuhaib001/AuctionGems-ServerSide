@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserAuctionHistory = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-// auction History scema 
 const UserAuctionHistorySchema = new mongoose_1.Schema({
     userId: { type: String, required: true },
     auctionId: { type: String, required: true },
@@ -33,7 +32,7 @@ const UserAuctionHistorySchema = new mongoose_1.Schema({
     amount: { type: Number, required: true },
     status: {
         type: String,
-        enum: ['attended', 'failed', 'canceled'],
+        enum: ['win', 'failed', 'canceled'],
         required: true
     },
     bidAmount: { type: Number },

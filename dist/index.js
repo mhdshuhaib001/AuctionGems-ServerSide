@@ -16,6 +16,9 @@ const app_1 = require("./infrastructure/config/app");
 const DBconfig_1 = require("./infrastructure/config/DBconfig");
 const dotenv_1 = __importDefault(require("dotenv"));
 const socket_io_1 = require("./infrastructure/config/services/socket-io");
+const corn_1 = require("./providers/corn");
+// import { initSocket } from './infrastructure/config/services/auctionSocket';
+const AuctionNotificationScheduler_1 = require("./providers/AuctionNotificationScheduler");
 dotenv_1.default.config();
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -27,8 +30,8 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         // Initialize Socket.io
         (0, socket_io_1.socketIoInit)(server);
         // Auction Notifgication corn 
-        // startAuctionCronJob()
-        // initAuctionCronJob();
+        (0, AuctionNotificationScheduler_1.startAuctionCronJob)();
+        (0, corn_1.initAuctionCronJob)();
         server.listen(port, () => console.log(`Server running at ${url}`));
     }
     catch (error) {

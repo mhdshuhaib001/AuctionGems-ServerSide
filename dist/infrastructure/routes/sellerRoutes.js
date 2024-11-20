@@ -8,7 +8,7 @@ const controllers_1 = require("../../providers/controllers");
 const RoleBaseAuth_1 = require("../../middilewares/RoleBaseAuth");
 const multer_1 = require("../../middilewares/multer");
 const router = express_1.default.Router();
-router.use((0, RoleBaseAuth_1.userAuth)(["seller", "admin"]));
+// router.use(userAuth(["seller", "admin"])); 
 // Define route handlers
 const handleSellerCreater = (req, res) => controllers_1.sellerController.createSeller(req, res);
 const handleCreateProduct = (req, res) => controllers_1.sellerController.createProduct(req, res);

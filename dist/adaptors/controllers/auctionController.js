@@ -64,5 +64,16 @@ class AuctionController {
             }
         });
     }
+    createAuctionHistory(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const history = yield this._auctionUseCase.createAuctionHistory(req.body);
+                res.status(201).json({ success: true, data: history });
+            }
+            catch (error) {
+                res.status(400).json({ success: false, message: error.message });
+            }
+        });
+    }
 }
 exports.default = AuctionController;
