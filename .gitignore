@@ -1,6 +1,4 @@
 node_modules
-# Firebase keys
-src/infrastructure/config/services/serviceAccountKey.json
 # Ignore .env file
 
 .env
