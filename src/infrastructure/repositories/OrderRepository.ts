@@ -1,5 +1,7 @@
+import Escrow from "../../entities_models/escrowModel";
+import { IEscrow } from "../../entities_models/escrowModel";
 import OrderModel from "../../entities_models/orderModel";
-import Revenue from "../../entities_models/revenueModel";
+import Revenue from "../../entities_models/adminRevenueModel";
 import SellerRevenue from "../../entities_models/sellerRevanue";
 import { ISellerRevenue } from "../../interfaces/model/ISellerRevenue";
 // import { IOrder } from "../../interfaces/model/order";
@@ -24,6 +26,17 @@ class OrderRepository {
       throw new Error("Failed to save order");
     }
   }
+
+  async createEscrow(escrowData: Omit<IEscrow, '_id'>): Promise<IEscrow> {
+    try {
+      const escrow = new Escrow(escrowData);
+      return await escrow.save();
+    } catch (error) {
+      console.error('Error creating escrow:', error);
+      throw new Error('Failed to create escrow');
+    }
+  }
+  
 
   async updateOrder(order: any): Promise<boolean> {
     try {

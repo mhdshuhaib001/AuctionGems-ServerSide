@@ -1,27 +1,47 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from "mongoose";
 
-interface IOrder extends Document {
-    productId: mongoose.Schema.Types.ObjectId;
-    buyerId: mongoose.Schema.Types.ObjectId;
-    sellerId: mongoose.Schema.Types.ObjectId;
-    paymentId: mongoose.Schema.Types.ObjectId;
-    orderDate: Date;
-    bidAmount: number;
-    shippingAddress: {
-        fullName: string;
-        phoneNumber: string;
-        streetAddress: string;
-        city: string;
-        state: string;
-        postalCode: string;
-        country: string;
-    };
-    shippingType: 'standard' | 'express';
-    orderStatus: 'pending' | 'completed' | 'canceled';
-    paymentDueDate?: Date;
-    trackingNumber:string
-    status:string
-    paymentStatus: 'pending' | 'completed' | 'failed'|'pending_payment';
+export default interface IOrder {
+  productId: mongoose.Types.ObjectId;
+  buyerId: mongoose.Types.ObjectId;
+  sellerId: mongoose.Types.ObjectId;
+  orderDate: Date;
+  bidAmount: number;
+  shippingAddress: {
+    fullName: string;
+    phoneNumber: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  shippingType: "standard" | "express" | "fragile";
+  orderStatus: 
+    | "pending" 
+    | "processing" 
+    | "shipped" 
+    | "delivered" 
+    | "completed" 
+    | "canceled" 
+    | "pending_payment";
+  paymentStatus: 
+    | "pending" 
+    | "escrowed" 
+    | "completed" 
+    | "failed" 
+    | "refunded";
+  
+  escrowStatus?: 
+    | "pending" 
+    | "delivered" 
+    | "confirmed" 
+    | "disputed";
+  
+  deliveryDate?: Date;
+  deliveryConfirmationDate?: Date;
+  isDeliveryConfirmed?: boolean;
+  disputeReason?: string;
+  trackingNumber?: string;
+  paymentDueDate?: Date;
+  paymentId?: string;
 }
-
-export default IOrder;

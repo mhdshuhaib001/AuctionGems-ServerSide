@@ -8,7 +8,7 @@ import { console } from "inspector";
 import { IReview } from "../../interfaces/model/IReview";
 import ReviewModel from "../../entities_models/reviewModel";
 import SellerRevenue from '../../entities_models/sellerRevanue';
-
+import AdminRevanue from '../../entities_models/adminRevenueModel'
 import { 
   ISellerDashboardRepository, 
   SalesMetrics, 
@@ -16,6 +16,8 @@ import {
   CategoryDistribution 
 } from '../../interfaces/model/ISellerDashBord';
 import mongoose, { ObjectId, Types } from "mongoose";
+import { IEscrow } from "../../entities_models/escrowModel";
+import Escrow from "../../entities_models/escrowModel";
 
 class SellerRepository implements ISellerRepository {
   existsByEmail(email: string) {
@@ -203,6 +205,110 @@ class SellerRepository implements ISellerRepository {
     }
   }
 
+
+  
+ 
+  
+
+
+  async releaseEscrow(orderId: string): Promise<void> {
+    try {
+      const escrow = await Escrow.findOne({ orderId });
+      if (!escrow) throw new Error("Escrow not found");
+  
+      escrow.status = 'released';
+      await escrow.save();
+    } catch (error) {
+      throw new Error(`Error releasing escrow:${error} `);
+    }
+  }
+  async getOrderById(orderId: string): Promise<IOrder | null> {
+    try {
+      const order = await OrderModel.findById(orderId)
+        .populate('productId')
+        .populate('sellerId')
+        .exec();
+      
+      if (!order) {
+        throw new Error("Order not found");
+      }
+      
+      return order;
+    } catch (error) {
+      console.error("Error getting order by ID:", error);
+      throw new Error("Failed to retrieve order.");
+    }
+  }
+
+  async getEscrowByOrderId(orderId: string): Promise<IEscrow | null> {
+    try {
+      const escrow = await Escrow.findOne({ orderId })
+        .populate('buyerId')
+        .populate('sellerId')
+        .exec();
+      
+      if (!escrow) {
+        throw new Error("Escrow not found");
+      }
+      
+      return escrow;
+    } catch (error) {
+      console.error("Error getting escrow by order ID:", error);
+      throw new Error("Failed to retrieve escrow.");
+    }
+  }
+
+  async saveSellerRevenue(revenueData: {
+    orderId: string;
+    productId: Types.ObjectId; 
+    sellerId: Types.ObjectId;  
+    sellerEarnings: number;
+    platformFee: number;
+  }): Promise<void> {
+    try {
+      const newRevenue = new SellerRevenue({
+        orderId: new mongoose.Types.ObjectId(revenueData.orderId),
+        productId: revenueData.productId, 
+        sellerId: revenueData.sellerId,   
+        sellerEarnings: revenueData.sellerEarnings,
+        platformFee: revenueData.platformFee
+      });
+  
+      await newRevenue.save();
+      console.log("Seller revenue saved successfully.");
+    } catch (error) {
+      console.error("Error saving seller revenue:", error);
+      throw new Error("Failed to save seller revenue.");
+    }
+  }
+  
+
+  async saveAdminRevenue(revenueData: {
+    date: string;
+    revenue: number;
+    sellerId?: string;
+    productId?: string;
+  }): Promise<void> {
+    try {
+      const newRevenue = new AdminRevanue({
+        date: revenueData.date,
+        revenue: revenueData.revenue,
+        sellerId: revenueData.sellerId 
+          ? new mongoose.Types.ObjectId(revenueData.sellerId) 
+          : undefined,
+        productId: revenueData.productId 
+          ? new mongoose.Types.ObjectId(revenueData.productId) 
+          : undefined
+      });
+  
+      await newRevenue.save();
+      console.log("Admin revenue saved successfully.");
+    } catch (error) {
+      console.error("Error saving admin revenue:", error);
+      throw new Error("Failed to save admin revenue.");
+    }
+  }
+  
   async getAllSeller(): Promise<Seller[]> {
     try {
       const sellerDatas = await SellerModel.find();

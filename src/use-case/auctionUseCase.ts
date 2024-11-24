@@ -257,11 +257,8 @@ class AuctionUseCase implements IAuctionUseCase {
       const currentTimeInIST = new Date(
         Date.now() + 5.5 * 60 * 60 * 1000
       ).toISOString();
-      const customTimeInIST = "2024-11-18T20:32:00";
-      console.log(currentTimeInIST, "========", currentTimeInIST);
       const activeAuctions =
         await this._auctionRepository.getActiveAuctions(currentTimeInIST);
-      console.log(activeAuctions, "this is the active auctions ");
       return activeAuctions;
     } catch (error) {
       console.error("Error fetching active auctions:", error);
@@ -270,8 +267,15 @@ class AuctionUseCase implements IAuctionUseCase {
   }
   async getAwaitPayment(): Promise<any> {
     try {
-    } catch (error) {}
+      const AwaitPayment =
+        await this._auctionRepository.getAuctionAwaitPayment();
+      return AwaitPayment;
+    } catch (error) {
+      console.error("Error fetching active auctions:", error);
+      throw error;
+    }
   }
+
   async createAuctionHistory(
     data: Partial<IUserAuctionHistory>
   ): Promise<IUserAuctionHistory> {

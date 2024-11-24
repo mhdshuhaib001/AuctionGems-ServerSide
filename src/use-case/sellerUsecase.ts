@@ -324,12 +324,45 @@ class SellerUseCase {
 
   async updateOrderStatus(orderId: string, newStatus: string): Promise<any> {
     try {
-      const updatedOrder = await this._SellerRepository.updateOrderStatus(
-        orderId,
-        newStatus
-      );
-      console.log(updatedOrder, "updatedOrder");
-
+      const order = await this._SellerRepository.getOrderById(orderId);
+      if (!order) throw new Error("Order not found");
+  
+      const escrow = await this._SellerRepository.getEscrowByOrderId(orderId);
+      if (!escrow) throw new Error("Escrow not found");
+  
+      if (newStatus === 'delivered') {
+        const platformFee = escrow.platformFee;
+        const sellerEarnings = escrow.sellerEarnings;
+        
+        await this._SellerRepository.releaseEscrow(orderId);
+  
+        const sellerRevenueData = {
+          orderId,
+          productId: order.productId,
+          sellerId: order.sellerId,
+          sellerEarnings,
+          platformFee,
+        };
+        await this._SellerRepository.saveSellerRevenue(sellerRevenueData);
+  
+        // Save Admin Revenue record
+        const adminRevenueData = {
+          date: new Date().toISOString(),
+          revenue: platformFee, 
+        };
+        await this._SellerRepository.saveAdminRevenue(adminRevenueData);
+  
+        // Update order status to 'delivered'
+        const updatedOrder = await this._SellerRepository.updateOrderStatus(orderId, newStatus);
+        return {
+          status: 200,
+          message: "Order status updated successfully",
+          order: updatedOrder
+        };
+      }
+  
+      // Default case for other statuses
+      const updatedOrder = await this._SellerRepository.updateOrderStatus(orderId, newStatus);
       return {
         status: 200,
         message: "Order status updated successfully",
@@ -343,7 +376,9 @@ class SellerUseCase {
       };
     }
   }
+  
 
+  
   async createReview(
     sellerId: string,
     userId: string,

@@ -15,13 +15,12 @@ export const initAuctionCronJob = () => {
     console.log('Checking for ended auctions...');
     try {
       const auctions = await auctionUseCase.getAllActiveAuctions(); 
-      console.log(auctions, '');
       
       for (const auction of auctions) {
         await auctionUseCase.endAuctionAndNotifyWinner(auction._id.toString());
       }
 
-      console.log('Auction check completed.');
+      console.log('Auction check completed.🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟');
     } catch (error) {
       console.error('Error during auction check:', error);
     }
@@ -33,7 +32,7 @@ export const initAuctionCronJob = () => {
 
 export const initRelistAuctionCronJob = () => {
   cron.schedule('0 0 * * *', async () => { 
-    console.log('Checking for auctions to relist...');
+    console.log('Checking for auctions to relist...❤️❤️');
     try {
       const auctionsToRelist = await auctionRepository.getAuctionsAwaitingPayment();
     

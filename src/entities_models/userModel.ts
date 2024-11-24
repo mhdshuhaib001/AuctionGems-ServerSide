@@ -34,6 +34,8 @@ const userSchema = new Schema<User>({
     enum: ['user', 'seller'],
     default: 'user',
   },
+  wallet: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet", required: true },
+
 }, { timestamps: true });
 
 export const UserModel = model<User>("User", userSchema);

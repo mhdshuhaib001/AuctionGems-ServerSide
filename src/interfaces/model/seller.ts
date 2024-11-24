@@ -11,6 +11,7 @@ export interface Seller extends Document {
   about?: string;
   isBlocked?: boolean;
   address?: string;
+  wallet?:any
 }
 
 export interface Product extends Document {
@@ -36,7 +37,6 @@ export interface Product extends Document {
   city?: string;
   currentBid: Number;
   state?: string;
-  returnDuration?: number;
 }
 
 export interface SellerResponse {

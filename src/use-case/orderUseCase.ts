@@ -4,6 +4,7 @@ import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import UserRepository from "../infrastructure/repositories/UserRepositories";
 import IOrderUsecase from "../interfaces/iUseCases/iOrderUseCase";
 import { ISellerRevenue } from "../interfaces/model/ISellerRevenue";
+import { IEscrow } from "../entities_models/escrowModel";
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -14,17 +15,6 @@ class OrderUsecase implements IOrderUsecase {
     private readonly _userRepository: UserRepository
   ) {}
 
-  // async createOrder(
-  //     userId: string,
-  //     sellerId: string,
-  //     addressId: string,
-  //     productId: string,
-  // ): Promise<string> {
-  //     try {
-  //         const product = await this._sellerRepository.getProductById(productId);
-  //         const address = await this._userRepository.getAddressById(addressId);
-  //         if (!product) throw new Error("Product not found");
-  //         if (!address) throw new Error("Address not found");
 
   async createOrder(
     userId: string,
@@ -42,7 +32,10 @@ class OrderUsecase implements IOrderUsecase {
         throw new Error("Reserve price is missing for the product");
 
       const reservePrice = Math.floor(Number(product.reservePrice) || 0);
-
+      const PLATFORM_FEE_PERCENTAGE = 0.03;
+      const platformFee = Math.ceil(reservePrice * PLATFORM_FEE_PERCENTAGE);
+      const sellerEarnings = reservePrice - platformFee;
+  
       const orderData = {
         productId,
         buyerId: userId,
@@ -64,19 +57,18 @@ class OrderUsecase implements IOrderUsecase {
 
       const order = await this._orderRepository.saveOrder(orderData);
 
-      const platformFeePercentage = 0.02;
-      const platformFee = reservePrice * platformFeePercentage;
-      const sellerEarnings = reservePrice - platformFee;
 
-      const revenueData = {
-        orderId: new mongoose.Types.ObjectId(order._id),
-        productId: new mongoose.Types.ObjectId(productId),
-        sellerId: new mongoose.Types.ObjectId(sellerId),
+      const escrowData = {
+        orderId: order._id,
+        buyerId: userId,
+        sellerId,
+        totalAmount: reservePrice,
         platformFee,
-        sellerEarnings
-      } as ISellerRevenue;
+        sellerEarnings,
+        status: 'held'
+      };
 
-      await this._orderRepository.sellerRevenue(revenueData);
+      await this._orderRepository.createEscrow(escrowData as unknown as IEscrow);
 
       return order._id;
     } catch (error: unknown) {

@@ -54,7 +54,7 @@ export const startAuctionCronJob = () => {
 
           const productName = auction.itemTitle || "Unknown Product";
           const productImage = auction.images?.[0] || "";
-          const productUrl = `http://localhost:5173/product-details/${auctionId}`;
+const productUrl = `${process.env.FRONTEND_URL}/product-details/${auctionId}`;
           const price = auction.reservePrice || '0';
 
           if (fcmToken) {

@@ -24,9 +24,13 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Create env file
         run: |
           touch .env
           echo "${{ secrets.PROD_ENV_FILE }}" > .env
 
+      - name: Restart PM2 process (auction-gems-server)
+        run: |
+          # Restart the PM2 process if it's running
+          pm2 restart "auction-gems-server" || echo "PM2 process not found"

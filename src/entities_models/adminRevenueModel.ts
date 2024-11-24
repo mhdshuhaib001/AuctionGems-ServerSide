@@ -7,8 +7,7 @@ export interface IRevenue extends Document {
   productId?: Types.ObjectId; 
 }
 
-// Define the Revenue schema
-const RevenueSchema: Schema = new Schema({
+const AdminRevenueSchema: Schema = new Schema({
   date: {
     type: String,
     required: true,
@@ -32,5 +31,5 @@ const RevenueSchema: Schema = new Schema({
   timestamps: true  
 });
 
-const Revenue = mongoose.model<IRevenue>('Revenue', RevenueSchema);
+const Revenue = mongoose.model<IRevenue>('AdminRevenueSchema', AdminRevenueSchema);
 export default Revenue;

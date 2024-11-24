@@ -118,6 +118,8 @@ class AdminRepository implements IAdminRepository {
     }
   }
 
+  
+
   async addReport(reportData: Partial<IReport>): Promise<void> {
     try {
       const newReport = await new ReportModel(reportData);
