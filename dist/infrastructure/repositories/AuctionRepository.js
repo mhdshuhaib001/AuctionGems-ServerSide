@@ -176,11 +176,11 @@ class AuctionRepository {
     getAuctionsAwaitingPayment() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const sixDaysAgo = new Date();
-                sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
+                const twoDaysAgo = new Date();
+                twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
                 const orders = yield orderModel_1.default.find({
                     paymentStatus: "pending",
-                    paymentDueDate: { $lt: sixDaysAgo },
+                    paymentDueDate: { $lt: twoDaysAgo },
                     orderStatus: { $ne: "completed" }
                 }).populate("productId");
                 const auctions = orders.map((order) => order.productId);

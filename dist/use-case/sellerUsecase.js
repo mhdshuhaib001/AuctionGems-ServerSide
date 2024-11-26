@@ -312,8 +312,40 @@ class SellerUseCase {
     updateOrderStatus(orderId, newStatus) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const order = yield this._SellerRepository.getOrderById(orderId);
+                if (!order)
+                    throw new Error("Order not found");
+                const escrow = yield this._SellerRepository.getEscrowByOrderId(orderId);
+                if (!escrow)
+                    throw new Error("Escrow not found");
+                if (newStatus === 'delivered') {
+                    const platformFee = escrow.platformFee;
+                    const sellerEarnings = escrow.sellerEarnings;
+                    yield this._SellerRepository.releaseEscrow(orderId);
+                    const sellerRevenueData = {
+                        orderId,
+                        productId: order.productId,
+                        sellerId: order.sellerId,
+                        sellerEarnings,
+                        platformFee,
+                    };
+                    yield this._SellerRepository.saveSellerRevenue(sellerRevenueData);
+                    // Save Admin Revenue record
+                    const adminRevenueData = {
+                        date: new Date().toISOString(),
+                        revenue: platformFee,
+                    };
+                    yield this._SellerRepository.saveAdminRevenue(adminRevenueData);
+                    // Update order status to 'delivered'
+                    const updatedOrder = yield this._SellerRepository.updateOrderStatus(orderId, newStatus);
+                    return {
+                        status: 200,
+                        message: "Order status updated successfully",
+                        order: updatedOrder
+                    };
+                }
+                // Default case for other statuses
                 const updatedOrder = yield this._SellerRepository.updateOrderStatus(orderId, newStatus);
-                console.log(updatedOrder, "updatedOrder");
                 return {
                     status: 200,
                     message: "Order status updated successfully",

@@ -23,41 +23,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const userSchema = new mongoose_1.Schema({
-    name: {
+const AdminRevenueSchema = new mongoose_1.Schema({
+    date: {
         type: String,
         required: true,
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
+    revenue: {
+        type: Number,
         required: true,
     },
-    profileImage: {
-        type: String,
+    sellerId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Seller',
+        required: false,
     },
-    isSeller: {
-        type: Boolean,
-        default: false,
+    productId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: false,
     },
-    otp: {
-        type: String,
-    },
-    isActive: {
-        type: Boolean,
-        default: false,
-    },
-    role: {
-        type: String,
-        enum: ['user', 'seller'],
-        default: 'user',
-    },
-    wallet: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Wallet", required: true },
-}, { timestamps: true });
-exports.UserModel = (0, mongoose_1.model)("User", userSchema);
+}, {
+    timestamps: true
+});
+const Revenue = mongoose_1.default.model('AdminRevenueSchema', AdminRevenueSchema);
+exports.default = Revenue;

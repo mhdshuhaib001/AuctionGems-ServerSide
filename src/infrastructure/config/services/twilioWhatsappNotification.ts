@@ -11,6 +11,7 @@ export const whatsAppNotification = async (
   productUrl: string,
   imageUrl: string
 ): Promise<void> => {
+
   try {
     const message = `
 🛍️ Auction Reminder!
@@ -29,7 +30,6 @@ Don't miss your chance to bid!
       mediaUrl: [imageUrl]
     });
 
-    console.log(response, "this is the response I get just for check this one");
     console.log(`Message sent: ${response.sid}`);
   } catch (error) {
     console.error("Error sending message:", error);

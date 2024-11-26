@@ -34,7 +34,6 @@ Don't miss your chance to bid!
             body: message,
             mediaUrl: [imageUrl]
         });
-        console.log(response, "this is the response I get just for check this one");
         console.log(`Message sent: ${response.sid}`);
     }
     catch (error) {

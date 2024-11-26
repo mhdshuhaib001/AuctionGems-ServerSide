@@ -41,22 +41,29 @@ export const socketIoInit = (HttpServer: HttpServer) => {
 
         const roomId = generateRoomId(message.senderId, message.receiverId);
         io?.to(roomId).emit("receive_message", message);
-
+        console.log(message.receiverId, "this was the receive_Id");
         if (message.receiverId) {
-          console.log("message send to tjhis ",message.receiverId);
-          io?.to(message.receiverId).emit("new_message_notification", {
+          const notification = {
             id: Date.now().toString(),
             senderId: message.senderId,
             senderName: message.senderName,
             message: message.message,
+            receiverId: message.receiverId,
             timestamp: new Date().toISOString(),
             type: "message",
             isRead: false,
             senderRole: message.senderRole
-          }); 
-          console.log('✨ Creating New Notification:');
+          };
+          console.log("Sending notification to:", message.receiverId);
+          console.log("Notification details:", notification);
 
-        }
+          const receiverSocketId = onlineUsers.get(message.receiverId);
+      
+          if (receiverSocketId) {
+            io?.to(receiverSocketId).emit("new_message_notification", notification);
+          } else {
+            console.warn(`No active socket found for user ${message.receiverId}`);
+          }        }
       } catch (error) {
         console.error("Failed to process message:", error);
       }

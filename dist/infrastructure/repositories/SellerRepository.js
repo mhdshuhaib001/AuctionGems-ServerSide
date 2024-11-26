@@ -18,7 +18,9 @@ const orderModel_1 = __importDefault(require("../../entities_models/orderModel")
 const inspector_1 = require("inspector");
 const reviewModel_1 = __importDefault(require("../../entities_models/reviewModel"));
 const sellerRevanue_1 = __importDefault(require("../../entities_models/sellerRevanue"));
+const adminRevenueModel_1 = __importDefault(require("../../entities_models/adminRevenueModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const escrowModel_1 = __importDefault(require("../../entities_models/escrowModel"));
 class SellerRepository {
     existsByEmail(email) {
         throw new Error("Method not implemented.");
@@ -210,6 +212,97 @@ class SellerRepository {
             catch (error) {
                 inspector_1.console.error("Error updating order status:", error);
                 throw new Error("Failed to update order status.");
+            }
+        });
+    }
+    releaseEscrow(orderId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const escrow = yield escrowModel_1.default.findOne({ orderId });
+                if (!escrow)
+                    throw new Error("Escrow not found");
+                escrow.status = 'released';
+                yield escrow.save();
+            }
+            catch (error) {
+                throw new Error(`Error releasing escrow:${error} `);
+            }
+        });
+    }
+    getOrderById(orderId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const order = yield orderModel_1.default.findById(orderId)
+                    .populate('productId')
+                    .populate('sellerId')
+                    .exec();
+                if (!order) {
+                    throw new Error("Order not found");
+                }
+                return order;
+            }
+            catch (error) {
+                inspector_1.console.error("Error getting order by ID:", error);
+                throw new Error("Failed to retrieve order.");
+            }
+        });
+    }
+    getEscrowByOrderId(orderId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const escrow = yield escrowModel_1.default.findOne({ orderId })
+                    .populate('buyerId')
+                    .populate('sellerId')
+                    .exec();
+                if (!escrow) {
+                    throw new Error("Escrow not found");
+                }
+                return escrow;
+            }
+            catch (error) {
+                inspector_1.console.error("Error getting escrow by order ID:", error);
+                throw new Error("Failed to retrieve escrow.");
+            }
+        });
+    }
+    saveSellerRevenue(revenueData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newRevenue = new sellerRevanue_1.default({
+                    orderId: new mongoose_1.default.Types.ObjectId(revenueData.orderId),
+                    productId: revenueData.productId,
+                    sellerId: revenueData.sellerId,
+                    sellerEarnings: revenueData.sellerEarnings,
+                    platformFee: revenueData.platformFee
+                });
+                yield newRevenue.save();
+                inspector_1.console.log("Seller revenue saved successfully.");
+            }
+            catch (error) {
+                inspector_1.console.error("Error saving seller revenue:", error);
+                throw new Error("Failed to save seller revenue.");
+            }
+        });
+    }
+    saveAdminRevenue(revenueData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newRevenue = new adminRevenueModel_1.default({
+                    date: revenueData.date,
+                    revenue: revenueData.revenue,
+                    sellerId: revenueData.sellerId
+                        ? new mongoose_1.default.Types.ObjectId(revenueData.sellerId)
+                        : undefined,
+                    productId: revenueData.productId
+                        ? new mongoose_1.default.Types.ObjectId(revenueData.productId)
+                        : undefined
+                });
+                yield newRevenue.save();
+                inspector_1.console.log("Admin revenue saved successfully.");
+            }
+            catch (error) {
+                inspector_1.console.error("Error saving admin revenue:", error);
+                throw new Error("Failed to save admin revenue.");
             }
         });
     }

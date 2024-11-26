@@ -13,8 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderRepository = void 0;
+const escrowModel_1 = __importDefault(require("../../entities_models/escrowModel"));
 const orderModel_1 = __importDefault(require("../../entities_models/orderModel"));
-const revenueModel_1 = __importDefault(require("../../entities_models/revenueModel"));
+const adminRevenueModel_1 = __importDefault(require("../../entities_models/adminRevenueModel"));
 const sellerRevanue_1 = __importDefault(require("../../entities_models/sellerRevanue"));
 // import { IOrder } from "../../interfaces/model/order";
 class OrderRepository {
@@ -40,6 +41,18 @@ class OrderRepository {
                 // Handle errors
                 console.error("Error saving order:", error);
                 throw new Error("Failed to save order");
+            }
+        });
+    }
+    createEscrow(escrowData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const escrow = new escrowModel_1.default(escrowData);
+                return yield escrow.save();
+            }
+            catch (error) {
+                console.error('Error creating escrow:', error);
+                throw new Error('Failed to create escrow');
             }
         });
     }
@@ -82,7 +95,7 @@ class OrderRepository {
     addRevenue(revenueData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield new revenueModel_1.default({
+                yield new adminRevenueModel_1.default({
                     date: new Date().toISOString(),
                     revenue: revenueData.platformFee + revenueData.sellerEarnings,
                     orderId: revenueData.orderId,

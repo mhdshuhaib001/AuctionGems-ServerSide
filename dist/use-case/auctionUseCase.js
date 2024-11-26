@@ -189,10 +189,7 @@ class AuctionUseCase {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const currentTimeInIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString();
-                const customTimeInIST = "2024-11-18T20:32:00";
-                console.log(currentTimeInIST, "========", currentTimeInIST);
                 const activeAuctions = yield this._auctionRepository.getActiveAuctions(currentTimeInIST);
-                console.log(activeAuctions, "this is the active auctions ");
                 return activeAuctions;
             }
             catch (error) {
@@ -204,8 +201,13 @@ class AuctionUseCase {
     getAwaitPayment() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const AwaitPayment = yield this._auctionRepository.getAuctionAwaitPayment();
+                return AwaitPayment;
             }
-            catch (error) { }
+            catch (error) {
+                console.error("Error fetching active auctions:", error);
+                throw error;
+            }
         });
     }
     createAuctionHistory(data) {

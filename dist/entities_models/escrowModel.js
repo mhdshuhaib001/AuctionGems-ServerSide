@@ -23,41 +23,43 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const userSchema = new mongoose_1.Schema({
-    name: {
+const EscrowSchema = new mongoose_1.Schema({
+    orderId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Order',
+        required: true
+    },
+    buyerId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    sellerId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Seller',
+        required: true
+    },
+    totalAmount: {
+        type: Number,
+        required: true
+    },
+    platformFee: {
+        type: Number,
+        required: true
+    },
+    sellerEarnings: {
+        type: Number,
+        required: true
+    },
+    status: {
         type: String,
-        required: true,
+        enum: ['held', 'released', 'disputed'],
+        default: 'held'
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
-    profileImage: {
-        type: String,
-    },
-    isSeller: {
-        type: Boolean,
-        default: false,
-    },
-    otp: {
-        type: String,
-    },
-    isActive: {
-        type: Boolean,
-        default: false,
-    },
-    role: {
-        type: String,
-        enum: ['user', 'seller'],
-        default: 'user',
-    },
-    wallet: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "Wallet", required: true },
+    releaseDate: {
+        type: Date
+    }
 }, { timestamps: true });
-exports.UserModel = (0, mongoose_1.model)("User", userSchema);
+const Escrow = mongoose_1.default.model('Escrow', EscrowSchema);
+exports.default = Escrow;

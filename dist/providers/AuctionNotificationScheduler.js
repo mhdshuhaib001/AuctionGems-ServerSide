@@ -41,7 +41,9 @@ const startAuctionCronJob = () => {
                     console.warn(`⚠️ Auction ID ${auctionId} not found in database.`);
                     continue;
                 }
-                const auctionStartTime = auction.auctionStartDateTime ? new Date(auction.auctionStartDateTime) : null;
+                const auctionStartTime = auction.auctionStartDateTime
+                    ? new Date(auction.auctionStartDateTime)
+                    : null;
                 if (!auctionStartTime || isNaN(auctionStartTime.getTime())) {
                     console.error(`🚫 Invalid or missing start time for auction ID ${auctionId}. Skipping.`);
                     continue;
@@ -51,11 +53,12 @@ const startAuctionCronJob = () => {
                 const notificationISO = notificationTime.toISOString();
                 const notificationHours = notificationTime.getUTCHours();
                 const notificationMinutes = notificationTime.getUTCMinutes();
-                if (nowUTCHours === notificationHours && nowUTCMinutes === notificationMinutes) {
+                if (nowUTCHours === notificationHours &&
+                    nowUTCMinutes === notificationMinutes) {
                     const productName = auction.itemTitle || "Unknown Product";
                     const productImage = ((_a = auction.images) === null || _a === void 0 ? void 0 : _a[0]) || "";
-                    const productUrl = `http://localhost:5173/product-details/${auctionId}`;
-                    const price = auction.reservePrice || '0';
+                    const productUrl = `${process.env.FRONTEND_URL}/product-details/${auctionId}`;
+                    const price = auction.reservePrice || "0";
                     if (fcmToken) {
                         yield (0, fireBaseConfig_1.sendAuctionAlert)(fcmToken, `Auction Alert: "${productName}" starts soon!`, productImage, productUrl);
                         console.log(`✅ Push notification sent for auction ${auctionId} - Product: ${productName}`);
@@ -64,7 +67,7 @@ const startAuctionCronJob = () => {
                         const productName = auction.itemTitle || "Unknown Product";
                         const productImage = ((_b = auction.images) === null || _b === void 0 ? void 0 : _b[0]) || "";
                         const productUrl = `${process.env.FRONTEND_URL}/product-details/${auctionId}`;
-                        const price = auction.reservePrice || '0';
+                        const price = auction.reservePrice || "0";
                         yield (0, twilioWhatsappNotification_1.whatsAppNotification)(whatsappNumber, productName, price, productUrl, productImage);
                         console.log(`✅ WhatsApp message sent to ${whatsappNumber} for auction ${auctionId}`);
                     }

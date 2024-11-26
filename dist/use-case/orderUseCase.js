@@ -8,12 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderUsecase = void 0;
-const mongoose_1 = __importDefault(require("mongoose"));
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 class OrderUsecase {
     constructor(_orderRepository, _sellerRepository, _userRepository) {
@@ -21,17 +17,6 @@ class OrderUsecase {
         this._sellerRepository = _sellerRepository;
         this._userRepository = _userRepository;
     }
-    // async createOrder(
-    //     userId: string,
-    //     sellerId: string,
-    //     addressId: string,
-    //     productId: string,
-    // ): Promise<string> {
-    //     try {
-    //         const product = await this._sellerRepository.getProductById(productId);
-    //         const address = await this._userRepository.getAddressById(addressId);
-    //         if (!product) throw new Error("Product not found");
-    //         if (!address) throw new Error("Address not found");
     createOrder(userId, sellerId, addressId, productId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -44,6 +29,9 @@ class OrderUsecase {
                 if (!product.reservePrice)
                     throw new Error("Reserve price is missing for the product");
                 const reservePrice = Math.floor(Number(product.reservePrice) || 0);
+                const PLATFORM_FEE_PERCENTAGE = 0.03;
+                const platformFee = Math.ceil(reservePrice * PLATFORM_FEE_PERCENTAGE);
+                const sellerEarnings = reservePrice - platformFee;
                 const orderData = {
                     productId,
                     buyerId: userId,
@@ -63,17 +51,16 @@ class OrderUsecase {
                     orderStatus: "pending"
                 };
                 const order = yield this._orderRepository.saveOrder(orderData);
-                const platformFeePercentage = 0.02;
-                const platformFee = reservePrice * platformFeePercentage;
-                const sellerEarnings = reservePrice - platformFee;
-                const revenueData = {
-                    orderId: new mongoose_1.default.Types.ObjectId(order._id),
-                    productId: new mongoose_1.default.Types.ObjectId(productId),
-                    sellerId: new mongoose_1.default.Types.ObjectId(sellerId),
+                const escrowData = {
+                    orderId: order._id,
+                    buyerId: userId,
+                    sellerId,
+                    totalAmount: reservePrice,
                     platformFee,
-                    sellerEarnings
+                    sellerEarnings,
+                    status: 'held'
                 };
-                yield this._orderRepository.sellerRevenue(revenueData);
+                yield this._orderRepository.createEscrow(escrowData);
                 return order._id;
             }
             catch (error) {

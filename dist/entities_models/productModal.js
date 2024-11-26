@@ -17,7 +17,6 @@ const ProductSchema = new mongoose_1.default.Schema({
     auctionEndDateTime: { type: String },
     reservePrice: { type: Number, required: true },
     shippingType: { type: String, required: true, enum: ['standard', 'express'] },
-    returnPolicy: { type: String },
     sold: { type: Boolean, default: false },
     finalBidAmount: { type: Number, default: null },
     auctionStatus: {

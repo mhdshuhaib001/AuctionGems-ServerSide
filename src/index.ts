@@ -21,10 +21,10 @@ const startServer = async () => {
     // Initialize Socket.io
     socketIoInit(server);
     // Auction Notifgication corn 
-    startAuctionCronJob()
-    initAuctionCronJob();
+    startAuctionCronJob();
+    // initAuctionCronJob();
     // Auction pebnding payment relist 
-    initRelistAuctionCronJob()
+    // initRelistAuctionCronJob()
     server.listen(port, () => console.log(`Server running at ${url}`));
   } catch (error) {
     console.error("Error starting server:", error);

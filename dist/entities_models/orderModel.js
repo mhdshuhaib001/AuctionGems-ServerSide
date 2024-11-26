@@ -58,17 +58,36 @@ const OrderSchema = new mongoose_1.Schema({
     },
     orderStatus: {
         type: String,
-        enum: ["pending", "completed", "canceled", "pending_payment"],
+        enum: [
+            "pending",
+            "processing",
+            "shipped",
+            "delivered",
+            "completed",
+            "canceled",
+            "pending_payment"
+        ],
         default: "pending"
     },
-    trackingNumber: { type: String },
-    status: { type: String },
     paymentStatus: {
         type: String,
         required: true,
-        enum: ["pending", "completed", "failed"],
+        enum: ["pending", "escrowed", "completed", "failed", "refunded"],
         default: "pending"
     },
+    trackingNumber: { type: String },
+    escrowStatus: {
+        type: String,
+        enum: ["pending", "delivered", "confirmed", "disputed"],
+        default: "pending"
+    },
+    deliveryDate: { type: Date },
+    deliveryConfirmationDate: { type: Date },
+    isDeliveryConfirmed: {
+        type: Boolean,
+        default: false
+    },
+    disputeReason: { type: String },
     paymentDueDate: { type: Date },
     paymentId: { type: String }
 }, { timestamps: true });
