@@ -10,9 +10,20 @@ const userRepository = new UserRepository();
 const adminRepository = new AdminRepository()
 const mailer = new NodeMailer()
 const auctionUseCase = new AuctionUseCase(auctionRepository, userRepository,mailer,adminRepository);
+
+function getCurrentIndianTime() {
+  const now = new Date();
+  const istOffset = 5.5 * 60; 
+  const localOffset = now.getTimezoneOffset();
+  const istTime = new Date(now.getTime() + (istOffset + localOffset) * 60000);
+  return istTime;
+}
+
+
+
 export const initAuctionCronJob = () => {
   cron.schedule('* * * * *', async () => {  
-    console.log('Checking for ended auctions...');
+    console.log('Checking for ended auctions...');  
     try {
       const auctions = await auctionUseCase.getAllActiveAuctions(); 
       

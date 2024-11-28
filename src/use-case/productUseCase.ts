@@ -75,6 +75,31 @@ class ProductUseCase implements IProductUseCase {
       };
     }
   }
+
+
+  async updateAuctionStatus(auctionId:string,status:string):Promise<void>{
+    try {
+      const validStatuses = ["sold", "live", "upcoming", "relisted", "end", "unsold"];
+      if (!validStatuses.includes(status)) {
+        throw new Error("Invalid auction status");
+      }
+
+      const auction = await this._ProductRepository.getProductById(auctionId);
+    if (!auction) {
+      throw new Error("Auction not found");
+    }
+
+    if (auction.auctionStatus === "sold" || auction.auctionStatus === "relisted") {
+      console.log("Cannot update status for sold or relisted auctions.");
+      return;
+    }
+
+    // auction.auctionStatus = status;
+    // await this._ProductRepository.updateAuction(auctionId, { auctionStatus: status });
+    } catch (error) {
+      
+    }
+  }
 }
 
 export default ProductUseCase;

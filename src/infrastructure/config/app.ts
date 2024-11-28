@@ -27,8 +27,8 @@ export const createServer = () => {
 
     // CORS configuration
     app.use(cors({
-      // origin: process.env.FRONTEND_URL,
-      origin: 'https://auction-gems.vercel.app',
+      origin: process.env.FRONTEND_URL,
+      // origin: 'https://auction-gems.vercel.app',
 
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true

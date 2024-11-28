@@ -24,6 +24,13 @@ const userRepository = new UserRepositories_1.default();
 const adminRepository = new AdminRepository_1.default();
 const mailer = new nodeMailer_1.default();
 const auctionUseCase = new auctionUseCase_1.default(auctionRepository, userRepository, mailer, adminRepository);
+function getCurrentIndianTime() {
+    const now = new Date();
+    const istOffset = 5.5 * 60;
+    const localOffset = now.getTimezoneOffset();
+    const istTime = new Date(now.getTime() + (istOffset + localOffset) * 60000);
+    return istTime;
+}
 const initAuctionCronJob = () => {
     node_cron_1.default.schedule('* * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
         console.log('Checking for ended auctions...');

@@ -31,16 +31,28 @@ class OrderUsecase implements IOrderUsecase {
       if (!product.reservePrice)
         throw new Error("Reserve price is missing for the product");
 
-      const reservePrice = Math.floor(Number(product.reservePrice) || 0);
+      let bidAmount :number
+      let shippingCost:number 
+
+      if (product.auctionStatus === 'sold' && product.currentBid) {
+        bidAmount = Math.floor(Number(product.currentBid) || 0);
+        shippingCost = Math.floor(Number(product.shippingCost) || 0);
+      } else {
+        bidAmount = Math.floor(Number(product.reservePrice) || 0);
+        shippingCost = Math.floor(Number(product.shippingCost) || 0);
+      }
+
+      const totalAmount = bidAmount + shippingCost;
+      console.log(totalAmount,'totoal amouint',bidAmount,'nid amouint',shippingCost,'shipping cost')
       const PLATFORM_FEE_PERCENTAGE = 0.03;
-      const platformFee = Math.ceil(reservePrice * PLATFORM_FEE_PERCENTAGE);
-      const sellerEarnings = reservePrice - platformFee;
+      const platformFee = Math.ceil(totalAmount * PLATFORM_FEE_PERCENTAGE);
+      const sellerEarnings = totalAmount - platformFee;
   
       const orderData = {
         productId,
         buyerId: userId,
         sellerId,
-        bidAmount: reservePrice,
+        bidAmount: totalAmount,
         shippingAddress: {
           fullName: address.fullName,
           phoneNumber: address.phoneNumber,
@@ -62,7 +74,7 @@ class OrderUsecase implements IOrderUsecase {
         orderId: order._id,
         buyerId: userId,
         sellerId,
-        totalAmount: reservePrice,
+        totalAmount: totalAmount,
         platformFee,
         sellerEarnings,
         status: 'held'

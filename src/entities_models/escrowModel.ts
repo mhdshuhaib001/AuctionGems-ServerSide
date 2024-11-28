@@ -11,6 +11,24 @@ export interface IEscrow extends Document {
   releaseDate?: Date;
 }
 
+export interface EscrowFilters {
+  page?: number;
+  limit?: number;
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+  searchTerm?: string;
+  searchType?: 'all' | 'seller' | 'buyer';
+}
+
+export interface EscrowSummary {
+  totalAmount: number
+  platformFee: number
+  sellerEarnings: number
+  count: number
+}
+
+
 const EscrowSchema: Schema = new Schema({
   orderId: { 
     type: Schema.Types.ObjectId, 
@@ -45,8 +63,10 @@ const EscrowSchema: Schema = new Schema({
     default: 'held' 
   },
   releaseDate: { 
-    type: Date 
+    type: Date,
+    default: Date.now
   }
+  
 }, { timestamps: true });
 
 const Escrow = mongoose.model<IEscrow>('Escrow', EscrowSchema);

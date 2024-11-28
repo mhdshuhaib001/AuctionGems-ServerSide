@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const addressModal_1 = __importDefault(require("../../entities_models/addressModal"));
 const userModel_1 = require("../../entities_models/userModel");
 const Notification_1 = __importDefault(require("../../entities_models/Notification"));
+const auctionHistory_1 = require("../../entities_models/auctionHistory");
 class UserRepository {
     insertOne(user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -227,6 +228,20 @@ class UserRepository {
             catch (error) {
                 console.error("Error in changePassword:", error);
                 return false;
+            }
+        });
+    }
+    getUserAuctionHistory(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const history = yield auctionHistory_1.UserAuctionHistory.find({ userId }).sort({
+                    auctionDate: -1
+                });
+                return history;
+            }
+            catch (error) {
+                console.error("Error fetching user auction history:", error);
+                throw new Error("Failed to fetch auction history");
             }
         });
     }

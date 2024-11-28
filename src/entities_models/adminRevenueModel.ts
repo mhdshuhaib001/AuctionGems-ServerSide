@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IRevenue extends Document {
-  date: string;      
+  date: Date;      
   revenue: number;    
   sellerId?: Types.ObjectId;  
   productId?: Types.ObjectId; 
@@ -9,7 +9,7 @@ export interface IRevenue extends Document {
 
 const AdminRevenueSchema: Schema = new Schema({
   date: {
-    type: String,
+    type: Date,
     required: true,
   },
   revenue: {

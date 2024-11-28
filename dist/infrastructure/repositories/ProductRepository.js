@@ -68,5 +68,16 @@ class ProductRepository {
             }
         });
     }
+    updateAuction(auctionId, updateFields) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield productModal_1.default.findByIdAndUpdate(auctionId, updateFields, { new: true }).exec();
+            }
+            catch (error) {
+                console.error("Error update product status:", error);
+                throw new Error("Failed to update product status.");
+            }
+        });
+    }
 }
 exports.default = ProductRepository;

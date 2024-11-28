@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -151,10 +161,10 @@ class SellerUseCase {
             }
         });
     }
-    fetchSellerProducts(sellerId) {
-        return __awaiter(this, void 0, void 0, function* () {
+    fetchSellerProducts(sellerId_1) {
+        return __awaiter(this, arguments, void 0, function* (sellerId, page = 1, limit = 2) {
             try {
-                const products = yield this._SellerRepository.getAllProducts(sellerId);
+                const { products, } = yield this._SellerRepository.getAllProducts(sellerId, page, limit);
                 if (products.length > 0) {
                     const productsWithCategory = products.map((product) => {
                         const plainProduct = product.toObject();
@@ -168,7 +178,7 @@ class SellerUseCase {
                     return {
                         status: 200,
                         message: "Products fetched successfully",
-                        products: productsWithCategory
+                        products: productsWithCategory,
                     };
                 }
                 return {
@@ -228,11 +238,14 @@ class SellerUseCase {
     getAllProducts(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const products = yield this._SellerRepository.getAll(page, limit);
+                const { products, totalPages, totalItems } = yield this._SellerRepository.getAll(page, limit);
                 return {
                     status: 200,
                     message: "All products fetched successfully",
-                    products
+                    products,
+                    totalPages,
+                    totalItems,
+                    currentPage: page
                 };
             }
             catch (error) {
@@ -318,7 +331,9 @@ class SellerUseCase {
                 const escrow = yield this._SellerRepository.getEscrowByOrderId(orderId);
                 if (!escrow)
                     throw new Error("Escrow not found");
+                console.log(escrow);
                 if (newStatus === 'delivered') {
+                    console.log(newStatus, 'this is the status area....................................');
                     const platformFee = escrow.platformFee;
                     const sellerEarnings = escrow.sellerEarnings;
                     yield this._SellerRepository.releaseEscrow(orderId);
@@ -330,9 +345,8 @@ class SellerUseCase {
                         platformFee,
                     };
                     yield this._SellerRepository.saveSellerRevenue(sellerRevenueData);
-                    // Save Admin Revenue record
                     const adminRevenueData = {
-                        date: new Date().toISOString(),
+                        date: new Date(),
                         revenue: platformFee,
                     };
                     yield this._SellerRepository.saveAdminRevenue(adminRevenueData);
@@ -403,7 +417,7 @@ class SellerUseCase {
                 if (!sellerProfile) {
                     throw new Error("Seller not found");
                 }
-                const sellerProducts = yield this._SellerRepository.getAllProducts(sellerId);
+                const sellerProducts = yield this._SellerRepository.getAllSellerProducts(sellerId);
                 const sellerReviews = yield this._SellerRepository.findReviewsBySellerId(sellerId);
                 return { sellerProfile, sellerProducts, sellerReviews };
             }

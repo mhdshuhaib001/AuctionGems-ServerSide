@@ -10,7 +10,6 @@ export interface User {
     isSeller?: boolean;
     role?: 'user' | 'seller'| 'admin';
     accessToken?:string
-    wallet?:any
 }
 
 

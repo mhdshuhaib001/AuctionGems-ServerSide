@@ -50,6 +50,16 @@ class ProductRepository {
       throw new Error("Failed to fetch product.");
     }
   }
+
+  async updateAuction(auctionId: string, updateFields: Partial<typeof ProductModel.schema.obj>) {
+    try {
+      return await ProductModel.findByIdAndUpdate(auctionId, updateFields, { new: true }).exec();
+
+    } catch (error) {
+      console.error("Error update product status:", error);
+
+      throw new Error("Failed to update product status.");    }
+  }
 }
 
 export default ProductRepository;

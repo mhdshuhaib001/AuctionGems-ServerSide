@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fireBaseConfig_1 = require("../infrastructure/config/services/fireBaseConfig");
 const nodeMailer_1 = __importDefault(require("../providers/nodeMailer"));
+const socket_io_1 = require("../infrastructure/config/services/socket-io");
 class AdminUseCase {
     constructor(_jwt, _adminRepository, _cloudinaryHelper, _sellerRepository) {
         this._jwt = _jwt;
@@ -58,13 +59,14 @@ class AdminUseCase {
     updateUserActiveStatus(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log(userId, "this is the userId ");
                 const result = yield this._adminRepository.updateUserStatus(userId);
                 console.log(result, "updated");
                 return result;
             }
             catch (error) {
-                console.error(`Error updating user status to ${status}:`, error);
-                throw new Error(`Error updating user status to ${status}`);
+                console.error(`Error updating user status for user ${userId}:`, error);
+                throw new Error(`Error updating user status for user ${userId}`);
             }
         });
     }
@@ -232,6 +234,12 @@ class AdminUseCase {
                     const reportCount = yield this._adminRepository.countConfirmedReports(updatedReport.sellerId.toString());
                     if (reportCount >= 3) {
                         yield this._adminRepository.blockSeller(updatedReport.sellerId.toString());
+                        // Notify seller via socket
+                        const io = (0, socket_io_1.getSocketInstance)();
+                        io.emit("seller_blocked", {
+                            sellerId: updatedReport.sellerId.toString(),
+                            message: "Your account has been blocked due to multiple reports."
+                        });
                         sellerBlocked = true;
                     }
                 }
@@ -240,6 +248,45 @@ class AdminUseCase {
             catch (error) {
                 console.error("Error updating report status in use case:", error);
                 throw new Error("Could not update report status");
+            }
+        });
+    }
+    getEscrowData(filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const escrowData = yield this._adminRepository.findAllEscrow(filters);
+                const summary = yield this._adminRepository.getEscrowSummary(filters);
+                return Object.assign(Object.assign({}, escrowData), { summary });
+            }
+            catch (error) {
+                console.error("Error in getEscrowData:", error);
+                throw new Error("Failed to fetch escrow data");
+            }
+        });
+    }
+    getDashboardData(period) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("ithe ivide ethikkn ");
+                const [stats, categorySales, revenueData, sellerReports, recentEscrows] = yield Promise.all([
+                    this._adminRepository.getDashboardStats(),
+                    this._adminRepository.getCategorySales(),
+                    this._adminRepository.getRevenueData(period),
+                    this._adminRepository.getTopSellerReports(),
+                    this._adminRepository.getRecentEscrows()
+                ]);
+                console.log(stats, categorySales, revenueData, sellerReports, recentEscrows, "this is very nice ");
+                return {
+                    stats,
+                    categorySales,
+                    revenueData,
+                    sellerReports,
+                    recentEscrows
+                };
+            }
+            catch (error) {
+                console.error("Error in dashbordData fetching area :", error);
+                throw new Error("Failed to dashborddata  data");
             }
         });
     }

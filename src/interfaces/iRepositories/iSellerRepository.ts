@@ -10,24 +10,31 @@ export interface ISellerRepository {
   existsByUserId(userId: string): Promise<Seller | null>;
   existsBySellerId(_id: string): Promise<Seller | null>;
   findByName(CompanyName: string): Promise<Seller | null>;
-  getAllProducts(sellerId: string): Promise<Product[]>;
+  // getAllProducts(
+  //   sellerId: string,
+  //   page: number = 1,
+  //   limit: number = 4
+  // ): Promise<{
+  //   products: Product[];
+  // }>
+  getAllSellerProducts(sellerId: string): Promise<Product[]>;
   deleteProduct(productId: string): Promise<void>;
   findSeller(id: string): Promise<Seller | null>;
   getProductById(productId: string): Promise<Product | null>;
-  getAll(page: number, limit: number): Promise<Product[]>;
-  updateSeller(
+  getAll(page: number, limit: number): Promise<{ products: Product[]; totalPages: number; currentPage: number; totalItems: number }>
+    updateSeller(
     sellerId: string,
     sellerData: Partial<Omit<Seller, "_id">>
   ): Promise<Seller | null>;
-  getAllOrders(sellerId: string): Promise<any>
-  updateOrderStatus(
-    orderId: string,
-    newStatus: string
-  ): Promise<IOrder | null>
-  getAllSeller(): Promise<Seller[]> 
-  getSellerByUserId(userId: string): Promise<Seller | null>
-  addReview(reviewData: IReview): Promise<IReview>
-  findReviewsBySellerId(sellerId: string): Promise<IReview[]>
-  getSellerMetrics(sellerId: Types.ObjectId): Promise<SalesMetrics>
-  getSalesData(sellerId: Types.ObjectId, timeframe: string): Promise<SalesDataPoint[]>
+  getAllOrders(sellerId: string): Promise<any>;
+  updateOrderStatus(orderId: string, newStatus: string): Promise<IOrder | null>;
+  getAllSeller(): Promise<Seller[]>;
+  getSellerByUserId(userId: string): Promise<Seller | null>;
+  addReview(reviewData: IReview): Promise<IReview>;
+  findReviewsBySellerId(sellerId: string): Promise<IReview[]>;
+  getSellerMetrics(sellerId: Types.ObjectId): Promise<SalesMetrics>;
+  getSalesData(
+    sellerId: Types.ObjectId,
+    timeframe: string
+  ): Promise<SalesDataPoint[]>;
 }

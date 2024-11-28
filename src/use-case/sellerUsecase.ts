@@ -158,10 +158,20 @@ class SellerUseCase {
   }
 
   async fetchSellerProducts(
-    sellerId: string
-  ): Promise<{ status: number; message: string; products?: Product[] }> {
+    sellerId: string, 
+    page: number = 1, 
+    limit: number = 2
+  ): Promise<{
+    status: number;
+    message: string;
+    products?: Product[];
+  }> {
     try {
-      const products = await this._SellerRepository.getAllProducts(sellerId);
+      const { 
+        products, 
+
+      } = await this._SellerRepository.getAllProducts(sellerId, page, limit);
+
       if (products.length > 0) {
         const productsWithCategory = products.map((product) => {
           const plainProduct = product.toObject();
@@ -176,7 +186,7 @@ class SellerUseCase {
         return {
           status: 200,
           message: "Products fetched successfully",
-          products: productsWithCategory
+          products: productsWithCategory,
         };
       }
 
@@ -192,7 +202,6 @@ class SellerUseCase {
       };
     }
   }
-
   async deleteProduct(productId: string): Promise<SellerResponse> {
     try {
       await this._SellerRepository.deleteProduct(productId);
@@ -238,13 +247,20 @@ class SellerUseCase {
     status: number;
     message: string;
     products?: Product[];
+    totalPages?: number;
+    totalItems?: number;
+    currentPage?: number;
   }> {
     try {
-      const products = await this._SellerRepository.getAll(page, limit);
+      const { products, totalPages, totalItems } = await this._SellerRepository.getAll(page, limit);
+  
       return {
         status: 200,
         message: "All products fetched successfully",
-        products
+        products,
+        totalPages,
+        totalItems,
+        currentPage: page
       };
     } catch (error) {
       console.error("Error fetching all products:", error);
@@ -254,6 +270,7 @@ class SellerUseCase {
       };
     }
   }
+  
 
   async fetchSeller(
     sellerId: any
@@ -329,8 +346,9 @@ class SellerUseCase {
   
       const escrow = await this._SellerRepository.getEscrowByOrderId(orderId);
       if (!escrow) throw new Error("Escrow not found");
-  
+      console.log(escrow)
       if (newStatus === 'delivered') {
+        console.log(newStatus,'this is the status area....................................')
         const platformFee = escrow.platformFee;
         const sellerEarnings = escrow.sellerEarnings;
         
@@ -345,9 +363,8 @@ class SellerUseCase {
         };
         await this._SellerRepository.saveSellerRevenue(sellerRevenueData);
   
-        // Save Admin Revenue record
         const adminRevenueData = {
-          date: new Date().toISOString(),
+          date: new Date(),
           revenue: platformFee, 
         };
         await this._SellerRepository.saveAdminRevenue(adminRevenueData);
@@ -433,7 +450,7 @@ class SellerUseCase {
       }
 
       const sellerProducts =
-        await this._SellerRepository.getAllProducts(sellerId);
+        await this._SellerRepository.getAllSellerProducts(sellerId);
 
       const sellerReviews =
         await this._SellerRepository.findReviewsBySellerId(sellerId);

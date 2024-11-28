@@ -15,7 +15,7 @@ export const messaging = admin.messaging();
 
 export const sendAuctionAlert = async (fcmToken: string, auctionTitle: string, auctionImage: string,productUrl:string) => {
 
-  const message = `The auction "${auctionTitle}" is starting in 20 minutes!`;
+  const message = `The auction "${auctionTitle}" is starting in 2 minutes!`;
   const payload = {
     notification: {
       title: "Auction Starting Soon!",
@@ -24,9 +24,9 @@ export const sendAuctionAlert = async (fcmToken: string, auctionTitle: string, a
     data: {
       auctionTitle: auctionTitle,  
       auctionImage: auctionImage,   
-      
       icon: auctionImage,             
       productUrl:productUrl,
+      click_action:productUrl,
     },
     token: fcmToken,
   };

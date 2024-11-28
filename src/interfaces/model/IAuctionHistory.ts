@@ -1,10 +1,14 @@
 import { Document } from "mongoose";
-export interface IUserAuctionHistory extends Document {
-    userId: string; 
-    auctionId: string; 
-    productName: string;
-    amount: number;
-    status: 'win' | 'failed' | 'canceled';
-    bidAmount?: number;
-    actionDate: Date; 
-  }
+export interface IUserAuctionHistory {
+  userId: string;
+  auctionId: string;
+  productName: string;
+  amount: number;
+  actionDate?:Date
+  status: "win" | "failed" | "canceled";
+  bidAmount?: number;
+  productDetails: {
+    image: string;
+    itemTitle: string;
+  } | null;
+}

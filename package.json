@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.ts",
-    "build": "tsc",
-    "start:prod": "node dist/index.js",
-    "dev": "nodemon -r ts-node/register src/index.ts",
-    "prestart:prod": "npm run build",
-    "clean": "rimraf dist"
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "nodemon --exec ts-node src/index.ts --ignore node_modules/* --ignore dist/* --ignore logs/*",
+    "dev:server": "nodemon --exec ts-node src/index.ts --ignore node_modules/* --ignore dist/*"
   },
   "author": "",
   "license": "ISC",
@@ -56,10 +57,10 @@
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
     "jest": "^29.7.0",
-    "nodemon": "^3.1.4",
+    "nodemon": "^3.1.7",
     "prettier": "^3.3.3",
     "ts-jest": "^29.2.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.7.2"
   }
 }

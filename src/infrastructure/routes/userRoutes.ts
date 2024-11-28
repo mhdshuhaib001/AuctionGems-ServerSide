@@ -16,6 +16,14 @@ const handleGetCategory = (req:Request,res:Response)=>userController.getCategory
 const handleNotifyAuctionStart = (req:Request,res:Response)=>userController.notifyAuctionStart(req,res);
 // const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
 const handleChangePassword = (req:Request,res:Response) => userController.changePassword(req,res)
+const handleGetAuctionHistory = (req:Request,res:Response) => userController.getUserAuctionHistory(req,res)
+
+
+
+
+
+
+
 route.post("/address",handleAddAddress)
 route.get("/address",handleGetAllAddress)
 route.get("/address/:id",handleGetAddress)
@@ -27,4 +35,5 @@ route.get('/categories',handleGetCategory)
 // route.post('/subscribe-notification',handleAuctionNotification)
 // route.post('/auctionNotification',handleAuctionNotification)
 route.post('/change-password',handleChangePassword)
+route.get('/auction-history',handleGetAuctionHistory)
 export default route    

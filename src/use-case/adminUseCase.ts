@@ -13,6 +13,8 @@ import mongoose from "mongoose";
 import SellerRepository from "../infrastructure/repositories/SellerRepository";
 import { messaging } from "../infrastructure/config/services/fireBaseConfig";
 import NodeMailer from "../providers/nodeMailer";
+import { EscrowFilters } from "../entities_models/escrowModel";
+import { getSocketInstance } from "../infrastructure/config/services/socket-io";
 
 class AdminUseCase implements IAdminUseCase {
   private readonly adminEmail: string = process.env.ADMIN_EMAIL!;
@@ -53,12 +55,13 @@ class AdminUseCase implements IAdminUseCase {
   }
   async updateUserActiveStatus(userId: string): Promise<any> {
     try {
+      console.log(userId, "this is the userId ");
       const result = await this._adminRepository.updateUserStatus(userId);
       console.log(result, "updated");
       return result;
     } catch (error) {
-      console.error(`Error updating user status to ${status}:`, error);
-      throw new Error(`Error updating user status to ${status}`);
+      console.error(`Error updating user status for user ${userId}:`, error);
+      throw new Error(`Error updating user status for user ${userId}`);
     }
   }
 
@@ -194,8 +197,6 @@ class AdminUseCase implements IAdminUseCase {
     }
   }
 
-
-
   async subscribeToAuction(
     userId: string,
     auctionId: string,
@@ -203,9 +204,8 @@ class AdminUseCase implements IAdminUseCase {
     email?: string,
     phoneNumber?: string,
     countryCode?: string
-  ):Promise<void>{
+  ): Promise<void> {
     try {
-      
       await this._adminRepository.upsertNotificationPreferences(
         userId,
         auctionId,
@@ -299,6 +299,13 @@ class AdminUseCase implements IAdminUseCase {
           await this._adminRepository.blockSeller(
             updatedReport.sellerId.toString()
           );
+          // Notify seller via socket
+          const io = getSocketInstance();
+          io.emit("seller_blocked", {
+            sellerId: updatedReport.sellerId.toString(),
+            message: "Your account has been blocked due to multiple reports."
+          });
+
           sellerBlocked = true;
         }
       }
@@ -307,6 +314,56 @@ class AdminUseCase implements IAdminUseCase {
     } catch (error) {
       console.error("Error updating report status in use case:", error);
       throw new Error("Could not update report status");
+    }
+  }
+
+  async getEscrowData(filters?: EscrowFilters) {
+    try {
+      const escrowData = await this._adminRepository.findAllEscrow(filters);
+
+      const summary = await this._adminRepository.getEscrowSummary(filters);
+
+      return {
+        ...escrowData,
+        summary
+      };
+    } catch (error) {
+      console.error("Error in getEscrowData:", error);
+      throw new Error("Failed to fetch escrow data");
+    }
+  }
+
+  async getDashboardData(period: any) {
+    try {
+      console.log("ithe ivide ethikkn ");
+      const [stats, categorySales, revenueData, sellerReports, recentEscrows] =
+        await Promise.all([
+          this._adminRepository.getDashboardStats(),
+          this._adminRepository.getCategorySales(),
+          this._adminRepository.getRevenueData(period),
+          this._adminRepository.getTopSellerReports(),
+          this._adminRepository.getRecentEscrows()
+        ]);
+
+      console.log(
+        stats,
+        categorySales,
+        revenueData,
+        sellerReports,
+        recentEscrows,
+        "this is very nice "
+      );
+
+      return {
+        stats,
+        categorySales,
+        revenueData,
+        sellerReports,
+        recentEscrows
+      };
+    } catch (error) {
+      console.error("Error in dashbordData fetching area :", error);
+      throw new Error("Failed to dashborddata  data");
     }
   }
 }

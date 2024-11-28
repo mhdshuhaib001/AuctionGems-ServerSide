@@ -15,6 +15,9 @@ const handleReportAdd = (req:Request,res:Response)=>adminController.addReport(re
 const handleGetReports = (req:Request,res:Response)=>adminController.getReports(req,res);
 const handleUpdateStatus = (req:Request,res:Response)=>adminController.updateReportStatus(req,res)
 const handleAuctionNotification = (req:Request,res:Response)=> adminController.auctionNotification(req,res)
+const handleGetEscrow = (req:Request,res:Response)=> adminController.getEscrowData(req,res)
+const handleGetDashboardData = (req:Request,res:Response)=> adminController.getDashboardData(req,res)
+
 router.get('/get-user', handleGetAllUser);
 router.post('/user-status',handleUserBlockAndUnblock)
 router.post('/categories', uploadFields, handleAddCategory);
@@ -25,4 +28,6 @@ router.post('/report',handleReportAdd)
 router.get('/getreports',handleGetReports)
 router.patch('/status/:id', handleUpdateStatus);
 router.post('/auction-notification',handleAuctionNotification)
+router.get('/escrow',handleGetEscrow)
+router.get('/dashboard', handleGetDashboardData); 
 export default router;

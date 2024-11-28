@@ -76,7 +76,31 @@ class SellerRepository implements ISellerRepository {
     }
   }
 
-  async getAllProducts(sellerId: string): Promise<Product[]> {
+  async getAllProducts(
+    sellerId: string,
+    page: number = 1,
+    limit: number = 4  
+  ): Promise<{
+    products: Product[];
+  }> {
+    try {
+      const skip = (page - 1) * limit;
+      
+      const products = await ProductModel.find({ sellerId })
+        .populate("categoryId", "name")
+        .skip(skip)
+        .limit(limit)
+        .exec();
+      
+      return { products };
+    } catch (error) {
+      console.error("Error getting products:", error);
+      throw new Error("Failed to retrieve products");
+    }
+  }
+
+
+  async getAllSellerProducts(sellerId: string): Promise<Product[]> {
     try {
       const products = await ProductModel.find({ sellerId })
         .populate("categoryId", "name")
@@ -92,6 +116,7 @@ class SellerRepository implements ISellerRepository {
       throw new Error("Failed to get products.");
     }
   }
+
 
   async deleteProduct(productId: string): Promise<void> {
     try {
@@ -121,13 +146,16 @@ class SellerRepository implements ISellerRepository {
 
   async getProductById(productId: string): Promise<Product | null> {
     try {
+      console.log("Fetching product with ID:", productId);
       const result = await ProductModel.findById(productId)
         .populate({
           path: "sellerId",
           select: "companyName profile"
         })
         .exec();
+  
       if (!result) {
+        console.error("Product not found for ID:", productId);
         throw new Error("Product not found");
       }
       console.log(result, "result");
@@ -137,20 +165,29 @@ class SellerRepository implements ISellerRepository {
       throw new Error("Failed to fetch product.");
     }
   }
+  
 
-  async getAll(page: number, limit: number): Promise<Product[]> {
+  async getAll(page: number, limit: number): Promise<{ products: Product[]; totalPages: number; currentPage: number; totalItems: number }> {
     try {
-      const total = await ProductModel.countDocuments();
+      const totalItems = await ProductModel.countDocuments();
       const products = await ProductModel.find()
         .populate("categoryId", "name")
         .skip((page - 1) * limit)
         .limit(limit);
-      return products;
+  
+      const totalPages = Math.ceil(totalItems / limit);
+      return {
+        products,
+        totalPages,
+        currentPage: page,
+        totalItems,
+      };
     } catch (error) {
       console.error("Error getting all products:", error);
       throw new Error("Failed to get products.");
     }
   }
+  
 
   async updateSeller(
     sellerId: string,
@@ -284,7 +321,7 @@ class SellerRepository implements ISellerRepository {
   
 
   async saveAdminRevenue(revenueData: {
-    date: string;
+    date: Date;
     revenue: number;
     sellerId?: string;
     productId?: string;

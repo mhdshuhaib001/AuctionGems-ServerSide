@@ -3,6 +3,7 @@ import AdminUseCase from "../../use-case/adminUseCase";
 import UserUseCase from "../../use-case/userUseCase";
 import { Request, Response } from "express";
 import { IReport } from "../../interfaces/model/IReport";
+import { EscrowFilters } from "../../entities_models/escrowModel";
 
 class AdminController {
   constructor(private readonly _AdminUsecase: AdminUseCase) {}
@@ -74,21 +75,19 @@ class AdminController {
       res.status(500).json({ error: "Internal server error" });
     }
   }
-
   async getAllCategory(req: Request, res: Response) {
     try {
-      const pageQuery = req.body.page;
-      const limitQuery = req.body.limit;
-      const page = typeof pageQuery === "string" ? parseInt(pageQuery) : 1;
-      const limit = typeof limitQuery === "string" ? parseInt(limitQuery) : 5;
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 5;
 
       const categories = await this._AdminUsecase.getAllCategory({
         page,
         limit
       });
+
       res.status(200).json(categories);
     } catch (error) {
-      console.error("Error in getAllCategory controller:", error);
+      console.error("Category fetch controller error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
@@ -215,6 +214,51 @@ class AdminController {
       return res.status(500).json({
         message: "An error occurred while updating the report status."
       });
+    }
+  }
+
+  getEscrowData = async (req: Request, res: Response) => {
+    try {
+      // Parse query parameters
+      const filters: EscrowFilters = {
+        page: Number(req.query.page) || 1,
+        limit: Number(req.query.limit) || 10,
+        status: req.query.status as "held" | "released" | "disputed",
+        startDate: req.query.startDate
+          ? new Date(req.query.startDate as string)
+          : undefined,
+        endDate: req.query.endDate
+          ? new Date(req.query.endDate as string)
+          : undefined,
+        searchTerm: req.query.searchTerm as string
+      };
+
+      const result = await this._AdminUsecase.getEscrowData(filters);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching escrow data:", error);
+      res.status(500).json({
+        message: "Error fetching escrow data",
+        error: (error as Error).message
+      });
+    }
+  };
+
+  async getDashboardData(req: Request, res: Response) {
+    try {
+      console.log("haloooooo");
+      const period = (req.query.period as string) || "weekly";
+      const dashboardData = await this._AdminUsecase.getDashboardData(period);
+      res.status(200).json({
+        success: true,
+        data: dashboardData
+      });
+    } catch (error) {
+      return {
+        success: false,
+        message: "Failed to fetch dashboard data"
+      };
     }
   }
 }

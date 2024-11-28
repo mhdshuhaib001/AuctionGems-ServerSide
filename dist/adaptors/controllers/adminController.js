@@ -12,6 +12,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class AdminController {
     constructor(_AdminUsecase) {
         this._AdminUsecase = _AdminUsecase;
+        this.getEscrowData = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Parse query parameters
+                const filters = {
+                    page: Number(req.query.page) || 1,
+                    limit: Number(req.query.limit) || 10,
+                    status: req.query.status,
+                    startDate: req.query.startDate
+                        ? new Date(req.query.startDate)
+                        : undefined,
+                    endDate: req.query.endDate
+                        ? new Date(req.query.endDate)
+                        : undefined,
+                    searchTerm: req.query.searchTerm
+                };
+                const result = yield this._AdminUsecase.getEscrowData(filters);
+                res.json(result);
+            }
+            catch (error) {
+                console.error("Error fetching escrow data:", error);
+                res.status(500).json({
+                    message: "Error fetching escrow data",
+                    error: error.message
+                });
+            }
+        });
     }
     adminLogin(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -81,10 +107,8 @@ class AdminController {
     getAllCategory(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const pageQuery = req.body.page;
-                const limitQuery = req.body.limit;
-                const page = typeof pageQuery === "string" ? parseInt(pageQuery) : 1;
-                const limit = typeof limitQuery === "string" ? parseInt(limitQuery) : 5;
+                const page = Number(req.query.page) || 1;
+                const limit = Number(req.query.limit) || 5;
                 const categories = yield this._AdminUsecase.getAllCategory({
                     page,
                     limit
@@ -92,7 +116,7 @@ class AdminController {
                 res.status(200).json(categories);
             }
             catch (error) {
-                console.error("Error in getAllCategory controller:", error);
+                console.error("Category fetch controller error:", error);
                 res.status(500).json({ error: "Internal server error" });
             }
         });
@@ -203,6 +227,25 @@ class AdminController {
                 return res.status(500).json({
                     message: "An error occurred while updating the report status."
                 });
+            }
+        });
+    }
+    getDashboardData(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("haloooooo");
+                const period = req.query.period || "weekly";
+                const dashboardData = yield this._AdminUsecase.getDashboardData(period);
+                res.status(200).json({
+                    success: true,
+                    data: dashboardData
+                });
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    message: "Failed to fetch dashboard data"
+                };
             }
         });
     }

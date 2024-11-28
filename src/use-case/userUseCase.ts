@@ -12,6 +12,7 @@ import bcrypt from "bcrypt";
 import CloudinaryHelper from "../providers/cloudinaryHelper";
 import AdminRepository from "../infrastructure/repositories/AdminRepository";
 import { messaging } from "../infrastructure/config/services/fireBaseConfig";
+import { IUserAuctionHistory } from "../entities_models/auctionHistory";
 
 class UserUseCase implements IUserUseCase {
   constructor(
@@ -415,7 +416,8 @@ class UserUseCase implements IUserUseCase {
         throw new Error("User not found");
       }
 console.log(user.password)
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
+const isMatch = await bcrypt.compare(currentPassword, user.password);
+console.log(isMatch);
       if (!isMatch) {
         throw new Error("Current password is incorrect");
       }
@@ -439,6 +441,36 @@ console.log(user.password)
       
     }
   }
+
+  async getUserAuctionHistory(userId: string): Promise<IUserAuctionHistory[]> {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    try {
+      const auctionHistory = await this._userRepository.getUserAuctionHistory(userId);
+console.log(auctionHistory,'auctionHistory in usecase')
+
+      // const enrichedHistory = await Promise.all(
+      //   auctionHistory.map(async (history) => {
+      //     const auctionDetails = await this._sellerRepository.getProductById(history.auctionId);
+      //     console.log(auctionDetails,'this is the auction usecase',history.auctionId)
+      //     return {
+      //       ...history,
+      //       productDetails: auctionDetails ? {
+      //         image: auctionDetails.images[0],
+      //         itemTitle: auctionDetails.itemTitle
+      //       } : null
+      //     };
+      //   })
+      // );
+
+      return auctionHistory;
+    } catch (error) {
+      console.error("Error in getUserAuctionHistory use case:", error);
+      throw error;
+    }
+  }
 }
 
-export default UserUseCase;
+export default UserUseCase; 

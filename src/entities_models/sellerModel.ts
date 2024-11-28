@@ -28,7 +28,6 @@ const sellerSchema = new Schema<Seller>({
     profile: {
       type: String,
     },
-    wallet: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet", required: true },
   }, { timestamps: true });
   
   const SellerModel: Model<Seller> = model<Seller>('Seller', sellerSchema);

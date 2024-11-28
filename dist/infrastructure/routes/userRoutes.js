@@ -18,6 +18,7 @@ const handleGetCategory = (req, res) => controllers_1.userController.getCategory
 const handleNotifyAuctionStart = (req, res) => controllers_1.userController.notifyAuctionStart(req, res);
 // const handleAuctionNotification = (req:Request,res:Response)=>userController.auctionNotification(req,res);
 const handleChangePassword = (req, res) => controllers_1.userController.changePassword(req, res);
+const handleGetAuctionHistory = (req, res) => controllers_1.userController.getUserAuctionHistory(req, res);
 route.post("/address", handleAddAddress);
 route.get("/address", handleGetAllAddress);
 route.get("/address/:id", handleGetAddress);
@@ -29,4 +30,5 @@ route.get('/categories', handleGetCategory);
 // route.post('/subscribe-notification',handleAuctionNotification)
 // route.post('/auctionNotification',handleAuctionNotification)
 route.post('/change-password', handleChangePassword);
+route.get('/auction-history', handleGetAuctionHistory);
 exports.default = route;

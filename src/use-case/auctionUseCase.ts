@@ -113,27 +113,26 @@ class AuctionUseCase implements IAuctionUseCase {
   }> {
     try {
       console.log(`Ending auction for auctionId: ${auctionId}`);
-
-      const auctionItem =
-        await this._auctionRepository.getAuctionItem(auctionId);
+      
+      const auctionItem = await this._auctionRepository.getAuctionItem(auctionId);
       if (!auctionItem) {
         console.error("Auction not found");
         throw new Error("Auction not found");
       }
-
+      
       const currentTime = new Date();
       const endTime = new Date(auctionItem.auctionEndDateTime);
       console.log(`Current time: ${currentTime}, End time: ${endTime}`);
-
+      
       if (currentTime < endTime) {
         console.log(
           `Auction ${auctionId} hasn't ended yet. Current: ${currentTime}, End: ${endTime}`
         );
         throw new Error("auction is not ended");
       }
-
+      
       const bids = await this._auctionRepository.getBiddings(auctionId);
-
+      
       if (!bids || bids.length === 0) {
         await ProductModel.findByIdAndUpdate(auctionId, {
           sold: false,
@@ -150,24 +149,51 @@ class AuctionUseCase implements IAuctionUseCase {
           currentBid: 0
         };
       }
-
+      
       const sortedBids = bids.sort(
         (a, b) =>
           b.currentBid - a.currentBid ||
           new Date(b.time).getTime() - new Date(a.time).getTime()
       );
+      
       const highestBid = sortedBids[0];
       console.log(`Highest bid: ${JSON.stringify(highestBid)}`);
-
+      
       const winner = await this._userRepository.findById(
         highestBid.buyerID.toString()
       );
+      
       if (!winner || !winner._id) {
         throw new Error("Winner not found or missing ID");
       }
-
+      
       const productName = auctionItem.itemTitle;
       const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
+      
+      // Create auction history for the winner
+      await this.createAuctionHistory({
+        userId: winner._id.toString(),
+        auctionId: auctionId,
+        productName: productName,
+        amount: highestBid.currentBid,
+        status: 'win',
+        bidAmount: highestBid.currentBid,
+        actionDate: new Date()
+      });
+      
+      // Create auction histories for other bidders (marked as 'failed')
+      for (const bid of sortedBids.slice(1)) {
+        await this.createAuctionHistory({
+          userId: bid.buyerID.toString(),
+          auctionId: auctionId,
+          productName: productName,
+          amount: bid.currentBid,
+          status: 'failed',
+          bidAmount: bid.currentBid,
+          actionDate: new Date()
+        });
+      }
+      
       const emailSent = await this._mailer.sendWinnerMail(
         winner.email,
         productName,
@@ -175,18 +201,19 @@ class AuctionUseCase implements IAuctionUseCase {
         paymentLink,
         auctionItem.images[0]
       );
+      
       if (emailSent) {
         console.log("Winner email sent successfully.");
       }
-
+      
       await ProductModel.findByIdAndUpdate(auctionId, {
         sold: true,
         finalBidAmount: highestBid.currentBid,
         auctionStatus: "sold"
       });
-
+      
       await this._auctionRepository.updateAuctionStatus(auctionId, "sold");
-
+      
       const io = getSocketInstance();
       io.to(auctionId).emit("auction_winner", {
         auctionId,
@@ -196,7 +223,7 @@ class AuctionUseCase implements IAuctionUseCase {
         productImage: auctionItem.images[0],
         checkoutLink: paymentLink
       });
-
+      
       io.emit("new_order_notification", {
         id: Date.now().toString(),
         sellerId: auctionItem.sellerId,
@@ -207,10 +234,11 @@ class AuctionUseCase implements IAuctionUseCase {
         timestamp: new Date().toISOString(),
         isRead: false
       });
+      
       console.log(
         `Auction ${auctionId} ended. Winner ID: ${winner._id.toString()}`
       );
-
+      
       return {
         winnerId: winner._id.toString(),
         paymentLink,
@@ -291,6 +319,7 @@ class AuctionUseCase implements IAuctionUseCase {
     }
     return await this._auctionRepository.createAuctionHistory(data);
   }
+
 }
 
 export default AuctionUseCase;

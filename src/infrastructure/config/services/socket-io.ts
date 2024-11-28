@@ -3,6 +3,7 @@ import { Server as HttpServer } from "http";
 import ChatUseCase from "../../../use-case/chatUseCase";
 import ChatRepository from "../../repositories/ChatRepository";
 import SellerRepository from "../../repositories/SellerRepository";
+import SellerModel from "../../../entities_models/sellerModel";
 
 let io: SocketIOServer | null = null;
 const onlineUsers = new Map<string, string>();
@@ -31,6 +32,21 @@ export const socketIoInit = (HttpServer: HttpServer) => {
       io?.emit("user_online", userId);
     });
 
+
+    socket.on("check_seller_block_status", async (sellerId: string) => {
+      try {
+        const seller = await SellerModel.findById(sellerId);
+        if (seller && seller.isBlocked) {
+          socket.emit("seller_blocked", {
+            sellerId,
+            message: "Your account has been blocked due to multiple reports."
+          });
+        }
+      } catch (error) {
+        console.error("Error checking seller block status:", error);
+      }
+    });
+    
     socket.on("send_message", async (message) => {
       try {
         await chatUseCase.sendMessage(

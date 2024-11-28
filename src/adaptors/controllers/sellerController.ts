@@ -64,11 +64,21 @@ class SellerController {
   async fetchSellerProducts(req: Request, res: Response) {
     try {
       const sellerId = req.params.sellerId;
-      const products = await this._sellerUseCase.fetchSellerProducts(sellerId);
-      res.status(products.status).json(products);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 4;
+      
+      const result = await this._sellerUseCase.fetchSellerProducts(
+        sellerId, page, limit
+      );
+      
+      res.status(result.status).json({
+        message: result.message,
+        products: result.products,
+        currentPage: page,
+        hasMore: result.products && result.products.length === limit
+      });
     } catch (error) {
-      console.error("Error product:", error);
-      res.status(500).json({ message: "Error creating product." });
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 
@@ -86,18 +96,27 @@ class SellerController {
 
 
   async getAllProducts(req: Request, res: Response) {
-    const { page = 1, limit = 10 } = req.query;
-    const pageNumber = parseInt(page as string, 10) || 1; 
-    const limitNumber = parseInt(limit as string, 10) || 10;
-
+    const { page = 1, limit = 6, sellerId } = req.query;
+    const pageNumber = parseInt(page as string, 10) || 1;
+    const limitNumber = parseInt(limit as string, 10) || 6;
+  
     try {
-        const products = await this._sellerUseCase.getAllProducts(pageNumber, limitNumber);
-        res.status(200).json(products);
+      const { products, totalPages, totalItems, currentPage } = await this._sellerUseCase.getAllProducts(pageNumber, limitNumber);
+      
+      res.status(200).json({
+        status: 200,
+        message: "Products fetched successfully",
+        products,
+        totalPages,
+        totalItems,
+        currentPage
+      });
     } catch (error) {
-        console.error("Error fetching products:", error);
-        res.status(500).json({ message: "Error fetching products." });
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Error fetching products." });
     }
-}
+  }
+  
 
   
 
@@ -200,28 +219,28 @@ const {sellerId,userId,rating,comment} = req.body
     }
   }
 
-  async getDashboardData(req: Request, res: Response): Promise<void> {
-    try {
-      const { sellerId } = req.params;
-      const { timeframe = 'monthly' } = req.query;
-
-      const dashboardData = await this._sellerUseCase.execute(
-        sellerId,
-        timeframe as string
-      );
-
-      res.status(200).json({
-        success: true,
-        data: dashboardData
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Error fetching dashboard data',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
+async getDashboardData(req: Request, res: Response): Promise<void> {
+  try {
+    const { sellerId } = req.params;
+    const { timeframe = 'weekly' } = req.query;
+    
+    const dashboardData = await this._sellerUseCase.execute(
+      sellerId,
+      timeframe as string
+    );
+    
+    res.status(200).json({
+      success: true,
+      data: dashboardData
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard data',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
+}
 }
 
 export default SellerController;

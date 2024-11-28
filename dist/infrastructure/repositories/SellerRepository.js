@@ -87,7 +87,24 @@ class SellerRepository {
             }
         });
     }
-    getAllProducts(sellerId) {
+    getAllProducts(sellerId_1) {
+        return __awaiter(this, arguments, void 0, function* (sellerId, page = 1, limit = 4) {
+            try {
+                const skip = (page - 1) * limit;
+                const products = yield productModal_1.default.find({ sellerId })
+                    .populate("categoryId", "name")
+                    .skip(skip)
+                    .limit(limit)
+                    .exec();
+                return { products };
+            }
+            catch (error) {
+                inspector_1.console.error("Error getting products:", error);
+                throw new Error("Failed to retrieve products");
+            }
+        });
+    }
+    getAllSellerProducts(sellerId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const products = yield productModal_1.default.find({ sellerId })
@@ -136,6 +153,7 @@ class SellerRepository {
     getProductById(productId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                inspector_1.console.log("Fetching product with ID:", productId);
                 const result = yield productModal_1.default.findById(productId)
                     .populate({
                     path: "sellerId",
@@ -143,6 +161,7 @@ class SellerRepository {
                 })
                     .exec();
                 if (!result) {
+                    inspector_1.console.error("Product not found for ID:", productId);
                     throw new Error("Product not found");
                 }
                 inspector_1.console.log(result, "result");
@@ -157,12 +176,18 @@ class SellerRepository {
     getAll(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const total = yield productModal_1.default.countDocuments();
+                const totalItems = yield productModal_1.default.countDocuments();
                 const products = yield productModal_1.default.find()
                     .populate("categoryId", "name")
                     .skip((page - 1) * limit)
                     .limit(limit);
-                return products;
+                const totalPages = Math.ceil(totalItems / limit);
+                return {
+                    products,
+                    totalPages,
+                    currentPage: page,
+                    totalItems,
+                };
             }
             catch (error) {
                 inspector_1.console.error("Error getting all products:", error);

@@ -65,12 +65,18 @@ class SellerController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const sellerId = req.params.sellerId;
-                const products = yield this._sellerUseCase.fetchSellerProducts(sellerId);
-                res.status(products.status).json(products);
+                const page = parseInt(req.query.page) || 1;
+                const limit = parseInt(req.query.limit) || 4;
+                const result = yield this._sellerUseCase.fetchSellerProducts(sellerId, page, limit);
+                res.status(result.status).json({
+                    message: result.message,
+                    products: result.products,
+                    currentPage: page,
+                    hasMore: result.products && result.products.length === limit
+                });
             }
             catch (error) {
-                console.error("Error product:", error);
-                res.status(500).json({ message: "Error creating product." });
+                res.status(500).json({ message: "Internal server error" });
             }
         });
     }
@@ -90,12 +96,19 @@ class SellerController {
     }
     getAllProducts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { page = 1, limit = 10 } = req.query;
+            const { page = 1, limit = 6, sellerId } = req.query;
             const pageNumber = parseInt(page, 10) || 1;
-            const limitNumber = parseInt(limit, 10) || 10;
+            const limitNumber = parseInt(limit, 10) || 6;
             try {
-                const products = yield this._sellerUseCase.getAllProducts(pageNumber, limitNumber);
-                res.status(200).json(products);
+                const { products, totalPages, totalItems, currentPage } = yield this._sellerUseCase.getAllProducts(pageNumber, limitNumber);
+                res.status(200).json({
+                    status: 200,
+                    message: "Products fetched successfully",
+                    products,
+                    totalPages,
+                    totalItems,
+                    currentPage
+                });
             }
             catch (error) {
                 console.error("Error fetching products:", error);
@@ -208,7 +221,7 @@ class SellerController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { sellerId } = req.params;
-                const { timeframe = 'monthly' } = req.query;
+                const { timeframe = 'weekly' } = req.query;
                 const dashboardData = yield this._sellerUseCase.execute(sellerId, timeframe);
                 res.status(200).json({
                     success: true,

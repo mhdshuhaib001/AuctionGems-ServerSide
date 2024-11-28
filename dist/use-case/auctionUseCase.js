@@ -118,6 +118,28 @@ class AuctionUseCase {
                 }
                 const productName = auctionItem.itemTitle;
                 const paymentLink = `${process.env.FRONTEND_URL}/checkout/${auctionId}`;
+                // Create auction history for the winner
+                yield this.createAuctionHistory({
+                    userId: winner._id.toString(),
+                    auctionId: auctionId,
+                    productName: productName,
+                    amount: highestBid.currentBid,
+                    status: 'win',
+                    bidAmount: highestBid.currentBid,
+                    actionDate: new Date()
+                });
+                // Create auction histories for other bidders (marked as 'failed')
+                for (const bid of sortedBids.slice(1)) {
+                    yield this.createAuctionHistory({
+                        userId: bid.buyerID.toString(),
+                        auctionId: auctionId,
+                        productName: productName,
+                        amount: bid.currentBid,
+                        status: 'failed',
+                        bidAmount: bid.currentBid,
+                        actionDate: new Date()
+                    });
+                }
                 const emailSent = yield this._mailer.sendWinnerMail(winner.email, productName, highestBid.currentBid, paymentLink, auctionItem.images[0]);
                 if (emailSent) {
                     console.log("Winner email sent successfully.");

@@ -5,6 +5,10 @@ import { AddressData } from "../../interfaces/model/address";
 import { User } from "../../interfaces/model/user";
 import admin from "../config/services/fireBaseConfig";
 import NotificationSubscriptionModel from "../../entities_models/Notification";
+import {
+  IUserAuctionHistory,
+  UserAuctionHistory
+} from "../../entities_models/auctionHistory";
 
 class UserRepository implements IUserRepository {
   async insertOne(user: User): Promise<User> {
@@ -66,7 +70,7 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async updateRole(userId: string, role: "user" | "seller"):Promise<boolean> {
+  async updateRole(userId: string, role: "user" | "seller"): Promise<boolean> {
     try {
       const user = await UserModel.findById(userId).exec();
 
@@ -101,7 +105,6 @@ class UserRepository implements IUserRepository {
 
   async saveAddress(addressData: AddressData): Promise<boolean> {
     try {
-
       const {
         fullName,
         phoneNumber,
@@ -230,6 +233,18 @@ class UserRepository implements IUserRepository {
       console.error("Error in changePassword:", error);
 
       return false;
+    }
+  }
+
+  async getUserAuctionHistory(userId: string): Promise<IUserAuctionHistory[]> {
+    try {
+      const history = await UserAuctionHistory.find({ userId }).sort({
+        auctionDate: -1
+      });
+      return history;
+    } catch (error) {
+      console.error("Error fetching user auction history:", error);
+      throw new Error("Failed to fetch auction history");
     }
   }
 }

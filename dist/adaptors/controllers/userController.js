@@ -115,7 +115,7 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { token, newPassword } = req.body;
-                console.log(req.body, '000000000');
+                console.log(req.body, "000000000");
                 const result = yield this._userUseCase.forgetPassword(token, newPassword);
                 res.status(200).json(result);
             }
@@ -257,7 +257,7 @@ class UserController {
     changePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(req.body, 'change password');
+                console.log(req.body, "change password");
                 const { userId, newPassword, currentPassword } = req.body;
                 const result = yield this._userUseCase.changePassword(userId, newPassword, currentPassword);
                 res.status(200).json({ result });
@@ -280,6 +280,34 @@ class UserController {
             //   console.error('Error sending auction notification:', error);
             //   res.status(500).json({ message: 'An error occurred while sending the auction notification' });
             // }
+        });
+    }
+    getUserAuctionHistory(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.query.userId;
+                console.log(userId, "this is the userId");
+                if (!userId) {
+                    res.status(401).json({
+                        success: false,
+                        message: "Unauthorized: User not authenticated"
+                    });
+                    return;
+                }
+                const auctionHistory = yield this._userUseCase.getUserAuctionHistory(userId);
+                res.status(200).json({
+                    success: true,
+                    data: auctionHistory,
+                    message: "Auction history retrieved successfully"
+                });
+            }
+            catch (error) {
+                console.error("Error fetching auction history:", error);
+                res.status(500).json({
+                    success: false,
+                    message: "Failed to retrieve auction history"
+                });
+            }
         });
     }
 }

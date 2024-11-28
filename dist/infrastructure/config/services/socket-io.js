@@ -17,6 +17,7 @@ const socket_io_1 = require("socket.io");
 const chatUseCase_1 = __importDefault(require("../../../use-case/chatUseCase"));
 const ChatRepository_1 = __importDefault(require("../../repositories/ChatRepository"));
 const SellerRepository_1 = __importDefault(require("../../repositories/SellerRepository"));
+const sellerModel_1 = __importDefault(require("../../../entities_models/sellerModel"));
 let io = null;
 const onlineUsers = new Map();
 const chatRepository = new ChatRepository_1.default();
@@ -40,6 +41,20 @@ const socketIoInit = (HttpServer) => {
             onlineUsers.set(userId, socket.id);
             io === null || io === void 0 ? void 0 : io.emit("user_online", userId);
         });
+        socket.on("check_seller_block_status", (sellerId) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const seller = yield sellerModel_1.default.findById(sellerId);
+                if (seller && seller.isBlocked) {
+                    socket.emit("seller_blocked", {
+                        sellerId,
+                        message: "Your account has been blocked due to multiple reports."
+                    });
+                }
+            }
+            catch (error) {
+                console.error("Error checking seller block status:", error);
+            }
+        }));
         socket.on("send_message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 yield chatUseCase.sendMessage(message.senderId, message.receiverId, message.message);
