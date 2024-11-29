@@ -34,7 +34,7 @@ const socketIoInit = (HttpServer) => {
             methods: ["GET", "POST"],
             credentials: true
         },
-        path: "/api/socket.io",
+        // path: "/api/socket.io",
         transports: ["websocket", "polling"]
     });
     io.on("connection", (socket) => {
