@@ -16,6 +16,8 @@ const generateRoomId = (id1: string, id2: string) => {
 };
 
 export const socketIoInit = (HttpServer: HttpServer) => {
+
+  // this is soccket connecting area 
   io = new SocketIOServer(HttpServer, {
     cors: {
       origin: "https://auction-gems.vercel.app",

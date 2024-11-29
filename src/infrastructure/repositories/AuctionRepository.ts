@@ -25,6 +25,7 @@ class AuctionRepository implements IAuctionRepository {
         currentBid: currentBid,
         bidStatus: "Active"
       });
+// final bid amount and bid saving area
 
       const savedBid = await newBid.save();
       return savedBid;
