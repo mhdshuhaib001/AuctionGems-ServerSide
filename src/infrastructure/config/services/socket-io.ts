@@ -20,7 +20,7 @@ export const socketIoInit = (HttpServer: HttpServer) => {
   // this is soccket connecting area 
   io = new SocketIOServer(HttpServer, {
     cors: {
-      origin: "https://auction-gems.vercel.app",
+      origin: "https://auction-gemss.vercel.app",
       methods: ["GET", "POST"],
       credentials: true
     },
