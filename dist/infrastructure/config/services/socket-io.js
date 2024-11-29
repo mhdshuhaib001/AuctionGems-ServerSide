@@ -29,11 +29,14 @@ const generateRoomId = (id1, id2) => {
 const socketIoInit = (HttpServer) => {
     io = new socket_io_1.Server(HttpServer, {
         cors: {
-            origin: process.env.FRONTEND_URL,
+            origin: [
+                "https://auction-gems.vercel.app",
+                "wss://backend.loomfashion.online"
+            ],
             methods: ["GET", "POST"],
             credentials: true
         },
-        path: "/socket.io",
+        path: "/api/socket.io",
         transports: ["websocket", "polling"]
     });
     io.on("connection", (socket) => {

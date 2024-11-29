@@ -18,11 +18,14 @@ const generateRoomId = (id1: string, id2: string) => {
 export const socketIoInit = (HttpServer: HttpServer) => {
   io = new SocketIOServer(HttpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: [
+        "https://auction-gems.vercel.app",
+        "wss://backend.loomfashion.online"
+      ],
       methods: ["GET", "POST"],
       credentials: true
     },
-    path: "/socket.io",
+    path: "/api/socket.io",
     transports: ["websocket", "polling"]
   });
 
@@ -31,7 +34,6 @@ export const socketIoInit = (HttpServer: HttpServer) => {
       onlineUsers.set(userId, socket.id);
       io?.emit("user_online", userId);
     });
-
 
     socket.on("check_seller_block_status", async (sellerId: string) => {
       try {
@@ -46,7 +48,7 @@ export const socketIoInit = (HttpServer: HttpServer) => {
         console.error("Error checking seller block status:", error);
       }
     });
-    
+
     socket.on("send_message", async (message) => {
       try {
         await chatUseCase.sendMessage(
@@ -74,12 +76,17 @@ export const socketIoInit = (HttpServer: HttpServer) => {
           console.log("Notification details:", notification);
 
           const receiverSocketId = onlineUsers.get(message.receiverId);
-      
+
           if (receiverSocketId) {
-            io?.to(receiverSocketId).emit("new_message_notification", notification);
+            io
+              ?.to(receiverSocketId)
+              .emit("new_message_notification", notification);
           } else {
-            console.warn(`No active socket found for user ${message.receiverId}`);
-          }        }
+            console.warn(
+              `No active socket found for user ${message.receiverId}`
+            );
+          }
+        }
       } catch (error) {
         console.error("Failed to process message:", error);
       }

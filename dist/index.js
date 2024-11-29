@@ -19,6 +19,21 @@ const socket_io_1 = require("./infrastructure/config/services/socket-io");
 const corn_1 = require("./providers/corn");
 const AuctionNotificationScheduler_1 = require("./providers/AuctionNotificationScheduler");
 dotenv_1.default.config();
+console.log("Environment Variables Loaded:");
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
+console.log("PORT:", process.env.PORT);
+console.log("GMAIL:", process.env.GMAIL);
+console.log("JWT_KEY:", process.env.JWT_KEY);
+console.log("CLOUDINARY_CLOUD_NAME:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("CLOUDINARY_API_KEY:", process.env.CLOUDINARY_API_KEY);
+console.log("CLOUDINARY_API_SECRET:", process.env.CLOUDINARY_API_SECRET);
+console.log("ADMIN_EMAIL:", process.env.ADMIN_EMAIL);
+console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY);
+console.log("TWILIO_ACCOUNT_SID:", process.env.TWILIO_ACCOUNT_SID);
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("BACKEND_URL:", process.env.BACKEND_URL);
+console.log("GEMINI_API_KEY:", process.env.GEMINI_API_KEY);
+console.log("FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, DBconfig_1.DBconfig)();
