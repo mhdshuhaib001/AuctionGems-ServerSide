@@ -33,7 +33,6 @@ function getCurrentIndianTime() {
 }
 const initAuctionCronJob = () => {
     node_cron_1.default.schedule('* * * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Checking for ended auctions...');
         try {
             const auctions = yield auctionUseCase.getAllActiveAuctions();
             for (const auction of auctions) {
@@ -49,7 +48,6 @@ const initAuctionCronJob = () => {
 exports.initAuctionCronJob = initAuctionCronJob;
 const initRelistAuctionCronJob = () => {
     node_cron_1.default.schedule('0 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Checking for auctions to relist...❤️❤️');
         try {
             const auctionsToRelist = yield auctionRepository.getAuctionsAwaitingPayment();
             for (const auction of auctionsToRelist) {

@@ -28,6 +28,7 @@ class AuctionRepository {
                     currentBid: currentBid,
                     bidStatus: "Active"
                 });
+                // final bid amount and bid saving area
                 const savedBid = yield newBid.save();
                 return savedBid;
             }
@@ -96,7 +97,6 @@ class AuctionRepository {
     getActiveAuctions(currentTimeInIST) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(currentTimeInIST, "halooooooo this is the main thing");
                 const activeAuctions = yield productModal_1.default.find({
                     auctionStatus: { $ne: "sold" },
                     auctionFormat: { $ne: "buy-it-now" },

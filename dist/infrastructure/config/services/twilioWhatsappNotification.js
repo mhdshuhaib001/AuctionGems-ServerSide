@@ -28,6 +28,7 @@ The auction for "${productName}" is starting in 5 minutes!
 
 Don't miss your chance to bid!
 `;
+        // twilo notification area 
         const response = yield client.messages.create({
             from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
             to: `whatsapp:+${to}`,

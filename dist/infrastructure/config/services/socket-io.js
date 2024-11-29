@@ -27,12 +27,10 @@ const generateRoomId = (id1, id2) => {
     return [id1, id2].sort().join("-");
 };
 const socketIoInit = (HttpServer) => {
+    // this is soccket connecting area 
     io = new socket_io_1.Server(HttpServer, {
         cors: {
-            origin: [
-                "https://auction-gems.vercel.app",
-                "wss://backend.loomfashion.online"
-            ],
+            origin: "https://auction-gemss.vercel.app",
             methods: ["GET", "POST"],
             credentials: true
         },
