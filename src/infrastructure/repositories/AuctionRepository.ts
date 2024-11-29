@@ -90,7 +90,6 @@ class AuctionRepository implements IAuctionRepository {
   }
   async getActiveAuctions(currentTimeInIST: any): Promise<any[]> {
     try {
-      console.log(currentTimeInIST, "halooooooo this is the main thing");
       const activeAuctions = await ProductModel.find({
         auctionStatus: { $ne: "sold" },
         auctionFormat: { $ne: "buy-it-now" },

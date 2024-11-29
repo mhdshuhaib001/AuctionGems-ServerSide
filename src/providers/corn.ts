@@ -23,7 +23,6 @@ function getCurrentIndianTime() {
 
 export const initAuctionCronJob = () => {
   cron.schedule('* * * * *', async () => {  
-    console.log('Checking for ended auctions...');  
     try {
       const auctions = await auctionUseCase.getAllActiveAuctions(); 
       
@@ -43,7 +42,6 @@ export const initAuctionCronJob = () => {
 
 export const initRelistAuctionCronJob = () => {
   cron.schedule('0 0 * * *', async () => { 
-    console.log('Checking for auctions to relist...❤️❤️');
     try {
       const auctionsToRelist = await auctionRepository.getAuctionsAwaitingPayment();
     
