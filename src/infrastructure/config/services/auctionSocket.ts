@@ -7,7 +7,7 @@ let io: SocketIOServer;
 export const initSocket = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: 'https://auction-gemss.vercel.app',
       methods: ["GET", "POST"],
       credentials: true,
     },

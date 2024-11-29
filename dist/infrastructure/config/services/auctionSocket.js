@@ -7,7 +7,7 @@ let io;
 const initSocket = (httpServer) => {
     io = new socket_io_1.Server(httpServer, {
         cors: {
-            origin: process.env.FRONTEND_URL,
+            origin: 'https://auction-gemss.vercel.app',
             methods: ["GET", "POST"],
             credentials: true,
         },
