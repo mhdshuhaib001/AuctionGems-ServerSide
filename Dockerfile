@@ -1,25 +1,27 @@
-FROM node:alpine
+FROM node:18-alpine
 
-# Set the working directory
-WORKDIR /src
+WORKDIR /app
 
-# Install build dependencies for bcrypt
 RUN apk add --no-cache --virtual .build-deps build-base python3
 
-# Copy package.json and package-lock.json first to leverage Docker's cache
-COPY package*.json ./
+COPY .env .env
 
-# Install dependencies, including bcrypt
+COPY package*.json ./
+COPY src/infrastructure/config/services/serviceAccountKey.json /app/dist/infrastructure/config/services/serviceAccountKey.json
+
+
 RUN npm install
 
-# Copy the rest of your application code
 COPY . .
 
-# Expose the port your application will run on
+RUN npm run build
+
 EXPOSE 8000
 
-# Clean up build dependencies to reduce image size
 RUN apk del .build-deps
 
-# Start the app
-CMD ["npm", "start"]
+ENV NODE_ENV=production
+
+ENV PORT=8000
+
+CMD ["node", "dist/index.js"]
