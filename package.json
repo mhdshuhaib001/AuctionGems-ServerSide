@@ -3,15 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "nodemon --exec ts-node src/index.ts --ignore node_modules/* --ignore dist/* --ignore logs/*",
-    "dev:server": "nodemon --exec ts-node src/index.ts --ignore node_modules/* --ignore dist/*"
-  },
+"scripts": {
+  "format": "prettier --write 'src/**/*.{ts,tsx}'",
+  "dev": "vite",
+  "build": "tsc -b && vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  "start": "nodemon --exec ts-node src/index.ts"
+},
   "author": "",
   "license": "ISC",
   "dependencies": {
