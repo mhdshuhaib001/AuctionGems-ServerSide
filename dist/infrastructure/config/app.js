@@ -29,10 +29,8 @@ const createServer = () => {
         app.use(express_1.default.json({ limit: '10mb' }));
         app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
         // CORS configuration
-        // the auction localhost is run on the https://auction-gems.vercel.app/ 
         app.use((0, cors_1.default)({
-            // origin: process.env.FRONTEND_URL,
-            origin: 'https://auction-gemss.vercel.app',
+            origin: process.env.FRONTEND_URL,
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             credentials: true
         }));

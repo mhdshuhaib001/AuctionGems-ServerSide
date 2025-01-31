@@ -14,7 +14,6 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
 
 EXPOSE 8000
 
@@ -24,4 +23,4 @@ ENV NODE_ENV=production
 
 ENV PORT=8000
 
-CMD ["node", "dist/index.js"]
+CMD ["npx", "ts-node", "src/index.ts"]
