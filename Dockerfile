@@ -4,7 +4,6 @@ WORKDIR /app
 
 RUN apk add --no-cache --virtual .build-deps build-base python3
 
-COPY .env .env
 
 COPY package*.json ./
 COPY src/infrastructure/config/services/serviceAccountKey.json /app/dist/infrastructure/config/services/serviceAccountKey.json
