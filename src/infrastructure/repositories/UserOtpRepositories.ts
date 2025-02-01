@@ -1,4 +1,4 @@
-import otp from "../../interfaces/model/Otp";
+import OTPModel from "../../interfaces/model/Otp";
 import otpModel from "../../entities_models/userOtpModel";
 import IOTPRepository from "../../interfaces/iRepositories/iOtpRepository";
 
@@ -19,7 +19,7 @@ class UserOTPRepository implements IOTPRepository {
         }
     }
 
-    async getOtpByEmail(email: string): Promise<otp | null> {
+    async getOtpByEmail(email: string): Promise<OTPModel | null> {
         try {
             const otp = await otpModel.findOne({ email: email });
             console.log('Retrieved OTP:', otp);
