@@ -46,7 +46,9 @@ export const createServer = () => {
 
     // Swagger Documentation
     app.use("/api-docs", swaggerDocs.serve, swaggerDocs.setup);
-
+    app.get('/health', (req, res) => {
+      res.status(200).send('OK  , THE CHEKC IS OKEY');
+    });
     // Routes
     app.use("/api/auth", authRouter);
     app.use("/api/user", userRoute);

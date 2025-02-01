@@ -37,16 +37,15 @@ console.log("FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, DBconfig_1.DBconfig)();
-        const port = process.env.PORT || 8000;
+        const port = process.env.PORT;
         const url = process.env.BACKEND_URL;
         const { app, server } = (0, app_1.createServer)();
-        // initSocket(server)
         // Initialize Socket.io
         (0, socket_io_1.socketIoInit)(server);
-        // Auction Notifgication corn 
+        // Auction Notification cron 
         (0, AuctionNotificationScheduler_1.startAuctionCronJob)();
         (0, corn_1.initAuctionCronJob)();
-        // Auction pebnding payment relist 
+        // Auction pending payment relist 
         (0, corn_1.initRelistAuctionCronJob)();
         server.listen(port, () => console.log(`Server running at ${url}`));
     }

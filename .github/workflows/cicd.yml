@@ -1,4 +1,4 @@
-name: Node.js CI/CD
+name: Node.js CI/CD to Cloud Run
 
 on:
   push:
@@ -8,20 +8,21 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
         node-version: [20.11.1]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
 
@@ -30,7 +31,21 @@ jobs:
           touch .env
           echo "${{ secrets.PROD_ENV_FILE }}" > .env
 
-      - name: Restart PM2 process (auction-gems-server)
+      - name: Build application
+        run: npm run build
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
         run: |
-          # Restart the PM2 process if it's running
-          pm2 restart "auction-gems-server" || echo "PM2 process not found"
+          gcloud run deploy auctiongems-backend \
+            --image=gcr.io/${{ secrets.GCP_PROJECT_ID }}/auctiongems-backend \
+            --region=us-central1 \
+            --platform=managed \
+            --allow-unauthenticated
