@@ -1,8 +1,8 @@
 import { model, Schema } from "mongoose";
-import OTP from "../interfaces/model/Otp"
+import OTPModel  from "../interfaces/model/Otp"
 
 
-const userOTPSchema = new Schema<OTP>({
+const userOTPSchema = new Schema<OTPModel >({
     email: {
         type: String,
         required: true
@@ -17,6 +17,6 @@ const userOTPSchema = new Schema<OTP>({
     }
 }, { timestamps: true })
 
-const otpModel = model<OTP>('userOtp', userOTPSchema)
+const otpModel = model<OTPModel >('userOtp', userOTPSchema)
 
 export default otpModel  
